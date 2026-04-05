@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alera — Coleccionables pop culture</title>
+  <meta name="description" content="Coleccionables y decoración pop culture. Llaveros, lámparas y figuras de Star Wars, Minecraft, Naruto, Pokémon y más. Hecho en Honduras, envíos a todo el país." />
+  <meta property="og:title" content="Alera — Coleccionables pop culture" />
+  <meta property="og:description" content="Llaveros, lámparas y decoración de tus universos favoritos. Gaming, anime y cultura pop — hecho a mano en Honduras." />
+  <meta property="og:image" content="assets/lampara-minecraft.jpg" />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#14b8a6" />
+  <link rel="icon" type="image/svg+xml" href="assets/logo-symbol.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mint: { 50:'#f0fdf8',100:'#ccfbef',200:'#99f6e0',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .hero-blob { position:absolute; border-radius:9999px; filter:blur(80px); pointer-events:none; }
+    .card-img { transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
+    .product-card:hover .card-img { transform: scale(1.06); }
+    .product-card { transition: box-shadow 0.25s ease, transform 0.25s ease; }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 24px 48px -12px rgba(14,165,144,0.15), 0 8px 16px -8px rgba(0,0,0,0.08); }
+    @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(3deg)} }
+    .float { animation: float 6s ease-in-out infinite; }
+    @keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
+    #cart-drawer { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+    #cart-drawer.open { transform: translateX(0); }
+    #cart-backdrop { transition: opacity 0.3s ease; }
+    @keyframes pop { 0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)} }
+    .pop { animation: pop 0.3s ease; }
+    .no-img { background: linear-gradient(135deg, #1c1c2e 0%, #2d2d44 100%); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+    .fade-up { opacity:0; }
+    .fade-up.visible { animation: fadeUp 0.5s ease forwards; }
+    .filter-btn { transition: all 0.2s ease; }
+    .filter-btn.active { background: #14b8a6; color: #fff; border-color: #14b8a6; }
+  </style>
+</head>
+<body class="bg-white text-zinc-900 antialiased overflow-x-hidden">
+
+  <!-- CARRITO DRAWER -->
+  <div id="cart-backdrop" class="fixed inset-0 bg-black/40 z-40 opacity-0 pointer-events-none" onclick="closeCart()"></div>
+  <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col translate-x-full">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
+      <h2 class="font-bold text-lg">Tu carrito</h2>
+      <button onclick="closeCart()" class="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4">
+      <div id="cart-empty" class="flex flex-col items-center justify-center h-full text-zinc-400 gap-3">
+        <svg class="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+        <p class="text-sm">Tu carrito está vacío</p>
+      </div>
+    </div>
+    <div id="cart-footer" class="hidden border-t border-zinc-100 p-5 space-y-4">
+      <div class="space-y-1">
+        <div class="flex justify-between items-center text-sm text-zinc-400">
+          <span>Subtotal</span>
+          <span id="cart-subtotal">L 0</span>
+        </div>
+        <div class="flex justify-between items-center text-sm text-zinc-400">
+          <span>Envío</span>
+          <span id="cart-envio">—</span>
+        </div>
+        <div class="flex justify-between items-center pt-1 border-t border-zinc-100">
+          <span class="font-semibold text-sm">Total</span>
+          <span id="cart-total" class="font-black text-xl">L 0</span>
+        </div>
+      </div>
+
+      <!-- Trust badge -->
+      <div class="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3.5 py-2.5">
+        <span class="text-lg">🔒</span>
+        <p class="text-xs text-green-700 font-medium leading-snug">Podés pagar cuando recibís tu pedido. Sin riesgo.</p>
+      </div>
+
+      <!-- Datos de entrega -->
+      <div class="space-y-2.5">
+        <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Datos de entrega</p>
+
+        <input id="delivery-name" type="text" placeholder="Nombre completo *"
+          class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
+          oninput="checkDeliveryForm()" />
+        <input id="delivery-phone" type="tel" placeholder="Teléfono *"
+          class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
+          oninput="checkDeliveryForm()" />
+
+        <!-- Selector TGU -->
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="btn-tgu" onclick="setZone('tgu')"
+            class="zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 border-mint-500 bg-mint-50 text-mint-700 transition-all">
+            🏙️ Dentro de TGU<br/><span class="text-xs font-normal">L 70 · 1–2 días</span>
+          </button>
+          <button type="button" id="btn-fuera" onclick="setZone('fuera')"
+            class="zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 border-zinc-200 text-zinc-500 transition-all">
+            🚚 Fuera de TGU<br/><span class="text-xs font-normal">L 90–120 · 3–5 días</span>
+          </button>
+        </div>
+
+        <input id="delivery-address" type="text" placeholder="Dirección de entrega *"
+          class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
+          oninput="checkDeliveryForm()" />
+
+        <!-- Método de pago -->
+        <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide pt-1">Método de pago</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="btn-contraentrega" onclick="setPayment('contraentrega')"
+            class="pay-btn text-sm font-semibold py-2.5 rounded-xl border-2 border-mint-500 bg-mint-50 text-mint-700 transition-all">
+            💵 Al recibir<br/><span class="text-xs font-normal">Pago contra entrega</span>
+          </button>
+          <button type="button" id="btn-transferencia" onclick="setPayment('transferencia')"
+            class="pay-btn text-sm font-semibold py-2.5 rounded-xl border-2 border-zinc-200 text-zinc-500 transition-all">
+            🏦 Transferencia<br/><span class="text-xs font-normal">Pagar por adelantado</span>
+          </button>
+        </div>
+      </div>
+
+      <button id="checkout-btn" onclick="checkoutWhatsApp()" disabled
+        class="w-full flex items-center justify-center gap-2.5 bg-zinc-200 text-zinc-400 cursor-not-allowed font-bold py-3.5 rounded-xl transition-all text-sm">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.553 4.103 1.523 5.824L.057 23.107a.75.75 0 0 0 .921.911l5.344-1.47A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.5c-1.967 0-3.81-.512-5.407-1.41l-.387-.224-3.17.872.888-3.088-.245-.398A10.452 10.452 0 0 1 1.5 12C1.5 6.201 6.201 1.5 12 1.5S22.5 6.201 22.5 12 17.799 22.5 12 22.5z"/></svg>
+        Confirmar por WhatsApp
+      </button>
+      <p class="text-xs text-center text-zinc-400">Te contactamos para confirmar el pedido.</p>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-zinc-100">
+    <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5 group">
+        <img src="assets/logo-symbol.svg" alt="Alera" class="h-8 w-auto group-hover:scale-110 transition-transform duration-200" />
+        <span class="font-bold text-lg tracking-tight">Alera</span>
+      </a>
+      <nav class="hidden sm:flex items-center gap-8 text-sm text-zinc-500">
+        <a href="#productos" class="hover:text-zinc-900 transition-colors">Productos</a>
+        <a href="#nosotros" class="hover:text-zinc-900 transition-colors">Nosotros</a>
+        <a href="#contacto" class="hover:text-zinc-900 transition-colors">Contacto</a>
+      </nav>
+      <button onclick="openCart()" class="relative flex items-center gap-2 border border-zinc-200 hover:border-zinc-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors hover:bg-zinc-50">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+        <span class="hidden sm:inline">Carrito</span>
+        <span id="cart-badge" class="hidden absolute -top-2 -right-2 bg-mint-500 text-white text-[10px] font-black w-5 h-5 rounded-full items-center justify-center">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative min-h-[88vh] flex items-center overflow-hidden">
+    <div class="hero-blob w-[500px] h-[500px] bg-mint-100 opacity-60 top-[-80px] right-[-100px]"></div>
+    <div class="hero-blob w-[300px] h-[300px] bg-mint-200 opacity-40 bottom-[60px] right-[200px]"></div>
+    <div class="hero-blob w-[200px] h-[200px] bg-teal-100 opacity-50 top-[30%] left-[-60px]"></div>
+    <div class="max-w-5xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+      <div>
+        <div class="flex flex-wrap gap-2 mb-6">
+          <span class="inline-flex items-center gap-2 bg-mint-50 text-mint-700 text-xs font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full border border-mint-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-mint-500 inline-block"></span>
+            Hecho en Honduras
+          </span>
+          <span class="inline-flex items-center gap-2 bg-mint-50 text-mint-700 text-xs font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full border border-mint-200">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Envíos a todo Honduras
+          </span>
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tight leading-[1.05]">
+          Coleccionables<br/>para fans de<br/><span class="text-mint-600">verdad.</span>
+        </h1>
+        <p class="mt-6 text-zinc-500 text-lg leading-relaxed max-w-sm">
+          Llaveros, lámparas y decoración de tus universos favoritos. Gaming, anime y cultura pop — hecho a mano.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#productos" class="inline-flex items-center gap-2 bg-mint-500 hover:bg-mint-600 text-white font-semibold px-6 py-3.5 rounded-xl shadow-lg shadow-mint-200 transition-all duration-200 text-sm">
+            Ver catálogo
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+          <a href="#contacto" class="inline-flex items-center gap-2 text-zinc-700 font-semibold px-6 py-3.5 rounded-xl border border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50 transition-all duration-200 text-sm">
+            Pedir personalizado
+          </a>
+        </div>
+        <!-- Fandoms -->
+        <div class="mt-10 flex flex-wrap gap-2">
+          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">⚔️ Star Wars</span>
+          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🎮 Minecraft</span>
+          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🍃 Naruto</span>
+          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🔴 Pokémon</span>
+          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🌸 Demon Slayer</span>
+          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🐛 Hollow Knight</span>
+        </div>
+      </div>
+      <div class="relative flex justify-center lg:justify-end" id="hero-product-wrap">
+        <!-- Renderizado por JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- STRIP -->
+  <div class="bg-mint-500 text-white overflow-hidden py-3">
+    <div class="flex gap-12 whitespace-nowrap text-sm font-medium" style="animation: marquee 20s linear infinite;">
+      <span>✦ Star Wars</span><span>✦ Minecraft</span><span>✦ Naruto</span><span>✦ Pokémon</span><span>✦ Demon Slayer</span><span>✦ Hollow Knight</span><span>✦ Hecho en Honduras</span><span>✦ Envíos a todo Honduras</span>
+      <span>✦ Star Wars</span><span>✦ Minecraft</span><span>✦ Naruto</span><span>✦ Pokémon</span><span>✦ Demon Slayer</span><span>✦ Hollow Knight</span><span>✦ Hecho en Honduras</span><span>✦ Envíos a todo Honduras</span>
+    </div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <section id="productos" class="py-24">
+    <!-- Buscador + Filtros por fandom -->
+    <div class="max-w-5xl mx-auto px-6 mb-10 space-y-4">
+      <div class="relative max-w-sm">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.804 7.5 7.5 0 0015.803 15.803z"/></svg>
+        <input id="search-input" type="text" placeholder="Buscar producto..."
+          class="w-full pl-10 pr-4 py-2.5 border border-zinc-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
+          oninput="setSearch(this.value)" />
+      </div>
+      <div class="flex flex-wrap gap-2" id="fandom-filters">
+        <button class="filter-btn active border border-zinc-200 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('*')">Todos</button>
+        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Star Wars')">⚔️ Star Wars</button>
+        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Minecraft')">🎮 Minecraft</button>
+        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Naruto')">🍃 Naruto</button>
+        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Pokémon')">🔴 Pokémon</button>
+        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Demon Slayer')">🌸 Demon Slayer</button>
+        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Hollow Knight')">🐛 Hollow Knight</button>
+        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('DC / Batman')">🦇 Batman</button>
+      </div>
+    </div>
+    <div id="products-root" class="max-w-5xl mx-auto px-6">
+      <!-- Renderizado dinámicamente por JS -->
+    </div>
+    <!-- fallback estático por si JS no carga aún (oculto) -->
+    <div class="hidden max-w-5xl mx-auto px-6">
+
+      <!-- Llaveros -->
+      <div class="mb-16">
+        <div class="flex items-end justify-between mb-8">
+          <div>
+            <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
+            <h2 class="mt-1 text-2xl font-black tracking-tight">🔑 Llaveros</h2>
+          </div>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square overflow-hidden bg-zinc-50">
+              <img src="assets/cubone-mochila.png" alt="Llavero Cubone" class="card-img w-full h-full object-cover" />
+            </div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Pokémon</p>
+              <h3 class="font-bold leading-tight">Llavero Cubone</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 150</span>
+                <button onclick="addToCart(1)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-zinc-950 rounded-3xl overflow-hidden border border-zinc-800">
+            <div class="aspect-square overflow-hidden">
+              <img src="assets/cubone.jpg" alt="Llavero Cubone Glow" class="card-img w-full h-full object-cover opacity-90" />
+            </div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-500">Pokémon</p>
+              <h3 class="font-bold text-white leading-tight">Llavero Cubone Glow</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black text-white">L 180</span>
+                <button onclick="addToCart(2)" class="text-xs font-bold bg-mint-500 hover:bg-mint-400 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">🔑</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Hollow Knight</p>
+              <h3 class="font-bold leading-tight">Llavero Hornet</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 150</span>
+                <button onclick="addToCart(3)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">💀</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Minecraft</p>
+              <h3 class="font-bold leading-tight">Llavero Esqueleto</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 150</span>
+                <button onclick="addToCart(4)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">⚔️</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Star Wars</p>
+              <h3 class="font-bold leading-tight">Llavero Mandalorian</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 150</span>
+                <button onclick="addToCart(5)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">⚔️</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Star Wars</p>
+              <h3 class="font-bold leading-tight">Llaveros Star Wars – varios</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 150</span>
+                <button onclick="addToCart(6)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">👁️</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Naruto</p>
+              <h3 class="font-bold leading-tight">Llaveros Sharingan</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 150</span>
+                <button onclick="addToCart(7)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">⚪🔴</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Pokémon</p>
+              <h3 class="font-bold leading-tight">Llavero Pokébola</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 150</span>
+                <button onclick="addToCart(8)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Lámparas -->
+      <div class="mb-16">
+        <div class="mb-8">
+          <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
+          <h2 class="mt-1 text-2xl font-black tracking-tight">🕯️ Lámparas</h2>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100 relative">
+            <div class="absolute top-3 left-3 z-10">
+              <span class="bg-zinc-900/90 text-white text-xs font-bold px-3 py-1.5 rounded-full">🔥 Más vendido</span>
+            </div>
+            <div class="aspect-square overflow-hidden bg-zinc-900">
+              <img src="assets/lampara-minecraft.jpg" alt="Lámpara Minecraft" class="card-img w-full h-full object-cover" />
+            </div>
+            <div class="p-5">
+              <p class="text-xs text-zinc-400">Minecraft</p>
+              <h3 class="font-bold text-lg leading-tight">Lámpara Minecraft</h3>
+              <p class="text-sm text-zinc-400 mt-0.5">LED cálida incluida</p>
+              <div class="mt-4 flex items-center justify-between">
+                <span class="font-black text-xl">L 350</span>
+                <button onclick="addToCart(9)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-6xl">☀️</div>
+            <div class="p-5">
+              <p class="text-xs text-zinc-400">Demon Slayer</p>
+              <h3 class="font-bold text-lg leading-tight">Lámpara Tanjiro Kamado</h3>
+              <p class="text-sm text-zinc-400 mt-0.5">Kimetsu no Yaiba</p>
+              <div class="mt-4 flex items-center justify-between">
+                <span class="font-black text-xl">L 350</span>
+                <button onclick="addToCart(10)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Decoración de pared -->
+      <div class="mb-16">
+        <div class="mb-8">
+          <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
+          <h2 class="mt-1 text-2xl font-black tracking-tight">🖼️ Decoración de pared</h2>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-6xl">🪖</div>
+            <div class="p-5">
+              <p class="text-xs text-zinc-400">Star Wars</p>
+              <h3 class="font-bold text-lg leading-tight">Máscara Darth Vader</h3>
+              <div class="mt-4 flex items-center justify-between">
+                <span class="font-black text-xl">L 280</span>
+                <button onclick="addToCart(11)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-6xl">⚔️</div>
+            <div class="p-5">
+              <p class="text-xs text-zinc-400">Star Wars</p>
+              <h3 class="font-bold text-lg leading-tight">Máscara The Mandalorian</h3>
+              <div class="mt-4 flex items-center justify-between">
+                <span class="font-black text-xl">L 280</span>
+                <button onclick="addToCart(12)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-6xl">🚀</div>
+            <div class="p-5">
+              <p class="text-xs text-zinc-400">Star Wars</p>
+              <h3 class="font-bold text-lg leading-tight">TIE Fighter</h3>
+              <div class="mt-4 flex items-center justify-between">
+                <span class="font-black text-xl">L 280</span>
+                <button onclick="addToCart(13)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Figuras y más -->
+      <div>
+        <div class="mb-8">
+          <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
+          <h2 class="mt-1 text-2xl font-black tracking-tight">🎭 Figuras y más</h2>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">🐶</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Minecraft</p>
+              <h3 class="font-bold leading-tight">Perritos Minecraft</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 200</span>
+                <button onclick="addToCart(14)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">👺</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Naruto</p>
+              <h3 class="font-bold leading-tight">Máscara Obito Uchiha</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 250</span>
+                <button onclick="addToCart(15)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">🚀</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Star Wars</p>
+              <h3 class="font-bold leading-tight">TIE Fighter armable</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 320</span>
+                <button onclick="addToCart(16)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
+            <div class="aspect-square no-img flex items-center justify-center text-5xl">🥤</div>
+            <div class="p-4">
+              <p class="text-xs text-zinc-400">Star Wars</p>
+              <h3 class="font-bold leading-tight">Set Portavasos Star Wars</h3>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-black">L 380</span>
+                <button onclick="addToCart(17)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PERSONALIZADOS -->
+  <section class="pb-24">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="relative bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-3xl overflow-hidden p-8 sm:p-12">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-mint-500 opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+        <div class="relative z-10 flex flex-col sm:flex-row items-start gap-8">
+          <div class="flex-1">
+            <span class="text-mint-400 text-xs font-semibold uppercase tracking-widest">Personalizados</span>
+            <h2 class="mt-2 text-3xl sm:text-4xl font-black text-white tracking-tight">¿No encontraste lo que buscás?</h2>
+            <p class="mt-3 text-zinc-400 leading-relaxed max-w-md">Mandanos tu idea — si existe un personaje o universo que amás, podemos hacerlo. Consultanos sin compromiso.</p>
+            <a href="#contacto" class="mt-6 inline-flex items-center gap-2.5 bg-mint-500 hover:bg-mint-400 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm">
+              Pedir personalizado por WhatsApp
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENVÍOS -->
+  <section class="bg-mint-50 border-y border-mint-100 py-16">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-center mb-10">
+        <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Envíos</span>
+        <h2 class="mt-2 text-3xl font-black tracking-tight">Te lo llevamos a donde estés</h2>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-5">
+        <div class="bg-white rounded-2xl p-6 border border-mint-100 shadow-sm">
+          <div class="text-3xl mb-3">🏙️</div>
+          <div class="font-bold text-zinc-900">Dentro de Tegucigalpa</div>
+          <div class="text-3xl font-black text-mint-600 mt-2">L 70</div>
+          <div class="text-zinc-400 text-sm mt-1">Entrega en 1–2 días</div>
+        </div>
+        <div class="bg-white rounded-2xl p-6 border border-mint-100 shadow-sm">
+          <div class="text-3xl mb-3">🚚</div>
+          <div class="font-bold text-zinc-900">Fuera de Tegucigalpa</div>
+          <div class="text-3xl font-black text-mint-600 mt-2">L 90 – 120</div>
+          <div class="text-zinc-400 text-sm mt-1">Entrega en 3–5 días</div>
+        </div>
+        <div class="bg-white rounded-2xl p-6 border border-mint-100 shadow-sm">
+          <div class="text-3xl mb-3">💬</div>
+          <div class="font-bold text-zinc-900">Coordinamos por WhatsApp</div>
+          <div class="text-zinc-500 text-sm mt-2">Pago contra entrega o transferencia. Te confirmamos el día exacto.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOSOTROS -->
+  <section id="nosotros" class="border-t border-zinc-100 py-20">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="max-w-lg">
+        <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Nosotros</span>
+        <h2 class="mt-2 text-3xl font-black tracking-tight">¿Quiénes somos?</h2>
+        <p class="mt-4 text-zinc-500 leading-relaxed text-lg">
+          Somos <span class="font-semibold text-zinc-900">Alera</span>, una tienda hondureña de coleccionables y decoración temática para fans de gaming, anime y cultura pop. Creamos piezas únicas de tus universos favoritos — desde Star Wars hasta Pokémon — hechas con dedicación. Hacemos envíos a todo Honduras.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section id="contacto" class="py-20">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Contacto</span>
+      <h2 class="mt-2 text-3xl font-black tracking-tight">¿Listo para pedir?</h2>
+      <p class="mt-3 text-zinc-500">Escribinos por WhatsApp y te respondemos enseguida.</p>
+      <a href="https://wa.me/50495902564" target="_blank" rel="noopener noreferrer"
+        class="mt-8 inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold px-8 py-4 rounded-2xl transition-colors text-base shadow-lg shadow-green-200">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.553 4.103 1.523 5.824L.057 23.107a.75.75 0 0 0 .921.911l5.344-1.47A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.5c-1.967 0-3.81-.512-5.407-1.41l-.387-.224-3.17.872.888-3.088-.245-.398A10.452 10.452 0 0 1 1.5 12C1.5 6.201 6.201 1.5 12 1.5S22.5 6.201 22.5 12 17.799 22.5 12 22.5z"/></svg>
+        Escribinos por WhatsApp
+      </a>
+      <p class="mt-4 text-zinc-400 text-sm font-medium">+504 9590-2564</p>
+      <p class="mt-1 text-zinc-400 text-xs">Coordinás el pago y el envío directamente con nosotros.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-zinc-100 py-8">
+    <div class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-400">
+      <div class="flex items-center gap-2.5">
+        <img src="assets/logo-symbol.svg" alt="Alera" class="h-5 w-auto opacity-30" />
+        <span>© 2026 Alera</span>
+      </div>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-zinc-700 transition-colors">Instagram</a>
+        <a href="#" class="hover:text-zinc-700 transition-colors">Facebook</a>
+        <a href="#" class="hover:text-zinc-700 transition-colors">WhatsApp</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Productos cargados desde localStorage (gestionados por admin.html)
+    const DEFAULT_PRODUCTS_LIST = [
+      { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'Pokémon',       price:150, emoji:'🔑',  img:'assets/cubone-mochila.png',                                          badge:'',               dark:false, active:true },
+      { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'Pokémon',       price:180, emoji:'🔑',  img:'assets/cubone.jpg',                                                  badge:'',               dark:true,  active:true },
+      { id:3,  name:'Llavero Hornet',              category:'Llavero',   fandom:'Hollow Knight', price:150, emoji:'🔑',  img:'assets/llavero-hornet.jpg',                  badge:'',               dark:false, active:true },
+      { id:4,  name:'Llavero Esqueleto Minecraft', category:'Llavero',   fandom:'Minecraft',     price:150, emoji:'💀',  img:'assets/llavero-esqueleto-minecraft.jpg',      badge:'',               dark:false, active:true },
+      { id:5,  name:'Llavero Mandalorian',         category:'Llavero',   fandom:'Star Wars',     price:150, emoji:'⚔️', img:'assets/llavero-mandalorian.jpg',              badge:'',               dark:false, active:true },
+      { id:6,  name:'Llaveros Star Wars',          category:'Llavero',   fandom:'Star Wars',     price:150, emoji:'⚔️', img:'assets/llaveros-star-wars.jpg',               badge:'',               dark:false, active:true },
+      { id:7,  name:'Llaveros Sharingan',          category:'Llavero',   fandom:'Naruto',        price:150, emoji:'👁️', img:'assets/llaveros-sharingan.jpg',               badge:'',               dark:false, active:true },
+      { id:8,  name:'Llavero Pokébola',            category:'Llavero',   fandom:'Pokémon',       price:150, emoji:'⚪🔴',img:'assets/llavero-pokebola.jpg',                badge:'',               dark:false, active:true },
+      { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:150, emoji:'🦇',  img:'assets/Batarang.jpg',                                                badge:'✨ Nuevo',        dark:false, active:true },
+      { id:10, name:'Lámpara Minecraft',           category:'Lámpara',   fandom:'Minecraft',     price:350, emoji:'🕯️', img:'assets/lampara-minecraft.jpg',                                       badge:'🔥 Más vendido', dark:false, active:true },
+      { id:11, name:'Lámpara Tanjiro Kamado',      category:'Lámpara',   fandom:'Demon Slayer',  price:350, emoji:'☀️',  img:'assets/lampara-tanjiro.jpg',              badge:'',               dark:false, active:true },
+      { id:12, name:'Máscara Darth Vader',         category:'Decoración',fandom:'Star Wars',     price:280, emoji:'🪖',  img:'assets/mascara-darth-vader.jpg',          badge:'',               dark:false, active:true },
+      { id:13, name:'Máscara The Mandalorian',     category:'Decoración',fandom:'Star Wars',     price:280, emoji:'⚔️', img:'assets/mandalorian-deco-pared.jpg',        badge:'',               dark:false, active:true },
+      { id:14, name:'TIE Fighter (pared)',          category:'Decoración',fandom:'Star Wars',     price:280, emoji:'🚀',  img:'assets/tie-fighter-deco-pared.jpg',        badge:'',               dark:false, active:true },
+      { id:15, name:'Perritos Minecraft',          category:'Figura',    fandom:'Minecraft',     price:200, emoji:'🐶',  img:'assets/perritos-minecraft.jpg',            badge:'',               dark:false, active:true },
+      { id:16, name:'Máscara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:250, emoji:'👺',  img:'assets/Obito.jpg',                         badge:'',               dark:false, active:true },
+      { id:17, name:'TIE Fighter armable',         category:'Figura',    fandom:'Star Wars',     price:320, emoji:'🚀',  img:'assets/tie-fighter-armable.jpg',           badge:'',               dark:false, active:true },
+      { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:320, emoji:'🤖',  img:'assets/at-st-star-wars.jpg',               badge:'✨ Nuevo',        dark:false, active:true },
+      { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:380, emoji:'🥤',  img:'assets/portavasos-star-wars.jpg',          badge:'',               dark:false, active:true },
+    ];
+
+    const CATALOG_VERSION = '5';
+    function getAllProducts() {
+      if (localStorage.getItem('alera_catalog_v') !== CATALOG_VERSION) {
+        localStorage.removeItem('alera_products');
+        localStorage.setItem('alera_catalog_v', CATALOG_VERSION);
+      }
+      const raw = localStorage.getItem('alera_products');
+      return raw ? JSON.parse(raw) : DEFAULT_PRODUCTS_LIST;
+    }
+
+    // Mapa id→producto para el carrito
+    let PRODUCTS = {};
+    function rebuildProductMap() {
+      PRODUCTS = {};
+      getAllProducts().filter(p => p.active).forEach(p => {
+        PRODUCTS[p.id] = { name: p.name, price: p.price, img: p.img, cat: p.category, emoji: p.emoji };
+      });
+    }
+    rebuildProductMap();
+
+    // ─── Render catálogo dinámico ────────────────────────────────────────────
+    const CAT_META = {
+      'Llavero':    { icon: '🔑', label: 'Llaveros',          cols: 'sm:grid-cols-2 lg:grid-cols-4', pad: 'p-4', titleSize: 'text-base' },
+      'Lámpara':    { icon: '🕯️', label: 'Lámparas',          cols: 'sm:grid-cols-2 lg:grid-cols-3', pad: 'p-5', titleSize: 'text-lg'   },
+      'Decoración': { icon: '🖼️', label: 'Decoración de pared',cols: 'sm:grid-cols-2 lg:grid-cols-3', pad: 'p-5', titleSize: 'text-lg'   },
+      'Figura':     { icon: '🎭', label: 'Figuras y más',      cols: 'sm:grid-cols-2 lg:grid-cols-4', pad: 'p-4', titleSize: 'text-base' },
+      'Set':        { icon: '📦', label: 'Sets',               cols: 'sm:grid-cols-2 lg:grid-cols-3', pad: 'p-5', titleSize: 'text-lg'   },
+    };
+
+    function plusIcon(size = 4) {
+      return `<svg class="w-${size} h-${size}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>`;
+    }
+
+    function renderProductCard(p, meta) {
+      const dark = p.dark;
+      const bg   = dark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-zinc-100';
+      const txtColor  = dark ? 'text-white'   : 'text-zinc-900';
+      const subColor  = dark ? 'text-zinc-500' : 'text-zinc-400';
+      const btnHover  = dark ? 'hover:bg-mint-400' : 'hover:bg-mint-600';
+      const padSmall  = meta.titleSize === 'text-base';
+
+      const imgHtml = p.img
+        ? `<img src="${p.img}" alt="${p.name}" class="card-img w-full h-full object-cover${dark ? ' opacity-90' : ''}" />`
+        : `<div class="w-full h-full no-img flex items-center justify-center" style="font-size:${padSmall?'3rem':'3.75rem'}">${p.emoji || '📦'}</div>`;
+
+      const agotado = p.stock === false;
+
+      const badgeHtml = agotado
+        ? `<div class="absolute top-3 left-3 z-10"><span class="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">Agotado</span></div>`
+        : p.badge
+          ? `<div class="absolute top-3 left-3 z-10"><span class="bg-zinc-900/90 text-white text-xs font-bold px-3 py-1.5 rounded-full">${p.badge}</span></div>`
+          : '';
+
+      const btnSize = padSmall
+        ? `text-xs px-3 py-1.5 rounded-lg gap-1`
+        : `text-sm px-4 py-2 rounded-xl gap-1.5`;
+      const priceSize = padSmall ? '' : 'text-xl';
+
+      const addBtn = agotado
+        ? `<button disabled class="font-bold bg-zinc-200 text-zinc-400 cursor-not-allowed ${btnSize} flex items-center">Agotado</button>`
+        : `<button onclick="addToCart(${p.id})" class="font-bold bg-mint-500 ${btnHover} text-white ${btnSize} transition-colors flex items-center">${plusIcon(padSmall ? 3 : 4)} Agregar</button>`;
+
+      return `
+        <div class="product-card ${bg} rounded-3xl overflow-hidden border relative${agotado ? ' opacity-60' : ''}">
+          <div class="aspect-square overflow-hidden ${!p.img ? '' : (dark ? 'bg-zinc-900' : 'bg-zinc-50')}">
+            ${badgeHtml}
+            ${imgHtml}
+          </div>
+          <div class="${meta.pad}">
+            <p class="text-xs ${subColor}">${p.fandom || ''}</p>
+            <h3 class="font-bold ${meta.titleSize} ${txtColor} leading-tight mt-0.5">${p.name}</h3>
+            <div class="mt-3 flex items-center justify-between">
+              <span class="font-black ${priceSize} ${txtColor}">L ${p.price}</span>
+              ${addBtn}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    let activeFilter = '*';
+    let activeSearch  = '';
+
+    function setFilter(fandom) {
+      activeFilter = fandom;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${fandom}'`));
+      });
+      renderCatalog();
+    }
+
+    function setSearch(val) {
+      activeSearch = val.toLowerCase().trim();
+      renderCatalog();
+    }
+
+    function renderCatalog() {
+      const root = document.getElementById('products-root');
+      if (!root) return;
+      let products = getAllProducts().filter(p => p.active);
+      if (activeFilter !== '*') products = products.filter(p => p.fandom === activeFilter);
+      if (activeSearch) products = products.filter(p =>
+        p.name.toLowerCase().includes(activeSearch) ||
+        (p.fandom || '').toLowerCase().includes(activeSearch)
+      );
+      const cats = Object.keys(CAT_META).filter(cat => products.some(p => p.category === cat));
+
+      root.innerHTML = cats.length ? cats.map((cat, i) => {
+        const meta  = CAT_META[cat];
+        const items = products.filter(p => p.category === cat);
+        const mb    = i < cats.length - 1 ? 'mb-16' : '';
+        return `
+          <div class="${mb}">
+            <div class="mb-8">
+              <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
+              <h2 class="mt-1 text-2xl font-black tracking-tight">${meta.icon} ${meta.label}</h2>
+            </div>
+            <div class="grid gap-5 ${meta.cols}">
+              ${items.map(p => renderProductCard(p, meta)).join('')}
+            </div>
+          </div>`;
+      }).join('') : `<p class="text-zinc-400 text-center py-16">No hay productos en este fandom aún.</p>`;
+
+      rebuildProductMap();
+      initFadeUp();
+    }
+
+    function initFadeUp() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => entry.target.classList.add('visible'), i * 60);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.product-card').forEach(el => {
+        el.classList.add('fade-up');
+        observer.observe(el);
+      });
+    }
+
+    function renderHero() {
+      const wrap = document.getElementById('hero-product-wrap');
+      if (!wrap) return;
+      const star = getAllProducts().find(p => p.active && p.badge && p.badge.includes('Más vendido'))
+                || getAllProducts().find(p => p.active);
+      if (!star) return;
+      wrap.innerHTML = `
+        <div class="relative">
+          <div class="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-mint-200 to-mint-400 blur-2xl opacity-30 scale-110"></div>
+          <div class="float relative w-72 sm:w-80 aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/80">
+            ${star.img
+              ? `<img src="${star.img}" alt="${star.name}" class="w-full h-full object-cover" />`
+              : `<div class="w-full h-full no-img flex items-center justify-center text-7xl">${star.emoji||'📦'}</div>`}
+            <div class="absolute bottom-4 left-4 right-4">
+              <div class="bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-sm text-zinc-900">${star.name}</div>
+                  <div class="text-xs text-zinc-500 mt-0.5">${star.fandom} · ${star.category}</div>
+                </div>
+                <div class="text-mint-600 font-black text-sm">L ${star.price}</div>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -top-3 -right-3 bg-zinc-900 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Más vendido 🔥</div>
+        </div>`;
+    }
+
+    // Renderizar al cargar
+    renderHero();
+    renderCatalog();
+
+    const WHATSAPP = '50495902564';
+    let cart = {};
+
+    function openCart() {
+      document.getElementById('cart-drawer').classList.add('open');
+      const bd = document.getElementById('cart-backdrop');
+      bd.classList.remove('pointer-events-none', 'opacity-0');
+      bd.classList.add('opacity-100');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCart() {
+      document.getElementById('cart-drawer').classList.remove('open');
+      const bd = document.getElementById('cart-backdrop');
+      bd.classList.add('pointer-events-none', 'opacity-0');
+      bd.classList.remove('opacity-100');
+      document.body.style.overflow = '';
+    }
+
+    function addToCart(id) {
+      cart[id] = (cart[id] || 0) + 1;
+      renderCart();
+      openCart();
+      const badge = document.getElementById('cart-badge');
+      badge.classList.remove('pop');
+      void badge.offsetWidth;
+      badge.classList.add('pop');
+    }
+
+    function changeQty(id, delta) {
+      cart[id] = (cart[id] || 0) + delta;
+      if (cart[id] <= 0) delete cart[id];
+      renderCart();
+    }
+
+    function removeItem(id) {
+      delete cart[id];
+      renderCart();
+    }
+
+    function renderCart() {
+      const ids = Object.keys(cart).map(Number);
+      const total = ids.reduce((s, id) => s + PRODUCTS[id].price * cart[id], 0);
+      const count = ids.reduce((s, id) => s + cart[id], 0);
+
+      const badge = document.getElementById('cart-badge');
+      if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+      } else {
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+      }
+
+      document.getElementById('cart-empty').style.display = ids.length ? 'none' : 'flex';
+      document.getElementById('cart-footer').classList.toggle('hidden', ids.length === 0);
+      updateCartTotal(total);
+
+      const container = document.getElementById('cart-items');
+      container.querySelectorAll('.cart-item').forEach(el => el.remove());
+
+      ids.forEach(id => {
+        const p = PRODUCTS[id];
+        const qty = cart[id];
+        const div = document.createElement('div');
+        div.className = 'cart-item flex gap-3 items-center';
+        const imgHtml = p.img
+          ? `<img src="${p.img}" class="w-16 h-16 rounded-2xl object-cover shrink-0 border border-zinc-100" />`
+          : `<div class="w-16 h-16 rounded-2xl shrink-0 bg-zinc-100 flex items-center justify-center text-2xl">${p.cat === 'Llavero' ? '🔑' : p.cat === 'Lámpara' ? '🕯️' : '🎭'}</div>`;
+        div.innerHTML = `
+          ${imgHtml}
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-sm truncate">${p.name}</div>
+            <div class="text-zinc-400 text-xs mt-0.5">L ${p.price} c/u</div>
+            <div class="flex items-center gap-2 mt-2">
+              <button onclick="changeQty(${id},-1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">−</button>
+              <span class="text-sm font-semibold w-5 text-center">${qty}</span>
+              <button onclick="changeQty(${id},1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">+</button>
+            </div>
+          </div>
+          <div class="flex flex-col items-end gap-2 shrink-0">
+            <button onclick="removeItem(${id})" class="text-zinc-300 hover:text-zinc-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <span class="font-bold text-sm">L ${p.price * qty}</span>
+          </div>`;
+        container.appendChild(div);
+      });
+    }
+
+    let deliveryZone    = 'tgu';
+    let deliveryPayment = 'contraentrega';
+
+    function updateCartTotal(subtotal) {
+      const envio = deliveryZone === 'tgu' ? 70 : 90;
+      const ids   = Object.keys(cart).map(Number);
+      const sub   = subtotal !== undefined ? subtotal : ids.reduce((s, id) => s + PRODUCTS[id].price * cart[id], 0);
+      document.getElementById('cart-subtotal').textContent = 'L ' + sub;
+      document.getElementById('cart-envio').textContent    = deliveryZone === 'tgu' ? 'L 70' : 'L 90-120';
+      document.getElementById('cart-total').textContent    = 'L ' + (sub + envio);
+    }
+
+    function setZone(zone) {
+      deliveryZone = zone;
+      const isTgu = zone === 'tgu';
+      document.getElementById('btn-tgu').className   = `zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 transition-all ${isTgu  ? 'border-mint-500 bg-mint-50 text-mint-700' : 'border-zinc-200 text-zinc-500'}`;
+      document.getElementById('btn-fuera').className = `zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 transition-all ${!isTgu ? 'border-mint-500 bg-mint-50 text-mint-700' : 'border-zinc-200 text-zinc-500'}`;
+      updateCartTotal();
+    }
+
+    function checkDeliveryForm() {
+      const name    = document.getElementById('delivery-name').value.trim();
+      const phone   = document.getElementById('delivery-phone').value.trim();
+      const address = document.getElementById('delivery-address').value.trim();
+      const btn     = document.getElementById('checkout-btn');
+      const ready   = name && phone && address;
+      btn.disabled  = !ready;
+      btn.className = `w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-xl transition-all text-sm ${
+        ready
+          ? 'bg-[#25D366] hover:bg-[#1ebe5d] text-white cursor-pointer'
+          : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
+      }`;
+    }
+
+    function setPayment(method) {
+      deliveryPayment = method;
+      const active = 'text-sm font-semibold py-2.5 rounded-xl border-2 border-mint-500 bg-mint-50 text-mint-700 transition-all';
+      const idle   = 'text-sm font-semibold py-2.5 rounded-xl border-2 border-zinc-200 text-zinc-500 transition-all';
+      document.getElementById('btn-contraentrega').className = `pay-btn ${method === 'contraentrega' ? active : idle}`;
+      document.getElementById('btn-transferencia').className  = `pay-btn ${method === 'transferencia'  ? active : idle}`;
+    }
+
+    function checkoutWhatsApp() {
+      const name    = document.getElementById('delivery-name').value.trim();
+      const phone   = document.getElementById('delivery-phone').value.trim();
+      const address = document.getElementById('delivery-address').value.trim();
+      if (!name || !phone || !address) return;
+
+      const envio      = deliveryZone === 'tgu' ? 70 : 90;
+      const zonaLabel  = deliveryZone === 'tgu' ? 'Dentro de TGU — L 70' : 'Fuera de TGU — L 90-120';
+      const pagoLabel  = deliveryPayment === 'contraentrega' ? 'Contra entrega' : 'Transferencia';
+      const ids        = Object.keys(cart).map(Number);
+      const subtotal   = ids.reduce((s, id) => s + PRODUCTS[id].price * cart[id], 0);
+      const totalFinal = subtotal + envio;
+
+      // Guardar pedido en localStorage para el admin
+      const prevOrders = JSON.parse(localStorage.getItem('alera_orders') || '[]');
+      const order = {
+        id:       Date.now(),
+        orderNum: prevOrders.length + 1,
+        date:     new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+        customer: { name, phone, address },
+        items:    ids.map(id => ({ id: Number(id), name: PRODUCTS[id].name, qty: cart[id], price: PRODUCTS[id].price })),
+        subtotal,
+        shipping: envio,
+        total:    totalFinal,
+        zone:     deliveryZone,
+        payment:  deliveryPayment,
+        status:   'pendiente',
+      };
+      prevOrders.unshift(order);
+      localStorage.setItem('alera_orders', JSON.stringify(prevOrders));
+
+      const lines = [
+        '*Alera — Nuevo pedido*',
+        '--------------------------------',
+        ...ids.map(id => `• ${cart[id]}x ${PRODUCTS[id].name} — L ${PRODUCTS[id].price * cart[id]}`),
+        '--------------------------------',
+        `Subtotal:  L ${subtotal}`,
+        `Envio:     ${zonaLabel}`,
+        `*Total:    L ${totalFinal}${deliveryZone !== 'tgu' ? ' (aprox.)' : ''}*`,
+        '',
+        '*Datos de entrega*',
+        `Nombre:    ${name}`,
+        `Tel:       ${phone}`,
+        `Direccion: ${address}`,
+        `Pago:      ${pagoLabel}`,
+      ];
+      window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
+    }
+  </script>
+</body>
+</html>
