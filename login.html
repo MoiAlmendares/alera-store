@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alera — Ingresar</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo-symbol.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { mint: { 50:'#f0fdf8',100:'#ccfbef',500:'#14b8a6',600:'#0d9488' } } } }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 antialiased min-h-screen flex items-center justify-center px-4">
+
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <img src="assets/logo-symbol.svg" alt="Alera" class="h-14 w-auto mx-auto mb-4" />
+      <h1 class="text-2xl font-black">Panel de Alera</h1>
+      <p class="text-zinc-500 text-sm mt-1">Ingresá tus credenciales para continuar</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm space-y-3">
+      <div>
+        <label class="block text-sm font-semibold mb-2">Usuario</label>
+        <input id="user-input" type="text" placeholder="usuario" autocomplete="username"
+          class="w-full border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-mint-500 text-sm"
+          onkeydown="if(event.key==='Enter') document.getElementById('pwd-input').focus()" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2">Contraseña</label>
+        <input id="pwd-input" type="password" placeholder="••••••••" autocomplete="current-password"
+          class="w-full border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-mint-500 text-sm"
+          onkeydown="if(event.key==='Enter') doLogin()" />
+      </div>
+      <p id="login-error" class="hidden text-red-500 text-xs">Usuario o contraseña incorrectos.</p>
+      <button onclick="doLogin()"
+        class="w-full bg-mint-500 hover:bg-mint-600 text-white font-bold py-3 rounded-xl transition-colors text-sm">
+        Ingresar
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function getAdminUser() { return localStorage.getItem('alera_user')         || 'admin';       }
+    function getAdminPwd()  { return localStorage.getItem('alera_pwd')          || 'alera2025';   }
+    function getVendUser()  { return localStorage.getItem('alera_vendedor_user') || 'vendedor';    }
+    function getVendPwd()   { return localStorage.getItem('alera_vendedor_pwd')  || 'vendedor2025';}
+
+    function doLogin() {
+      const user = document.getElementById('user-input').value.trim();
+      const pwd  = document.getElementById('pwd-input').value;
+      const err  = document.getElementById('login-error');
+
+      if (user === getAdminUser() && pwd === getAdminPwd()) {
+        sessionStorage.setItem('alera_admin', '1');
+        location.href = 'admin.html';
+      } else if (user === getVendUser() && pwd === getVendPwd()) {
+        sessionStorage.setItem('alera_vendedor', '1');
+        location.href = 'vendedor.html';
+      } else {
+        err.classList.remove('hidden');
+        document.getElementById('pwd-input').value = '';
+      }
+    }
+  </script>
+</body>
+</html>
