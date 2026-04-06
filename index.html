@@ -874,10 +874,12 @@
       localStorage.setItem('alera_cart', JSON.stringify(cart));
     }
 
-    // Renderizar al cargar
+    // Renderizar al cargar (esperar productos antes de pintar el carrito)
     renderHero();
-    renderCatalog();
-    renderCart();
+    rebuildProductMap().then(() => {
+      renderCatalog();
+      renderCart();
+    });
     function toggleDeliveryForm() {
       deliveryFormOpen = !deliveryFormOpen;
       document.getElementById('delivery-form-body').style.display = deliveryFormOpen ? '' : 'none';
