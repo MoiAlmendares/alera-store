@@ -97,10 +97,10 @@
 
         <input id="delivery-name" type="text" placeholder="Nombre completo *"
           class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
-          oninput="checkDeliveryForm()" />
-        <input id="delivery-phone" type="tel" placeholder="Teléfono *"
+          oninput="this.value=this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g,''); checkDeliveryForm()" />
+        <input id="delivery-phone" type="tel" inputmode="numeric" placeholder="Teléfono *"
           class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
-          oninput="checkDeliveryForm()" />
+          oninput="this.value=this.value.replace(/\D/g,''); checkDeliveryForm()" />
 
         <!-- Selector TGU -->
         <div class="grid grid-cols-2 gap-2">
