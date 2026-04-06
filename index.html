@@ -864,17 +864,17 @@
         </div>`;
     }
 
-    // Renderizar al cargar
-    renderHero();
-    renderCatalog();
-    renderCart();
-
     // Carrito persistente
     let cart = JSON.parse(localStorage.getItem('alera_cart') || '{}');
 
     function saveCart() {
       localStorage.setItem('alera_cart', JSON.stringify(cart));
     }
+
+    // Renderizar al cargar
+    renderHero();
+    renderCatalog();
+    renderCart();
 
     let deliveryFormOpen = true;
     function toggleDeliveryForm() {
