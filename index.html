@@ -52,7 +52,7 @@
 
   <!-- CARRITO DRAWER -->
   <div id="cart-backdrop" class="fixed inset-0 bg-black/40 z-40 opacity-0 pointer-events-none" onclick="closeCart()"></div>
-  <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col translate-x-full">
+  <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col translate-x-full relative overflow-hidden">
     <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
       <h2 class="font-bold text-lg">Tu carrito</h2>
       <button onclick="closeCart()" class="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
@@ -82,9 +82,9 @@
       </div>
 
       <!-- Trust badge -->
-      <div class="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3.5 py-2.5">
+      <div class="flex items-center gap-2.5 bg-mint-50 border border-mint-200 rounded-xl px-3.5 py-2.5">
         <span class="text-lg">🔒</span>
-        <p class="text-xs text-green-700 font-medium leading-snug">Podés pagar cuando recibís tu pedido. Sin riesgo.</p>
+        <p class="text-xs text-mint-700 font-medium leading-snug">Pedido seguro. Te contactamos para confirmar la entrega.</p>
       </div>
 
       <!-- Datos de entrega -->
@@ -126,15 +126,47 @@
             🏦 Transferencia<br/><span class="text-xs font-normal">Pagar por adelantado</span>
           </button>
         </div>
+
+        <!-- Transfer upload section (hidden until transferencia selected) -->
+        <div id="transfer-section" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3.5 space-y-2.5">
+          <p class="text-xs font-semibold text-blue-700">Datos para transferencia</p>
+          <div class="text-xs text-blue-600 space-y-0.5">
+            <p>🏦 Banco Atlántida</p>
+            <p>📋 Cuenta: <span class="font-mono font-bold">1234-5678-9012</span></p>
+            <p>👤 A nombre de: <span class="font-semibold">Alera Store</span></p>
+          </div>
+          <div>
+            <p class="text-xs text-blue-600 mb-1.5">Sube el comprobante (opcional):</p>
+            <label class="flex items-center gap-2 cursor-pointer bg-white border border-blue-200 hover:border-blue-400 rounded-xl px-3.5 py-2.5 transition-all">
+              <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+              <span id="transfer-file-label" class="text-xs text-blue-500 truncate">Seleccionar imagen...</span>
+              <input id="transfer-file" type="file" accept="image/*" class="hidden" onchange="onTransferFileChange()"/>
+            </label>
+          </div>
+        </div>
       </div>
 
-      <button id="checkout-btn" onclick="checkoutWhatsApp()" disabled
+      <button id="checkout-btn" onclick="submitOrder()" disabled
         class="w-full flex items-center justify-center gap-2.5 bg-zinc-200 text-zinc-400 cursor-not-allowed font-bold py-3.5 rounded-xl transition-all text-sm">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.553 4.103 1.523 5.824L.057 23.107a.75.75 0 0 0 .921.911l5.344-1.47A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.5c-1.967 0-3.81-.512-5.407-1.41l-.387-.224-3.17.872.888-3.088-.245-.398A10.452 10.452 0 0 1 1.5 12C1.5 6.201 6.201 1.5 12 1.5S22.5 6.201 22.5 12 17.799 22.5 12 22.5z"/></svg>
-        Confirmar por WhatsApp
+        Hacer pedido
       </button>
-      <p class="text-xs text-center text-zinc-400">Te contactamos para confirmar el pedido.</p>
+      <p class="text-xs text-center text-zinc-400">Te contactamos para confirmar tu pedido.</p>
     </div>
+  <!-- Order success screen -->
+  <div id="cart-success" class="hidden absolute inset-0 bg-white z-10 flex flex-col items-center justify-center p-8 text-center gap-5">
+    <div class="w-20 h-20 bg-mint-100 rounded-full flex items-center justify-center">
+      <svg class="w-10 h-10 text-mint-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+    </div>
+    <div>
+      <p class="font-black text-2xl">¡Pedido listo!</p>
+      <p class="text-sm text-zinc-400 mt-1.5">Pedido <span id="success-order-num" class="font-mono font-bold text-zinc-700">#001</span></p>
+    </div>
+    <p class="text-sm text-zinc-500 leading-relaxed max-w-xs">Recibimos tu pedido. Te contactaremos pronto para coordinar la entrega.</p>
+    <button onclick="closeCart(); resetCartSuccess()"
+      class="mt-1 bg-mint-500 hover:bg-mint-600 text-white font-bold px-8 py-3.5 rounded-xl transition-colors text-sm w-full max-w-xs">
+      ¡Genial!
+    </button>
+  </div>
   </div>
 
   <!-- HEADER -->
@@ -830,7 +862,6 @@
     renderHero();
     renderCatalog();
 
-    const WHATSAPP = '50495902564';
     let cart = {};
 
     function openCart() {
@@ -950,9 +981,10 @@
       btn.disabled  = !ready;
       btn.className = `w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-xl transition-all text-sm ${
         ready
-          ? 'bg-[#25D366] hover:bg-[#1ebe5d] text-white cursor-pointer'
+          ? 'bg-mint-500 hover:bg-mint-600 text-white cursor-pointer'
           : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
       }`;
+      if (!btn.textContent.includes('Enviando')) btn.textContent = 'Hacer pedido';
     }
 
     function setPayment(method) {
@@ -961,25 +993,71 @@
       const idle   = 'text-sm font-semibold py-2.5 rounded-xl border-2 border-zinc-200 text-zinc-500 transition-all';
       document.getElementById('btn-contraentrega').className = `pay-btn ${method === 'contraentrega' ? active : idle}`;
       document.getElementById('btn-transferencia').className  = `pay-btn ${method === 'transferencia'  ? active : idle}`;
+      document.getElementById('transfer-section').classList.toggle('hidden', method !== 'transferencia');
     }
 
-    function checkoutWhatsApp() {
+    function onTransferFileChange() {
+      const file  = document.getElementById('transfer-file').files[0];
+      const label = document.getElementById('transfer-file-label');
+      if (file) {
+        const name = file.name.length > 26 ? file.name.substring(0, 23) + '...' : file.name;
+        label.textContent = '✓ ' + name;
+        label.classList.add('text-blue-700', 'font-semibold');
+        label.classList.remove('text-blue-500');
+      } else {
+        label.textContent = 'Seleccionar imagen...';
+        label.classList.remove('text-blue-700', 'font-semibold');
+        label.classList.add('text-blue-500');
+      }
+    }
+
+    function compressImage(file, maxSize, quality) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            if (w > h && w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
+            else if (h > maxSize)     { w = Math.round(w * maxSize / h); h = maxSize; }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function submitOrder() {
       const name    = document.getElementById('delivery-name').value.trim();
       const phone   = document.getElementById('delivery-phone').value.trim();
       const address = document.getElementById('delivery-address').value.trim();
       if (!name || !phone || !address) return;
 
+      const btn = document.getElementById('checkout-btn');
+      btn.disabled  = true;
+      btn.className = 'w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-xl transition-all text-sm bg-zinc-200 text-zinc-400 cursor-not-allowed';
+      btn.textContent = 'Enviando...';
+
+      // Compress transfer image if present
+      let transferImg = null;
+      if (deliveryPayment === 'transferencia') {
+        const file = document.getElementById('transfer-file').files[0];
+        if (file) transferImg = await compressImage(file, 900, 0.75);
+      }
+
       const envio      = deliveryZone === 'tgu' ? 70 : 90;
-      const zonaLabel  = deliveryZone === 'tgu' ? 'Dentro de TGU — L 70' : 'Fuera de TGU — L 90-120';
-      const pagoLabel  = deliveryPayment === 'contraentrega' ? 'Contra entrega' : 'Transferencia';
       const ids        = Object.keys(cart).map(Number);
       const subtotal   = ids.reduce((s, id) => s + PRODUCTS[id].price * cart[id], 0);
       const totalFinal = subtotal + envio;
+      const orderId    = Date.now();
 
-      // Guardar pedido en AWS
       const order = {
-        id:       Date.now(),
-        orderNum: Date.now() % 9999 + 1,
+        id:       orderId,
+        orderNum: (orderId % 9000) + 1,
         date:     new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
         customer: { name, phone, address },
         items:    ids.map(id => ({ id: Number(id), name: PRODUCTS[id].name, qty: cart[id], price: PRODUCTS[id].price })),
@@ -990,24 +1068,35 @@
         payment:  deliveryPayment,
         status:   'pendiente',
       };
-      fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) }).catch(console.error);
+      if (transferImg) order.transferImg = transferImg;
 
-      const lines = [
-        '*Alera — Nuevo pedido*',
-        '--------------------------------',
-        ...ids.map(id => `• ${cart[id]}x ${PRODUCTS[id].name} — L ${PRODUCTS[id].price * cart[id]}`),
-        '--------------------------------',
-        `Subtotal:  L ${subtotal}`,
-        `Envio:     ${zonaLabel}`,
-        `*Total:    L ${totalFinal}${deliveryZone !== 'tgu' ? ' (aprox.)' : ''}*`,
-        '',
-        '*Datos de entrega*',
-        `Nombre:    ${name}`,
-        `Tel:       ${phone}`,
-        `Direccion: ${address}`,
-        `Pago:      ${pagoLabel}`,
-      ];
-      window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
+      try {
+        await fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) });
+        cart = {};
+        renderCart();
+        document.getElementById('success-order-num').textContent = '#' + String(order.orderNum).padStart(3, '0');
+        document.getElementById('cart-success').classList.remove('hidden');
+      } catch(e) {
+        btn.disabled = false;
+        checkDeliveryForm();
+        alert('No se pudo enviar el pedido. Revisá tu conexión e intentá de nuevo.');
+      }
+    }
+
+    function resetCartSuccess() {
+      document.getElementById('cart-success').classList.add('hidden');
+      document.getElementById('delivery-name').value    = '';
+      document.getElementById('delivery-phone').value   = '';
+      document.getElementById('delivery-address').value = '';
+      document.getElementById('transfer-file').value    = '';
+      document.getElementById('transfer-file-label').textContent = 'Seleccionar imagen...';
+      document.getElementById('transfer-file-label').classList.remove('text-blue-700','font-semibold');
+      document.getElementById('transfer-file-label').classList.add('text-blue-500');
+      deliveryZone    = 'tgu';
+      deliveryPayment = 'contraentrega';
+      setZone('tgu');
+      setPayment('contraentrega');
+      checkDeliveryForm();
     }
   </script>
 </body>

@@ -777,6 +777,15 @@
               <div class="text-xs text-zinc-400 pt-0.5">Pago: ${pagoLabel}</div>
             </div>
 
+            ${o.transferImg ? `
+            <div class="border-t border-zinc-100 pt-3">
+              <p class="text-xs font-semibold text-zinc-500 mb-2">🏦 Comprobante de transferencia</p>
+              <img src="${o.transferImg}" alt="Comprobante"
+                class="w-full rounded-xl border border-zinc-200 cursor-pointer object-cover max-h-52"
+                onclick="this.classList.toggle('max-h-52')" />
+              <p class="text-[10px] text-zinc-400 mt-1 text-center">Toca para expandir</p>
+            </div>` : ''}
+
             ${actions}
           </div>`;
       }).join('');
