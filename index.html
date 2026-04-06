@@ -97,10 +97,10 @@
 
         <input id="delivery-name" type="text" placeholder="Nombre completo *"
           class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
-          oninput="this.value=this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g,''); checkDeliveryForm()" />
+          oninput="filterName(this)" />
         <input id="delivery-phone" type="tel" inputmode="numeric" placeholder="Teléfono *"
           class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
-          oninput="this.value=this.value.replace(/\D/g,''); checkDeliveryForm()" />
+          oninput="filterPhone(this)" />
 
         <!-- Selector TGU -->
         <div class="grid grid-cols-2 gap-2">
@@ -1003,6 +1003,16 @@
       document.getElementById('btn-tgu').className   = `zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 transition-all ${isTgu  ? 'border-mint-500 bg-mint-50 text-mint-700' : 'border-zinc-200 text-zinc-500'}`;
       document.getElementById('btn-fuera').className = `zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 transition-all ${!isTgu ? 'border-mint-500 bg-mint-50 text-mint-700' : 'border-zinc-200 text-zinc-500'}`;
       updateCartTotal();
+    }
+
+    function filterName(el) {
+      el.value = el.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ ]/g, '');
+      checkDeliveryForm();
+    }
+
+    function filterPhone(el) {
+      el.value = el.value.replace(/[^0-9]/g, '');
+      checkDeliveryForm();
     }
 
     function checkDeliveryForm() {
