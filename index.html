@@ -95,10 +95,10 @@
         </button>
         <div id="delivery-form-body" class="space-y-2.5">
 
-        <input id="delivery-name" type="text" placeholder="Nombre completo *"
+        <input id="delivery-name" type="text" placeholder="Nombre completo *" maxlength="80" autocomplete="name"
           class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
           oninput="filterName(this)" />
-        <input id="delivery-phone" type="tel" inputmode="numeric" placeholder="Teléfono *"
+        <input id="delivery-phone" type="tel" inputmode="numeric" placeholder="Teléfono *" maxlength="15" autocomplete="tel"
           class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
           oninput="filterPhone(this)" />
 
@@ -114,7 +114,7 @@
           </button>
         </div>
 
-        <input id="delivery-address" type="text" placeholder="Dirección de entrega *"
+        <input id="delivery-address" type="text" placeholder="Dirección de entrega *" maxlength="150" autocomplete="street-address"
           class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
           oninput="checkDeliveryForm()" />
 
@@ -1077,11 +1077,26 @@
       });
     }
 
+    let _lastOrderTs = 0;
+
     async function submitOrder() {
       const name    = document.getElementById('delivery-name').value.trim();
       const phone   = document.getElementById('delivery-phone').value.trim();
       const address = document.getElementById('delivery-address').value.trim();
       if (!name || !phone || !address) return;
+
+      // Anti-spam: máximo 1 pedido cada 30 segundos
+      const now = Date.now();
+      if (now - _lastOrderTs < 30000) {
+        alert('Por favor esperá unos segundos antes de enviar otro pedido.');
+        return;
+      }
+
+      // Validar longitudes máximas
+      if (name.length > 80 || phone.length > 15 || address.length > 150) {
+        alert('Uno de los campos excede el largo máximo permitido.');
+        return;
+      }
 
       const btn = document.getElementById('checkout-btn');
       btn.disabled  = true;
@@ -1118,6 +1133,7 @@
 
       try {
         await fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) });
+        _lastOrderTs = Date.now();
         cart = {};
         saveCart();
         renderCart();
