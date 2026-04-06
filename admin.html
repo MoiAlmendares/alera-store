@@ -187,11 +187,18 @@
               Todos
             </button>
           </div>
-          <button onclick="openOrderModal()"
-            class="flex items-center gap-2 bg-mint-500 hover:bg-mint-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-            Nuevo pedido
-          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="refreshOrders()"
+              class="flex items-center gap-2 border border-zinc-200 hover:bg-zinc-50 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Refrescar
+            </button>
+            <button onclick="openOrderModal()"
+              class="flex items-center gap-2 bg-mint-500 hover:bg-mint-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              Nuevo pedido
+            </button>
+          </div>
         </div>
 
         <div id="orders-list" class="grid gap-4 sm:grid-cols-2"></div>
@@ -505,6 +512,28 @@
 
   <script>
     // ─── Auth ───────────────────────────────────────────────────────────────
+    function showToast(msg, ok = true) {
+      const t = document.createElement('div');
+      t.className = `fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-lg text-white ${ok ? 'bg-mint-600' : 'bg-red-500'}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    async function refreshOrders() {
+      try {
+        const r = await fetch(API + '/orders');
+        _orders = await r.json();
+        renderStats();
+        renderOrders();
+        updatePendingBadge();
+        showToast('Pedidos actualizados ✓');
+      } catch(e) {
+        showToast('Error al cargar pedidos', false);
+        console.error('refreshOrders:', e);
+      }
+    }
+
     function doLogout() {
       sessionStorage.removeItem('alera_admin');
       location.href = 'login.html';
@@ -559,7 +588,11 @@
         ]);
         _products = pr.length ? pr : DEFAULT_PRODUCTS;
         _orders   = or;
-      } catch(e) { console.error('loadData:', e); _products = DEFAULT_PRODUCTS; }
+      } catch(e) {
+        console.error('loadData:', e);
+        _products = DEFAULT_PRODUCTS;
+        showToast('No se pudo conectar a la base de datos', false);
+      }
     }
 
     function getProducts() { return _products; }
