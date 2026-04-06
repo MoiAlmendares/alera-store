@@ -547,20 +547,25 @@
       { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:380, emoji:'🥤',  img:'assets/portavasos-star-wars.jpg',      badge:'',               dark:false, active:true, stock:true },
     ];
 
-    function getProducts() {
-      const storedVersion = localStorage.getItem('alera_catalog_v');
-      if (storedVersion !== CATALOG_VERSION) {
-        localStorage.setItem('alera_catalog_v', CATALOG_VERSION);
-        saveProducts(DEFAULT_PRODUCTS);
-        return DEFAULT_PRODUCTS;
-      }
-      const raw = localStorage.getItem('alera_products');
-      if (!raw) { saveProducts(DEFAULT_PRODUCTS); return DEFAULT_PRODUCTS; }
-      return JSON.parse(raw);
+    const API = 'https://atxokpumuk.execute-api.us-east-1.amazonaws.com';
+    let _products = [];
+    let _orders   = [];
+
+    async function loadData() {
+      try {
+        const [pr, or] = await Promise.all([
+          fetch(API + '/products').then(r => r.json()),
+          fetch(API + '/orders').then(r => r.json())
+        ]);
+        _products = pr.length ? pr : DEFAULT_PRODUCTS;
+        _orders   = or;
+      } catch(e) { console.error('loadData:', e); _products = DEFAULT_PRODUCTS; }
     }
 
+    function getProducts() { return _products; }
     function saveProducts(products) {
-      localStorage.setItem('alera_products', JSON.stringify(products));
+      _products = products;
+      fetch(API + '/products', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(products) }).catch(console.error);
     }
 
     function nextId(products) {
@@ -576,8 +581,7 @@
     let uploadedImgData = '';
 
     // ─── Orders data ─────────────────────────────────────────────────────────
-    function getOrders()        { return JSON.parse(localStorage.getItem('alera_orders') || '[]'); }
-    function saveOrders(orders) { localStorage.setItem('alera_orders', JSON.stringify(orders)); }
+    function getOrders() { return _orders; }
 
     // ─── Tab switching ────────────────────────────────────────────────────────
     function setTab(tab) {
@@ -746,9 +750,9 @@
     }
 
     function updateOrderStatus(id, status) {
-      const orders = getOrders();
-      const o = orders.find(x => x.id === id);
-      if (o) { o.status = status; saveOrders(orders); }
+      const o = _orders.find(x => x.id === id);
+      if (o) o.status = status;
+      fetch(API + '/orders/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ status }) }).catch(console.error);
       renderStats();
       renderOrders();
       updatePendingBadge();
@@ -1202,10 +1206,9 @@
 
       const subtotal = omItems.reduce((s, x) => s + x.price * x.qty, 0);
       const shipping = omZone === 'tgu' ? 70 : 90;
-      const orders   = getOrders();
       const order    = {
         id:       Date.now(),
-        orderNum: orders.length + 1,
+        orderNum: _orders.length + 1,
         date:     new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
         customer: { name, phone, address },
         items:    omItems.map(x => ({ id: x.id, name: x.name, qty: x.qty, price: x.price })),
@@ -1216,8 +1219,8 @@
         payment:  omPayment,
         status:   'pendiente',
       };
-      orders.unshift(order);
-      saveOrders(orders);
+      _orders.unshift(order);
+      fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) }).catch(console.error);
       closeOrderModal();
       renderStats();
       renderOrders();
@@ -1226,7 +1229,7 @@
 
     // ─── Boot ─────────────────────────────────────────────────────────────────
     if (sessionStorage.getItem('alera_admin')) {
-      renderAll();
+      loadData().then(renderAll);
     } else {
       location.href = 'login.html';
     }

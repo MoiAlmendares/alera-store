@@ -204,17 +204,29 @@
     }
 
     // ─── Products ────────────────────────────────────────────────────────────
-    const CATALOG_VERSION = '5';
-    function getProducts() {
-      const storedVersion = localStorage.getItem('alera_catalog_v');
-      if (storedVersion !== CATALOG_VERSION) return [];
-      return JSON.parse(localStorage.getItem('alera_products') || '[]');
+    const API = 'https://atxokpumuk.execute-api.us-east-1.amazonaws.com';
+    let _products = [];
+    let _orders   = [];
+
+    async function loadData() {
+      try {
+        const [pr, or] = await Promise.all([
+          fetch(API + '/products').then(r => r.json()),
+          fetch(API + '/orders').then(r => r.json())
+        ]);
+        _products = pr;
+        _orders   = or;
+      } catch(e) { console.error('loadData:', e); }
     }
-    function saveProducts(p) { localStorage.setItem('alera_products', JSON.stringify(p)); }
+
+    function getProducts() { return _products; }
+    function saveProducts(products) {
+      _products = products;
+      fetch(API + '/products', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(products) }).catch(console.error);
+    }
 
     // ─── Orders ──────────────────────────────────────────────────────────────
-    function getOrders()        { return JSON.parse(localStorage.getItem('alera_orders') || '[]'); }
-    function saveOrders(orders) { localStorage.setItem('alera_orders', JSON.stringify(orders)); }
+    function getOrders() { return _orders; }
 
     // ─── UI State ────────────────────────────────────────────────────────────
     let currentFilter = 'all';
@@ -376,9 +388,9 @@
     }
 
     function updateOrderStatus(id, status) {
-      const orders = getOrders();
-      const o = orders.find(x => x.id === id);
-      if (o) { o.status = status; saveOrders(orders); }
+      const o = _orders.find(x => x.id === id);
+      if (o) o.status = status;
+      fetch(API + '/orders/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ status }) }).catch(console.error);
       renderStats(); renderOrders(); updatePendingBadge();
     }
 
@@ -474,21 +486,21 @@
       errEl.classList.add('hidden');
       const subtotal = omItems.reduce((s, x) => s + x.price * x.qty, 0);
       const shipping = omZone === 'tgu' ? 70 : 90;
-      const orders   = getOrders();
-      orders.unshift({
-        id: Date.now(), orderNum: orders.length + 1,
+      const order = {
+        id: Date.now(), orderNum: _orders.length + 1,
         date: new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
         customer: { name, phone, address },
         items: omItems.map(x => ({ id: x.id, name: x.name, qty: x.qty, price: x.price })),
         subtotal, shipping, total: subtotal + shipping, zone: omZone, payment: omPayment, status: 'pendiente',
-      });
-      saveOrders(orders);
+      };
+      _orders.unshift(order);
+      fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) }).catch(console.error);
       closeOrderModal(); renderStats(); renderOrders(); updatePendingBadge();
     }
 
     // ─── Boot ─────────────────────────────────────────────────────────────────
     if (sessionStorage.getItem('alera_vendedor')) {
-      renderAll();
+      loadData().then(renderAll);
     } else {
       location.href = 'login.html';
     }

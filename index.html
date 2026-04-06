@@ -655,21 +655,23 @@
       { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:380, emoji:'🥤',  img:'assets/portavasos-star-wars.jpg',          badge:'',               dark:false, active:true },
     ];
 
-    const CATALOG_VERSION = '5';
-    function getAllProducts() {
-      if (localStorage.getItem('alera_catalog_v') !== CATALOG_VERSION) {
-        localStorage.removeItem('alera_products');
-        localStorage.setItem('alera_catalog_v', CATALOG_VERSION);
-      }
-      const raw = localStorage.getItem('alera_products');
-      return raw ? JSON.parse(raw) : DEFAULT_PRODUCTS_LIST;
+    const API = 'https://atxokpumuk.execute-api.us-east-1.amazonaws.com';
+    let _productsCache = null;
+    async function getAllProducts() {
+      if (_productsCache) return _productsCache;
+      try {
+        const r = await fetch(API + '/products');
+        const data = await r.json();
+        if (data.length) { _productsCache = data; return data; }
+      } catch(e) {}
+      return DEFAULT_PRODUCTS_LIST;
     }
 
     // Mapa id→producto para el carrito
     let PRODUCTS = {};
-    function rebuildProductMap() {
+    async function rebuildProductMap() {
       PRODUCTS = {};
-      getAllProducts().filter(p => p.active).forEach(p => {
+      (await getAllProducts()).filter(p => p.active).forEach(p => {
         PRODUCTS[p.id] = { name: p.name, price: p.price, img: p.img, cat: p.category, emoji: p.emoji };
       });
     }
@@ -750,10 +752,10 @@
       renderCatalog();
     }
 
-    function renderCatalog() {
+    async function renderCatalog() {
       const root = document.getElementById('products-root');
       if (!root) return;
-      let products = getAllProducts().filter(p => p.active);
+      let products = (await getAllProducts()).filter(p => p.active);
       if (activeFilter !== '*') products = products.filter(p => p.fandom === activeFilter);
       if (activeSearch) products = products.filter(p =>
         p.name.toLowerCase().includes(activeSearch) ||
@@ -796,11 +798,12 @@
       });
     }
 
-    function renderHero() {
+    async function renderHero() {
       const wrap = document.getElementById('hero-product-wrap');
       if (!wrap) return;
-      const star = getAllProducts().find(p => p.active && p.badge && p.badge.includes('Más vendido'))
-                || getAllProducts().find(p => p.active);
+      const allP = await getAllProducts();
+      const star = allP.find(p => p.active && p.badge && p.badge.includes('Más vendido'))
+                || allP.find(p => p.active);
       if (!star) return;
       wrap.innerHTML = `
         <div class="relative">
@@ -973,11 +976,10 @@
       const subtotal   = ids.reduce((s, id) => s + PRODUCTS[id].price * cart[id], 0);
       const totalFinal = subtotal + envio;
 
-      // Guardar pedido en localStorage para el admin
-      const prevOrders = JSON.parse(localStorage.getItem('alera_orders') || '[]');
+      // Guardar pedido en AWS
       const order = {
         id:       Date.now(),
-        orderNum: prevOrders.length + 1,
+        orderNum: Date.now() % 9999 + 1,
         date:     new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
         customer: { name, phone, address },
         items:    ids.map(id => ({ id: Number(id), name: PRODUCTS[id].name, qty: cart[id], price: PRODUCTS[id].price })),
@@ -988,8 +990,7 @@
         payment:  deliveryPayment,
         status:   'pendiente',
       };
-      prevOrders.unshift(order);
-      localStorage.setItem('alera_orders', JSON.stringify(prevOrders));
+      fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) }).catch(console.error);
 
       const lines = [
         '*Alera — Nuevo pedido*',
