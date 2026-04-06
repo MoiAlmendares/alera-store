@@ -864,8 +864,11 @@
         </div>`;
     }
 
-    // Carrito persistente
-    let cart = JSON.parse(localStorage.getItem('alera_cart') || '{}');
+    // Estado global — antes de cualquier render
+    let cart             = JSON.parse(localStorage.getItem('alera_cart') || '{}');
+    let deliveryZone     = 'tgu';
+    let deliveryPayment  = 'contraentrega';
+    let deliveryFormOpen = true;
 
     function saveCart() {
       localStorage.setItem('alera_cart', JSON.stringify(cart));
@@ -875,8 +878,6 @@
     renderHero();
     renderCatalog();
     renderCart();
-
-    let deliveryFormOpen = true;
     function toggleDeliveryForm() {
       deliveryFormOpen = !deliveryFormOpen;
       document.getElementById('delivery-form-body').style.display = deliveryFormOpen ? '' : 'none';
@@ -984,9 +985,6 @@
         container.appendChild(div);
       });
     }
-
-    let deliveryZone    = 'tgu';
-    let deliveryPayment = 'contraentrega';
 
     function updateCartTotal(subtotal) {
       const envio = deliveryZone === 'tgu' ? 70 : 90;
