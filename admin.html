@@ -71,6 +71,10 @@
           class="flex items-center gap-2 pb-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 transition-colors">
           Comisiones
         </button>
+        <button id="tab-btn-estadisticas" onclick="setTab('estadisticas')"
+          class="flex items-center gap-2 pb-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 transition-colors">
+          Estadísticas
+        </button>
       </div>
 
       <!-- Stats -->
@@ -281,6 +285,19 @@
         </div>
 
       </div><!-- /section-comisiones -->
+
+      <!-- ─── Estadísticas Section ─── -->
+      <div id="section-estadisticas" class="hidden space-y-6">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="stat-metrics"></div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="bg-white rounded-2xl border border-zinc-200 p-6" id="stat-top-products"></div>
+          <div class="bg-white rounded-2xl border border-zinc-200 p-6" id="stat-monthly"></div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="bg-white rounded-2xl border border-zinc-200 p-6" id="stat-zone"></div>
+          <div class="bg-white rounded-2xl border border-zinc-200 p-6" id="stat-payment"></div>
+        </div>
+      </div><!-- /section-estadisticas -->
 
     </main>
   </div>
@@ -653,15 +670,16 @@
       currentTab = tab;
       const activeClass = 'flex items-center gap-2 pb-3 text-sm font-semibold transition-colors border-b-2 border-zinc-900 text-zinc-900';
       const idleClass   = 'flex items-center gap-2 pb-3 text-sm font-semibold transition-colors border-b-2 border-transparent text-zinc-400 hover:text-zinc-600';
-      ['products', 'orders', 'comisiones'].forEach(t => {
+      ['products', 'orders', 'comisiones', 'estadisticas'].forEach(t => {
         const btn = document.getElementById('tab-btn-' + t);
         const sec = document.getElementById('section-' + t);
         if (btn) btn.className = tab === t ? activeClass : idleClass;
         if (sec) sec.classList.toggle('hidden', tab !== t);
       });
       renderStats();
-      if (tab === 'orders')     renderOrders();
-      if (tab === 'comisiones') renderComisiones();
+      if (tab === 'orders')       renderOrders();
+      if (tab === 'comisiones')   renderComisiones();
+      if (tab === 'estadisticas') renderEstadisticas();
     }
 
     // ─── Render ──────────────────────────────────────────────────────────────
@@ -673,7 +691,7 @@
 
     function renderStats() {
       const row = document.getElementById('stats-row');
-      if (currentTab === 'comisiones') { row.classList.add('hidden'); return; }
+      if (currentTab === 'comisiones' || currentTab === 'estadisticas') { row.classList.add('hidden'); return; }
       row.classList.remove('hidden');
       if (currentTab === 'orders') {
         const orders    = getOrders();
@@ -1310,6 +1328,127 @@
       renderStats();
       renderOrders();
       updatePendingBadge();
+    }
+
+    // ─── Estadísticas ────────────────────────────────────────────────────────
+    function renderDistrib(items, total) {
+      if (!total) return '<p class="text-sm text-zinc-400 text-center py-6">Sin datos aún</p>';
+      return items.map(({ label, val, color }) => `
+        <div class="mb-4">
+          <div class="flex justify-between text-sm mb-1.5">
+            <span class="text-zinc-600">${label}</span>
+            <span class="font-bold text-zinc-900">${val} <span class="text-zinc-400 font-normal text-xs">(${Math.round(val / total * 100)}%)</span></span>
+          </div>
+          <div class="h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+            <div class="h-full ${color} rounded-full transition-all" style="width:${Math.round(val / total * 100)}%"></div>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderEstadisticas() {
+      const delivered = getOrders().filter(o => o.status === 'entregado');
+      const now       = new Date();
+      const msThisStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+      const msLastStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+      const msLastEnd   = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).getTime();
+
+      const thisMo   = delivered.filter(o => o.id >= msThisStart);
+      const lastMo   = delivered.filter(o => o.id >= msLastStart && o.id <= msLastEnd);
+      const totalRev = delivered.reduce((s, o) => s + (o.total || 0), 0);
+      const thisRev  = thisMo.reduce((s, o) => s + (o.total || 0), 0);
+      const lastRev  = lastMo.reduce((s, o) => s + (o.total || 0), 0);
+      const avg      = delivered.length ? Math.round(totalRev / delivered.length) : 0;
+
+      // ── Top metrics ──
+      document.getElementById('stat-metrics').innerHTML = `
+        <div class="bg-white rounded-2xl border border-zinc-200 p-5">
+          <div class="text-2xl font-black text-mint-600">L ${thisRev.toLocaleString('es-HN')}</div>
+          <div class="text-sm text-zinc-500 mt-1">Este mes</div>
+          <div class="text-xs text-zinc-400 mt-0.5">${thisMo.length} pedidos</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-zinc-200 p-5">
+          <div class="text-2xl font-black text-zinc-700">L ${lastRev.toLocaleString('es-HN')}</div>
+          <div class="text-sm text-zinc-500 mt-1">Mes anterior</div>
+          <div class="text-xs text-zinc-400 mt-0.5">${lastMo.length} pedidos</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-zinc-200 p-5">
+          <div class="text-2xl font-black text-zinc-900">L ${totalRev.toLocaleString('es-HN')}</div>
+          <div class="text-sm text-zinc-500 mt-1">Total histórico</div>
+          <div class="text-xs text-zinc-400 mt-0.5">${delivered.length} pedidos entregados</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-zinc-200 p-5">
+          <div class="text-2xl font-black text-zinc-900">L ${avg.toLocaleString('es-HN')}</div>
+          <div class="text-sm text-zinc-500 mt-1">Ticket promedio</div>
+          <div class="text-xs text-zinc-400 mt-0.5">por pedido</div>
+        </div>`;
+
+      // ── Top productos ──
+      const prodSales = {};
+      delivered.forEach(o => o.items?.forEach(i => {
+        prodSales[i.name] = (prodSales[i.name] || 0) + (i.qty || 1);
+      }));
+      const top = Object.entries(prodSales).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const maxQ = top[0]?.[1] || 1;
+      document.getElementById('stat-top-products').innerHTML = `
+        <h3 class="font-bold text-base mb-5">🏆 Más vendidos</h3>
+        ${top.length ? top.map(([name, qty]) => `
+          <div class="mb-3.5">
+            <div class="flex justify-between text-sm mb-1.5">
+              <span class="font-medium text-zinc-700 truncate max-w-[75%]">${esc(name)}</span>
+              <span class="font-bold text-zinc-900 shrink-0">${qty} uds</span>
+            </div>
+            <div class="h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+              <div class="h-full bg-mint-500 rounded-full" style="width:${Math.round(qty / maxQ * 100)}%"></div>
+            </div>
+          </div>`).join('')
+        : '<p class="text-sm text-zinc-400 text-center py-8">Sin datos aún</p>'}`;
+
+      // ── Últimos 6 meses ──
+      const months = Array.from({ length: 6 }, (_, i) => {
+        const d     = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+        const start = d.getTime();
+        const end   = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
+        const mos   = delivered.filter(o => o.id >= start && o.id <= end);
+        return { label: d.toLocaleDateString('es-HN', { month: 'short' }), count: mos.length, rev: mos.reduce((s, o) => s + (o.total || 0), 0) };
+      });
+      const maxC = Math.max(...months.map(m => m.count), 1);
+      document.getElementById('stat-monthly').innerHTML = `
+        <h3 class="font-bold text-base mb-5">📅 Últimos 6 meses</h3>
+        <div class="flex items-end gap-2" style="height:90px">
+          ${months.map(m => {
+            const h = m.count ? Math.max(10, Math.round(m.count / maxC * 80)) : 6;
+            return `<div class="flex-1 flex flex-col justify-end items-center">
+              <div class="w-full rounded-t-lg ${m.count ? 'bg-mint-500' : 'bg-zinc-100'}" style="height:${h}px"></div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="flex gap-2 mt-2">
+          ${months.map(m => `
+            <div class="flex-1 text-center">
+              <div class="text-[11px] font-bold text-zinc-700">${m.count || '–'}</div>
+              <div class="text-[10px] text-zinc-400 capitalize">${m.label}</div>
+            </div>`).join('')}
+        </div>`;
+
+      // ── Zona ──
+      const tgu   = delivered.filter(o => o.zone === 'tgu').length;
+      const fuera = delivered.filter(o => o.zone === 'fuera').length;
+      document.getElementById('stat-zone').innerHTML = `
+        <h3 class="font-bold text-base mb-5">📍 Zona de envío</h3>
+        ${renderDistrib([
+          { label:'Dentro de TGU', val:tgu,   color:'bg-mint-500' },
+          { label:'Fuera de TGU',  val:fuera, color:'bg-zinc-400' },
+        ], tgu + fuera)}`;
+
+      // ── Pago ──
+      const contra = delivered.filter(o => o.payment === 'contraentrega').length;
+      const trans  = delivered.filter(o => o.payment === 'transferencia').length;
+      document.getElementById('stat-payment').innerHTML = `
+        <h3 class="font-bold text-base mb-5">💳 Método de pago</h3>
+        ${renderDistrib([
+          { label:'Contra entrega', val:contra, color:'bg-mint-500' },
+          { label:'Transferencia',  val:trans,  color:'bg-zinc-400' },
+        ], contra + trans)}`;
     }
 
     // ─── Boot ─────────────────────────────────────────────────────────────────
