@@ -535,6 +535,24 @@
       }
     }
 
+    async function pollOrders() {
+      try {
+        const r = await authFetch(API + '/orders');
+        if (!r) return;
+        const fresh = await r.json();
+        if (!Array.isArray(fresh)) return;
+        const prevPending = _orders.filter(o => o.status === 'pendiente').length;
+        const newPending  = fresh.filter(o => o.status === 'pendiente').length;
+        _orders = fresh;
+        updatePendingBadge();
+        if (currentTab === 'orders') { renderStats(); renderOrders(); }
+        if (newPending > prevPending) {
+          const diff = newPending - prevPending;
+          showToast(`🛒 ${diff} pedido${diff > 1 ? 's' : ''} nuevo${diff > 1 ? 's' : ''}!`);
+        }
+      } catch(e) { console.error('poll:', e); }
+    }
+
     function doLogout() {
       sessionStorage.removeItem('alera_admin');
       sessionStorage.removeItem('alera_token');
@@ -1297,6 +1315,7 @@
     // ─── Boot ─────────────────────────────────────────────────────────────────
     if (sessionStorage.getItem('alera_admin')) {
       loadData().then(renderAll);
+      setInterval(pollOrders, 20000); // auto-refresh cada 20s
     } else {
       location.href = 'login.html';
     }
