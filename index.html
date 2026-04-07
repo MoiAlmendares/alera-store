@@ -1142,6 +1142,9 @@
         cart = {};
         saveCart();
         renderCart();
+        closeCart();
+        btn.textContent = 'Hacer pedido';
+        btn.disabled = false;
         document.getElementById('success-order-num').textContent = '#' + String(order.orderNum).padStart(3, '0');
         const sc = document.getElementById('cart-success');
         sc.style.display = 'flex';
