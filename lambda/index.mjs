@@ -232,7 +232,7 @@ export const handler = async (event) => {
       order.status   = 'pendiente'; // el cliente nunca puede cambiar el estado
 
       await db.send(new PutItemCommand({ TableName: 'alera-orders', Item: marshall(order, { removeUndefinedValues: true }) }));
-      sendOrderEmail(order).catch(e => console.error('SES:', e)); // no bloquea la respuesta
+      try { await sendOrderEmail(order); } catch(e) { console.error('SES:', e); }
       return { statusCode: 200, body: JSON.stringify({ ok: true }) };
     }
 
