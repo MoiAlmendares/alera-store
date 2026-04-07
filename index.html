@@ -1021,7 +1021,7 @@
       const address   = document.getElementById('delivery-address').value.trim();
       const hasImg    = deliveryPayment !== 'transferencia' || !!document.getElementById('transfer-file').files[0];
       const btn       = document.getElementById('checkout-btn');
-      const ready     = name && phone && address && hasImg;
+      const ready     = name.length >= 2 && phone.length >= 6 && address.length >= 3 && hasImg;
       btn.disabled    = !ready;
       btn.className   = `w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-xl transition-all text-sm ${
         ready
