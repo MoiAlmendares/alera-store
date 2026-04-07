@@ -1,8 +1,10 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { DynamoDBClient, ScanCommand, PutItemCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
-const db          = new DynamoDBClient({ region: 'us-east-2' });
+const db  = new DynamoDBClient({ region: 'us-east-2' });
+const ses = new SESClient({ region: 'us-east-1' });
 const MAX_BODY    = 1_500_000;           // 1.5 MB máximo por request
 const TOKEN_TTL   = 8 * 60 * 60 * 1000; // 8 horas
 const LIMITS      = { name: 80, phone: 15, address: 150 };
@@ -94,6 +96,69 @@ function unauth() {
   return { statusCode: 401, body: JSON.stringify({ error: 'No autorizado.' }) };
 }
 
+async function sendOrderEmail(order) {
+  const to       = process.env.NOTIFY_EMAIL;
+  const from     = process.env.NOTIFY_EMAIL;
+  if (!to) return; // si no hay email configurado, no falla
+
+  const zonaLabel = order.zone === 'tgu' ? 'Dentro de TGU — L 70' : 'Fuera de TGU — L 90–120';
+  const pagoLabel = order.payment === 'contraentrega' ? '💵 Contra entrega' : '🏦 Transferencia';
+  const num       = String(order.orderNum).padStart(3, '0');
+
+  const itemsHtml = order.items.map(i =>
+    `<tr>
+      <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0">${i.qty}x ${i.name}</td>
+      <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600">L ${i.price * i.qty}</td>
+    </tr>`
+  ).join('');
+
+  const html = `
+  <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7">
+    <div style="background:#14b8a6;padding:24px 28px">
+      <h1 style="margin:0;color:#fff;font-size:20px">🛍️ Nuevo pedido #${num}</h1>
+      <p style="margin:4px 0 0;color:#ccfbef;font-size:13px">${order.date}</p>
+    </div>
+    <div style="padding:24px 28px">
+      <h3 style="margin:0 0 12px;font-size:14px;color:#71717a;text-transform:uppercase;letter-spacing:.05em">Cliente</h3>
+      <p style="margin:0;font-size:15px;font-weight:700">${order.customer.name}</p>
+      <p style="margin:2px 0;font-size:14px;color:#52525b">📞 ${order.customer.phone}</p>
+      <p style="margin:2px 0;font-size:14px;color:#52525b">📍 ${order.customer.address}</p>
+
+      <h3 style="margin:20px 0 12px;font-size:14px;color:#71717a;text-transform:uppercase;letter-spacing:.05em">Productos</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        ${itemsHtml}
+        <tr>
+          <td style="padding:6px 12px;color:#71717a">Envío (${zonaLabel})</td>
+          <td style="padding:6px 12px;text-align:right;color:#71717a">L ${order.shipping}</td>
+        </tr>
+        <tr style="background:#f4fdfb">
+          <td style="padding:10px 12px;font-weight:800;font-size:15px">Total</td>
+          <td style="padding:10px 12px;text-align:right;font-weight:800;font-size:15px;color:#14b8a6">L ${order.total}</td>
+        </tr>
+      </table>
+
+      <p style="margin:16px 0 0;font-size:14px">Pago: <strong>${pagoLabel}</strong></p>
+      ${order.transferImg ? '<p style="margin:4px 0 0;font-size:13px;color:#14b8a6">✅ Comprobante de transferencia adjunto en el panel.</p>' : ''}
+
+      <div style="margin-top:24px;text-align:center">
+        <a href="https://moialmendares.github.io/alera-store/admin.html"
+           style="background:#14b8a6;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;display:inline-block">
+          Ver en el panel →
+        </a>
+      </div>
+    </div>
+  </div>`;
+
+  await ses.send(new SendEmailCommand({
+    Source:      from,
+    Destination: { ToAddresses: [to] },
+    Message: {
+      Subject: { Data: `🛍️ Alera — Nuevo pedido #${num} de ${order.customer.name}`, Charset: 'UTF-8' },
+      Body:    { Html: { Data: html, Charset: 'UTF-8' } },
+    },
+  }));
+}
+
 // ── Handler principal ─────────────────────────────────────────────────────────
 export const handler = async (event) => {
   const method = event.requestContext?.http?.method || event.httpMethod;
@@ -167,6 +232,7 @@ export const handler = async (event) => {
       order.status   = 'pendiente'; // el cliente nunca puede cambiar el estado
 
       await db.send(new PutItemCommand({ TableName: 'alera-orders', Item: marshall(order, { removeUndefinedValues: true }) }));
+      sendOrderEmail(order).catch(e => console.error('SES:', e)); // no bloquea la respuesta
       return { statusCode: 200, body: JSON.stringify({ ok: true }) };
     }
 
