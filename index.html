@@ -1132,7 +1132,11 @@
       if (transferImg) order.transferImg = transferImg;
 
       try {
-        await fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) });
+        const r = await fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) });
+        if (!r.ok) {
+          const errData = await r.json().catch(() => ({}));
+          throw new Error(errData.error || `Error ${r.status}`);
+        }
         _lastOrderTs = Date.now();
         cart = {};
         saveCart();
@@ -1144,7 +1148,8 @@
       } catch(e) {
         btn.disabled = false;
         checkDeliveryForm();
-        alert('No se pudo enviar el pedido. Revisá tu conexión e intentá de nuevo.');
+        console.error('submitOrder error:', e);
+        alert('No se pudo enviar el pedido: ' + (e.message || 'Revisá tu conexión.'));
       }
     }
 
