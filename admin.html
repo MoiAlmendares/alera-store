@@ -523,8 +523,8 @@
 
     async function refreshOrders() {
       try {
-        const r = await fetch(API + '/orders');
-        _orders = await r.json();
+        const r = await authFetch(API + '/orders');
+        _orders = await r?.json() || _orders;
         renderStats();
         renderOrders();
         updatePendingBadge();
@@ -537,6 +537,7 @@
 
     function doLogout() {
       sessionStorage.removeItem('alera_admin');
+      sessionStorage.removeItem('alera_token');
       location.href = 'login.html';
     }
 
@@ -581,11 +582,23 @@
     let _products = [];
     let _orders   = [];
 
+    function authHeaders(extra = {}) {
+      const token = sessionStorage.getItem('alera_token') || '';
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...extra };
+    }
+
+    async function authFetch(url, opts = {}) {
+      opts.headers = authHeaders(opts.headers || {});
+      const r = await fetch(url, opts);
+      if (r.status === 401) { doLogout(); return null; }
+      return r;
+    }
+
     async function loadData() {
       try {
         const [pr, or] = await Promise.all([
-          fetch(API + '/products').then(r => r.json()),
-          fetch(API + '/orders').then(r => r.json())
+          authFetch(API + '/products').then(r => r?.json()),
+          authFetch(API + '/orders').then(r => r?.json())
         ]);
         _products = pr.length ? pr : DEFAULT_PRODUCTS;
         _orders   = or;
@@ -599,7 +612,7 @@
     function getProducts() { return _products; }
     function saveProducts(products) {
       _products = products;
-      fetch(API + '/products', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(products) }).catch(console.error);
+      authFetch(API + '/products', { method:'PUT', body:JSON.stringify(products) }).catch(console.error);
     }
 
     function nextId(products) {
@@ -806,7 +819,7 @@
     function updateOrderStatus(id, status) {
       const o = _orders.find(x => x.id === id);
       if (o) o.status = status;
-      fetch(API + '/orders/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ status }) }).catch(console.error);
+      authFetch(API + '/orders/' + id, { method:'PATCH', body:JSON.stringify({ status }) }).catch(console.error);
       renderStats();
       renderOrders();
       updatePendingBadge();
@@ -1274,7 +1287,7 @@
         status:   'pendiente',
       };
       _orders.unshift(order);
-      fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) }).catch(console.error);
+      authFetch(API + '/orders', { method:'POST', body:JSON.stringify(order) }).catch(console.error);
       closeOrderModal();
       renderStats();
       renderOrders();
