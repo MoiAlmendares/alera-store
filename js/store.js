@@ -166,14 +166,8 @@
       });
     }
 
-    async function renderHero() {
-      const wrap = document.getElementById('hero-product-wrap');
-      if (!wrap) return;
-      const allP = await getAllProducts();
-      const star = allP.find(p => p.active && p.badge && p.badge.includes('Más vendido'))
-                || allP.find(p => p.active);
-      if (!star) return;
-      wrap.innerHTML = `
+    function heroCardHTML(star) {
+      return `
         <div class="relative">
           <div class="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-mint-200 to-mint-400 blur-2xl opacity-30 scale-110"></div>
           <div class="float relative w-72 sm:w-80 aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/80">
@@ -192,6 +186,29 @@
           </div>
           <div class="absolute -top-3 -right-3 bg-zinc-900 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Más vendido 🔥</div>
         </div>`;
+    }
+
+    async function renderHero() {
+      const wrap = document.getElementById('hero-product-wrap');
+      if (!wrap) return;
+      const allP  = await getAllProducts();
+      const stars = allP.filter(p => p.active && p.badge && p.badge.includes('Más vendido'));
+      const pool  = stars.length ? stars : allP.filter(p => p.active);
+      if (!pool.length) return;
+
+      let idx = 0;
+      wrap.innerHTML = heroCardHTML(pool[idx]);
+      if (pool.length === 1) return;
+
+      setInterval(() => {
+        wrap.style.opacity = '0';
+        wrap.style.transition = 'opacity 0.4s ease';
+        setTimeout(() => {
+          idx = (idx + 1) % pool.length;
+          wrap.innerHTML = heroCardHTML(pool[idx]);
+          wrap.style.opacity = '1';
+        }, 400);
+      }, 3500);
     }
 
     // Estado global — antes de cualquier render
