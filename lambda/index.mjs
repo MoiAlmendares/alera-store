@@ -180,14 +180,17 @@ export const handler = async (event) => {
       if (!user || !password)
         return { statusCode: 400, body: JSON.stringify({ error: 'Credenciales requeridas.' }) };
 
-      const adminUser = process.env.ADMIN_USER || 'admin';
-      const adminPass = process.env.ADMIN_PASS || 'alera2025';
-      const vendUser  = process.env.VEND_USER  || 'vendedor';
-      const vendPass  = process.env.VEND_PASS  || 'vendedor2025';
+      const adminUser  = process.env.ADMIN_USER  || 'admin';
+      const adminPass  = process.env.ADMIN_PASS  || 'alera2025';
+      const admin2User = process.env.ADMIN2_USER || '';
+      const admin2Pass = process.env.ADMIN2_PASS || '';
+      const vendUser   = process.env.VEND_USER   || 'vendedor';
+      const vendPass   = process.env.VEND_PASS   || 'vendedor2025';
 
       let role = null;
       if (safeEq(user, adminUser) && safeEq(password, adminPass)) role = 'admin';
-      else if (safeEq(user, vendUser) && safeEq(password, vendPass))  role = 'vendedor';
+      else if (admin2User && safeEq(user, admin2User) && safeEq(password, admin2Pass)) role = 'admin';
+      else if (safeEq(user, vendUser) && safeEq(password, vendPass)) role = 'vendedor';
 
       if (!role) {
         await new Promise(r => setTimeout(r, 400)); // frena brute-force
