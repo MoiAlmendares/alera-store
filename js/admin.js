@@ -32,16 +32,64 @@
       } catch(e) { console.error('poll:', e); }
     }
 
-    function saveCredentials() {
-      const newUser = document.getElementById('new-user').value.trim();
-      const newPwd  = document.getElementById('new-pwd').value.trim();
-      if (!newUser && !newPwd) return;
-      if (newUser) localStorage.setItem('alera_user', newUser);
-      if (newPwd)  localStorage.setItem('alera_pwd',  newPwd);
-      document.getElementById('new-user').value = '';
-      document.getElementById('new-pwd').value  = '';
-      document.getElementById('pwd-saved').classList.remove('hidden');
-      setTimeout(() => document.getElementById('pwd-saved').classList.add('hidden'), 3000);
+    // ─── Config tab ───────────────────────────────────────────────────────────
+    async function loadConfigSection() {
+      try {
+        const r = await authFetch(API + '/settings');
+        if (!r) return;
+        const data = await r.json();
+        if (data.adminUser)  document.getElementById('cfg-admin-user').placeholder  = 'Actual: ' + data.adminUser;
+        if (data.admin2User) document.getElementById('cfg-admin2-user').placeholder = 'Actual: ' + data.admin2User;
+        if (data.vendUser)   document.getElementById('cfg-vend-user').placeholder   = 'Actual: ' + data.vendUser;
+      } catch (e) {
+        console.error('loadConfigSection:', e);
+      }
+    }
+
+    async function saveConfig(role) {
+      const userEl  = document.getElementById('cfg-' + role + '-user');
+      const passEl  = document.getElementById('cfg-' + role + '-pass');
+      const savedEl = document.getElementById('cfg-' + role + '-saved');
+      const errEl   = document.getElementById('cfg-' + role + '-error');
+
+      const newUser = userEl.value.trim();
+      const newPass = passEl.value;
+
+      savedEl.classList.add('hidden');
+      errEl.classList.add('hidden');
+
+      if (!newUser && !newPass) {
+        errEl.textContent = 'Ingresá al menos un campo.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const body = { role };
+        if (newUser) body.newUser = newUser;
+        if (newPass) body.newPass = newPass;
+
+        const r = await authFetch(API + '/settings', {
+          method: 'PUT',
+          body: JSON.stringify(body),
+        });
+        if (!r) return;
+        const data = await r.json();
+        if (!r.ok) {
+          errEl.textContent = data.error || 'Error al guardar.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+        userEl.value = '';
+        passEl.value = '';
+        savedEl.classList.remove('hidden');
+        setTimeout(() => savedEl.classList.add('hidden'), 3000);
+        // Recargar placeholders con los nuevos valores
+        loadConfigSection();
+      } catch (e) {
+        errEl.textContent = 'Error de conexión.';
+        errEl.classList.remove('hidden');
+      }
     }
 
     // ─── Products ────────────────────────────────────────────────────────────
@@ -113,7 +161,7 @@
       currentTab = tab;
       const activeClass = 'flex items-center gap-2 pb-3 text-sm font-semibold transition-colors border-b-2 border-zinc-900 text-zinc-900';
       const idleClass   = 'flex items-center gap-2 pb-3 text-sm font-semibold transition-colors border-b-2 border-transparent text-zinc-400 hover:text-zinc-600';
-      ['products', 'orders', 'comisiones', 'estadisticas'].forEach(t => {
+      ['products', 'orders', 'comisiones', 'estadisticas', 'config'].forEach(t => {
         const btn = document.getElementById('tab-btn-' + t);
         const sec = document.getElementById('section-' + t);
         if (btn) btn.className = tab === t ? activeClass : idleClass;
@@ -123,6 +171,7 @@
       if (tab === 'orders')       renderOrders();
       if (tab === 'comisiones')   renderComisiones();
       if (tab === 'estadisticas') renderEstadisticas();
+      if (tab === 'config')       loadConfigSection();
     }
 
     // ─── Render ──────────────────────────────────────────────────────────────
@@ -134,7 +183,7 @@
 
     function renderStats() {
       const row = document.getElementById('stats-row');
-      if (currentTab === 'comisiones' || currentTab === 'estadisticas') { row.classList.add('hidden'); return; }
+      if (currentTab === 'comisiones' || currentTab === 'estadisticas' || currentTab === 'config') { row.classList.add('hidden'); return; }
       row.classList.remove('hidden');
       if (currentTab === 'orders') {
         const orders    = getOrders();
