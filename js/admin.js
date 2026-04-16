@@ -32,7 +32,16 @@
       } catch(e) { console.error('poll:', e); }
     }
 
-    // ─── Config tab ───────────────────────────────────────────────────────────
+    // ─── Config modal ────────────────────────────────────────────────────────
+    function openConfigModal() {
+      document.getElementById('config-overlay').classList.remove('hidden');
+      loadConfigSection();
+    }
+    function closeConfigModal() {
+      document.getElementById('config-overlay').classList.add('hidden');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLightbox(); closeConfigModal(); } });
+
     async function loadConfigSection() {
       try {
         const r = await authFetch(API + '/settings');
@@ -161,7 +170,7 @@
       currentTab = tab;
       const activeClass = 'flex items-center gap-2 pb-3 text-sm font-semibold transition-colors border-b-2 border-zinc-900 text-zinc-900';
       const idleClass   = 'flex items-center gap-2 pb-3 text-sm font-semibold transition-colors border-b-2 border-transparent text-zinc-400 hover:text-zinc-600';
-      ['products', 'orders', 'comisiones', 'estadisticas', 'config'].forEach(t => {
+      ['products', 'orders', 'comisiones', 'estadisticas'].forEach(t => {
         const btn = document.getElementById('tab-btn-' + t);
         const sec = document.getElementById('section-' + t);
         if (btn) btn.className = tab === t ? activeClass : idleClass;
@@ -171,7 +180,6 @@
       if (tab === 'orders')       renderOrders();
       if (tab === 'comisiones')   renderComisiones();
       if (tab === 'estadisticas') renderEstadisticas();
-      if (tab === 'config')       loadConfigSection();
     }
 
     // ─── Render ──────────────────────────────────────────────────────────────
@@ -183,7 +191,7 @@
 
     function renderStats() {
       const row = document.getElementById('stats-row');
-      if (currentTab === 'comisiones' || currentTab === 'estadisticas' || currentTab === 'config') { row.classList.add('hidden'); return; }
+      if (currentTab === 'comisiones' || currentTab === 'estadisticas') { row.classList.add('hidden'); return; }
       row.classList.remove('hidden');
       if (currentTab === 'orders') {
         const orders    = getOrders();
