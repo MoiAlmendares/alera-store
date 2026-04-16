@@ -1,5 +1,10 @@
 // ─── Vendedor panel logic ─────────────────────────────────────────────────────
 
+function esc(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 let _products = [];
 let _orders   = [];
 
@@ -160,15 +165,15 @@ function renderOrders() {
       <div class="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <div class="text-xs text-zinc-400 font-mono mb-0.5">#${String(o.orderNum).padStart(3,'0')} &middot; ${o.date}</div>
-            <div class="font-bold text-base">${o.customer.name}</div>
-            <div class="text-sm text-zinc-500 mt-0.5">${o.customer.phone}</div>
-            <div class="text-sm text-zinc-400">${o.customer.address}</div>
+            <div class="text-xs text-zinc-400 font-mono mb-0.5">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</div>
+            <div class="font-bold text-base">${esc(o.customer.name)}</div>
+            <div class="text-sm text-zinc-500 mt-0.5">${esc(o.customer.phone)}</div>
+            <div class="text-sm text-zinc-400">${esc(o.customer.address)}</div>
           </div>
           <span class="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${sc.cls}">${sc.label}</span>
         </div>
         <div class="border-t border-zinc-50 pt-3 space-y-1.5">
-          ${o.items.map(i => `<div class="flex justify-between text-sm"><span class="text-zinc-600">${i.qty}x ${i.name}</span><span class="font-medium">L ${i.price * i.qty}</span></div>`).join('')}
+          ${o.items.map(i => `<div class="flex justify-between text-sm"><span class="text-zinc-600">${esc(String(i.qty))}x ${esc(i.name)}</span><span class="font-medium">L ${Number(i.price) * Number(i.qty)}</span></div>`).join('')}
         </div>
         <div class="border-t border-zinc-100 pt-3 space-y-1 text-sm">
           <div class="flex justify-between text-zinc-400"><span>Envío (${zonaLabel})</span><span>L ${o.shipping}</span></div>
