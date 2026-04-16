@@ -24,6 +24,22 @@
     ];
 
     const API = 'https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws';
+
+    // ─── Meta Pixel helper ──────────────────────────────────────────────────────
+    // Dispara eventos de Meta Pixel de forma segura. Si el Pixel ID no está
+    // configurado en index.html, no rompe nada — solo loguea en consola.
+    function aleraTrack(eventName, params) {
+      try {
+        if (typeof fbq === 'function'
+            && window.ALERA_META_PIXEL_ID
+            && window.ALERA_META_PIXEL_ID !== 'REPLACE_WITH_YOUR_PIXEL_ID') {
+          fbq('track', eventName, params || {});
+        }
+      } catch (e) {
+        console.warn('[Alera] Pixel track failed:', eventName, e);
+      }
+    }
+
     let _productsCache = null;
     async function getAllProducts() {
       if (_productsCache) return _productsCache;
@@ -269,6 +285,18 @@
       badge.classList.remove('pop');
       void badge.offsetWidth;
       badge.classList.add('pop');
+
+      // Meta Pixel: AddToCart
+      const p = PRODUCTS[id];
+      if (p) {
+        aleraTrack('AddToCart', {
+          content_ids:  [String(id)],
+          content_name: p.name,
+          content_type: 'product',
+          currency:     'HNL',
+          value:        p.price,
+        });
+      }
     }
 
     function changeQty(id, delta) {
@@ -463,6 +491,16 @@
       const totalFinal = subtotal + envio;
       const orderId    = Date.now();
 
+      // Meta Pixel: InitiateCheckout (el usuario confirmó el formulario y envía pedido)
+      aleraTrack('InitiateCheckout', {
+        content_ids:  ids.map(String),
+        content_type: 'product',
+        contents:     ids.map(id => ({ id: String(id), quantity: cart[id] })),
+        num_items:    ids.reduce((s, id) => s + cart[id], 0),
+        currency:     'HNL',
+        value:        totalFinal,
+      });
+
       const order = {
         id:       orderId,
         orderNum: (orderId % 9000) + 1,
@@ -485,6 +523,17 @@
           throw new Error(errData.error || `Error ${r.status}`);
         }
         _lastOrderTs = Date.now();
+
+        // Meta Pixel: Purchase (pedido enviado con éxito al backend)
+        aleraTrack('Purchase', {
+          content_ids:  ids.map(String),
+          content_type: 'product',
+          contents:     ids.map(id => ({ id: String(id), quantity: cart[id] })),
+          num_items:    ids.reduce((s, id) => s + cart[id], 0),
+          currency:     'HNL',
+          value:        totalFinal,
+        });
+
         cart = {};
         saveCart();
         renderCart();

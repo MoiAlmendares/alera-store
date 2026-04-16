@@ -11,6 +11,29 @@
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#14b8a6" />
   <link rel="icon" type="image/svg+xml" href="assets/logo-symbol.svg" />
+
+  <!-- Meta Pixel Code -->
+  <script>
+    // 🔧 REEMPLAZA ESTE VALOR por tu Pixel ID de Meta Business (16 dígitos).
+    // Lo sacas desde: business.facebook.com → Events Manager → Data Sources → Pixel.
+    window.ALERA_META_PIXEL_ID = '1054808999886336';
+
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    if (window.ALERA_META_PIXEL_ID && window.ALERA_META_PIXEL_ID !== 'REPLACE_WITH_YOUR_PIXEL_ID') {
+      fbq('init', window.ALERA_META_PIXEL_ID);
+      fbq('track', 'PageView');
+    } else {
+      console.warn('[Alera] Meta Pixel ID no configurado. Edita index.html y reemplaza REPLACE_WITH_YOUR_PIXEL_ID.');
+    }
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1054808999886336&ev=PageView&noscript=1" alt="" /></noscript>
+  <!-- End Meta Pixel Code -->
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
