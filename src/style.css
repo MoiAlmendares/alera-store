@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Tipografía base ─────────────────────────────────────────────────── */
+body { font-family: 'Inter', sans-serif; }
+
+/* ── Tienda (index.html) ─────────────────────────────────────────────── */
+.hero-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.card-img {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.product-card:hover .card-img {
+  transform: scale(1.06);
+}
+
+.product-card {
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 24px 48px -12px rgba(14, 165, 144, 0.15),
+    0 8px 16px -8px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-12px) rotate(3deg); }
+}
+.float { animation: float 6s ease-in-out infinite; }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+#cart-drawer {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#cart-drawer.open {
+  transform: translateX(0);
+}
+
+#cart-backdrop {
+  transition: opacity 0.3s ease;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+.pop { animation: pop 0.3s ease; }
+
+.no-img {
+  background: linear-gradient(135deg, #1c1c2e 0%, #2d2d44 100%);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up         { opacity: 0; }
+.fade-up.visible { animation: fadeUp 0.5s ease forwards; }
+
+.filter-btn        { transition: all 0.2s ease; }
+.filter-btn.active { background: #14b8a6; color: #fff; border-color: #14b8a6; }
+
+/* ── Admin / Vendedor ────────────────────────────────────────────────── */
+.modal-backdrop { backdrop-filter: blur(4px); }
+
+#modal { transition: opacity 0.2s ease, transform 0.2s ease; }
