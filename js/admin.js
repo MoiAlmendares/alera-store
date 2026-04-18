@@ -145,9 +145,15 @@
     }
 
     function getProducts() { return _products; }
-    function saveProducts(products) {
+    async function saveProducts(products) {
       _products = products;
-      authFetch(API + '/products', { method:'PUT', body:JSON.stringify(products) }).catch(console.error);
+      try {
+        const r = await authFetch(API + '/products', { method:'PUT', body:JSON.stringify(products) });
+        if (!r || !r.ok) throw new Error('respuesta no ok');
+      } catch(e) {
+        console.error('saveProducts:', e);
+        showToast('Error al guardar cambios — verificá tu conexión', false);
+      }
     }
 
     function nextId(products) {
@@ -342,8 +348,8 @@
             <div class="border-t border-zinc-100 pt-3">
               <p class="text-xs font-semibold text-zinc-500 mb-2">🏦 Comprobante de transferencia</p>
               <div class="relative group cursor-pointer rounded-xl overflow-hidden border border-zinc-200"
-                   onclick="openLightbox('${o.transferImg.replace(/'/g,"\\'")}')">
-                <img src="${o.transferImg}" alt="Comprobante"
+                   data-lightbox-src="${esc(o.transferImg)}" onclick="openLightbox(this.dataset.lightboxSrc)">
+                <img src="${esc(o.transferImg)}" alt="Comprobante"
                   class="w-full object-cover max-h-44 transition-transform group-hover:scale-105" />
                 <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                   <span class="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
@@ -816,7 +822,7 @@
       const subtotal = omItems.reduce((s, x) => s + x.price * x.qty, 0);
       const shipping = omZone === 'tgu' ? 70 : 90;
       const order    = {
-        id:       Date.now(),
+        id:       Date.now() * 1000 + Math.floor(Math.random() * 1000),
         orderNum: _orders.length + 1,
         date:     new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
         customer: { name, phone, address },

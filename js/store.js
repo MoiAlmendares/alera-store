@@ -276,7 +276,7 @@ function initFadeUp() {
 // ─── Hero card ─────────────────────────────────────────────────────────
 function heroCardHTML(star) {
   const imgHtml = star.img
-    ? `<img src="${star.img}" alt="${star.name}" class="w-full h-full object-cover" />`
+    ? `<img src="${star.img}" alt="${star.name}" loading="lazy" class="w-full h-full object-cover" />`
     : productPlaceholder(star.fandom||'', false);
   return `
     <div class="relative">
@@ -704,53 +704,6 @@ const TWEAK_PALETTES_LIST = [
   { key:'lime',    swatch:'#84cc16', label:'Lima' },
 ];
 
-function renderTweakPalette() {
-  const root = document.getElementById('tweak-palette');
-  if (!root) return;
-  const current = (window.TWEAK_DEFAULTS && window.TWEAK_DEFAULTS.accent) || 'mint';
-  root.innerHTML = TWEAK_PALETTES_LIST.map(p => `
-    <button onclick="applyAccent('${p.key}')" title="${p.label}"
-      class="relative aspect-square rounded-xl border-2 ${current===p.key?'border-zinc-900':'border-transparent hover:border-zinc-300'} transition-all"
-      style="background:${p.swatch}">
-      ${current===p.key ? `<svg class="w-4 h-4 text-white absolute inset-0 m-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>` : ''}
-    </button>
-  `).join('');
-}
-
-function applyAccent(key) {
-  const p = window.PALETTES && window.PALETTES[key];
-  if (!p) return;
-  const r = document.documentElement.style;
-  Object.entries(p).forEach(([k,v]) => { if (k!=='name') r.setProperty('--accent-'+k, v); });
-  window.TWEAK_DEFAULTS.accent = key;
-  renderTweakPalette();
-  // Re-render chrome that uses inline color
-  setZone(deliveryZone); setPayment(deliveryPayment);
-  // Persist to file via editmode protocol
-  try { window.parent.postMessage({type:'__edit_mode_set_keys', edits:{accent:key}}, '*'); } catch(e){}
-}
-
-// expose palettes for runtime
-window.PALETTES = {
-  mint:    { 50:'#f0fdf8',100:'#ccfbef',200:'#99f6e0',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e', name:'Mint' },
-  indigo:  { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca', name:'Indigo' },
-  coral:   { 50:'#fff4ed',100:'#ffe5d3',200:'#fecaa6',300:'#fca96f',400:'#fb7d3a',500:'#f35d14',600:'#e4450a',700:'#bd330b', name:'Coral' },
-  magenta: { 50:'#fdf2f8',100:'#fce7f3',200:'#fbcfe8',300:'#f9a8d4',400:'#f472b6',500:'#ec4899',600:'#db2777',700:'#be185d', name:'Magenta' },
-  lime:    { 50:'#f7fee7',100:'#ecfccb',200:'#d9f99d',300:'#bef264',400:'#a3e635',500:'#84cc16',600:'#65a30d',700:'#4d7c0f', name:'Lima' },
-};
-window.TWEAK_DEFAULTS = window.TWEAK_DEFAULTS || { accent: 'mint' };
-
-// Edit mode listener FIRST, then announce
-window.addEventListener('message', (e) => {
-  const d = e.data || {};
-  if (d.type === '__activate_edit_mode') {
-    document.getElementById('tweaks-panel').classList.add('open');
-  } else if (d.type === '__deactivate_edit_mode') {
-    document.getElementById('tweaks-panel').classList.remove('open');
-  }
-});
-try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e){}
-
 // ─── Init ──────────────────────────────────────────────────────────────
 (async function init() {
   await rebuildProductMap();
@@ -760,6 +713,5 @@ try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e)
   await renderCatalog();
   renderCart();
   renderFAQ();
-  renderTweakPalette();
   window.addEventListener('resize', () => renderCart());
 })();

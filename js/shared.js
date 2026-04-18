@@ -17,9 +17,17 @@ function authHeaders(extra = {}) {
 
 async function authFetch(url, opts = {}) {
   opts.headers = authHeaders(opts.headers || {});
-  const r = await fetch(url, opts);
-  if (r.status === 401) { doLogout(); return null; }
-  return r;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10_000);
+  try {
+    const r = await fetch(url, { ...opts, signal: ctrl.signal });
+    clearTimeout(timer);
+    if (r.status === 401) { doLogout(); return null; }
+    return r;
+  } catch(e) {
+    clearTimeout(timer);
+    throw e;
+  }
 }
 
 function doLogout() {

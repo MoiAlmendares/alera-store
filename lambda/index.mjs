@@ -219,7 +219,7 @@ async function sendOrderEmail(order) {
       <p style="margin:16px 0 0;font-size:14px">Pago: <strong>${pagoLabel}</strong></p>
       ${order.transferImg ? '<p style="margin:4px 0 0;font-size:13px;color:#14b8a6">Comprobante de transferencia adjunto en el panel.</p>' : ''}
       <div style="margin-top:24px;text-align:center">
-        <a href="https://moialmendares.github.io/alera-store/admin.html"
+        <a href="${process.env.ADMIN_URL || 'https://moialmendares.github.io/alera-store/admin.html'}"
            style="background:#14b8a6;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;display:inline-block">
           Ver en el panel
         </a>
@@ -384,6 +384,24 @@ export const handler = async (event) => {
 
     // ── POST /orders  (público — clientes) ─────────────────────────────────
     if (method === 'POST' && path.startsWith('/orders')) {
+      // Rate limit: máx 10 pedidos por IP en 10 minutos
+      if (ip) {
+        const rlKey = `order-${ip}`;
+        try {
+          const rlr = await db.send(new GetItemCommand({ TableName: RL_TABLE, Key: marshall({ ip: rlKey }) }));
+          if (rlr.Item && unmarshall(rlr.Item).attempts >= 10)
+            return resp(429, { error: 'Demasiados pedidos. Intentá más tarde.' });
+          const ttl = Math.floor(Date.now() / 1000) + 600;
+          await db.send(new UpdateItemCommand({
+            TableName: RL_TABLE,
+            Key: marshall({ ip: rlKey }),
+            UpdateExpression: 'ADD attempts :one SET #ttl = if_not_exists(#ttl, :ttl)',
+            ExpressionAttributeNames:  { '#ttl': 'ttl' },
+            ExpressionAttributeValues: marshall({ ':one': 1, ':ttl': ttl }),
+          }));
+        } catch(e) { console.error('order RL:', e); } // fail open
+      }
+
       let order;
       try { order = JSON.parse(event.body); }
       catch { return resp(400, { error: 'JSON inválido.' }); }
@@ -392,7 +410,7 @@ export const handler = async (event) => {
       if (err) return resp(400, { error: err });
 
       order        = sanitizeOrder(order);
-      order.id     = Number(order.id) || Date.now();
+      order.id     = Date.now() * 1000 + Math.floor(Math.random() * 1000); // siempre server-side
       order.status = 'pendiente';
 
       await db.send(new PutItemCommand({ TableName: 'alera-orders', Item: marshall(order, { removeUndefinedValues: true }) }));
