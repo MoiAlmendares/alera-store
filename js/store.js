@@ -678,7 +678,7 @@ const FAQS = [
   { q: '¿Qué pasa si no estoy en Tegucigalpa?', a: 'Hacemos envíos a todo Honduras. Fuera de TGU el costo es L 90–120 y tarda 3–5 días hábiles. Te confirmamos día exacto por WhatsApp.' },
   { q: '¿Puedo pagar contra entrega?', a: 'Sí, es nuestra opción por defecto. Pagás cuando recibís el producto. Dentro de TGU es la opción más popular.' },
   { q: '¿Cuánto tardan en hacer un personalizado?', a: 'Depende del personaje, pero usualmente entre 7–14 días. Te confirmamos tiempo real cuando vemos tu idea.' },
-  { q: '¿Qué pasa si la pieza llega dañada?', a: 'La reponemos. Mandanos una foto por WhatsApp y arreglamos. Empacamos todo con burbuja y cuidado.' },
+  { q: '¿Qué pasa si la pieza llega dañada?', a: 'La reponemos. Mandanos una foto por WhatsApp y arreglamos. Empacamos todo con cuidado para que llegue perfecto.' },
 ];
 
 function renderFAQ() {
