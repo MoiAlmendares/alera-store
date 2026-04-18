@@ -1,37 +1,37 @@
-﻿// â”€â”€â”€ Alera Redesign â€” Store logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Alera Redesign — Store logic ──────────────────────────────────────────
 // Mantiene: Meta Pixel events, AWS Lambda endpoint, payload shape del backend,
-// localStorage del carrito, filtros y render dinÃ¡mico.
+// localStorage del carrito, filtros y render dinámico.
 
 const DEFAULT_PRODUCTS_LIST = [
-  { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'PokÃ©mon',       price:150, img:'assets/cubone-mochila.png',                     badge:'',               dark:false, active:true },
-  { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'PokÃ©mon',       price:180, img:'assets/cubone.jpg',                             badge:'',               dark:true,  active:true },
+  { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'Pokémon',       price:150, img:'assets/cubone-mochila.png',                     badge:'',               dark:false, active:true },
+  { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'Pokémon',       price:180, img:'assets/cubone.jpg',                             badge:'',               dark:true,  active:true },
   { id:3,  name:'Llavero Hornet',              category:'Llavero',   fandom:'Hollow Knight', price:150, img:'assets/llavero-hornet.jpg',                     badge:'',               dark:false, active:true },
   { id:4,  name:'Llavero Esqueleto Minecraft', category:'Llavero',   fandom:'Minecraft',     price:150, img:'assets/llavero-esqueleto-minecraft.jpg',        badge:'',               dark:false, active:true },
   { id:5,  name:'Llavero Mandalorian',         category:'Llavero',   fandom:'Star Wars',     price:150, img:'assets/llavero-mandalorian.jpg',                badge:'',               dark:false, active:true },
   { id:6,  name:'Llaveros Star Wars',          category:'Llavero',   fandom:'Star Wars',     price:150, img:'assets/llaveros-star-wars.jpg',                 badge:'',               dark:false, active:true },
   { id:7,  name:'Llaveros Sharingan',          category:'Llavero',   fandom:'Naruto',        price:150, img:'assets/llaveros-sharingan.jpg',                 badge:'',               dark:false, active:true },
-  { id:8,  name:'Llavero PokÃ©bola',            category:'Llavero',   fandom:'PokÃ©mon',       price:150, img:'assets/llavero-pokebola.jpg',                   badge:'',               dark:false, active:true },
-  { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:150, img:'assets/Batarang.jpg',                           badge:'âœ¨ Nuevo',        dark:false, active:true },
-  { id:10, name:'LÃ¡mpara Minecraft',           category:'LÃ¡mpara',   fandom:'Minecraft',     price:350, img:'assets/lampara-minecraft.jpg',                  badge:'ðŸ”¥ MÃ¡s vendido', dark:false, active:true },
-  { id:11, name:'LÃ¡mpara Tanjiro Kamado',      category:'LÃ¡mpara',   fandom:'Demon Slayer',  price:350, img:'assets/lampara-tanjiro.jpg',                    badge:'',               dark:false, active:true },
-  { id:12, name:'MÃ¡scara Darth Vader',         category:'DecoraciÃ³n',fandom:'Star Wars',     price:280, img:'assets/mascara-darth-vader.jpg',                badge:'',               dark:false, active:true },
-  { id:13, name:'MÃ¡scara The Mandalorian',     category:'DecoraciÃ³n',fandom:'Star Wars',     price:280, img:'assets/mandalorian-deco-pared.jpg',             badge:'',               dark:false, active:true },
-  { id:14, name:'TIE Fighter (pared)',          category:'DecoraciÃ³n',fandom:'Star Wars',     price:280, img:'assets/tie-fighter-deco-pared.jpg',             badge:'',               dark:false, active:true },
+  { id:8,  name:'Llavero Pokébola',            category:'Llavero',   fandom:'Pokémon',       price:150, img:'assets/llavero-pokebola.jpg',                   badge:'',               dark:false, active:true },
+  { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:150, img:'assets/Batarang.jpg',                           badge:'✨ Nuevo',        dark:false, active:true },
+  { id:10, name:'Lámpara Minecraft',           category:'Lámpara',   fandom:'Minecraft',     price:350, img:'assets/lampara-minecraft.jpg',                  badge:'🔥 Más vendido', dark:false, active:true },
+  { id:11, name:'Lámpara Tanjiro Kamado',      category:'Lámpara',   fandom:'Demon Slayer',  price:350, img:'assets/lampara-tanjiro.jpg',                    badge:'',               dark:false, active:true },
+  { id:12, name:'Máscara Darth Vader',         category:'Decoración',fandom:'Star Wars',     price:280, img:'assets/mascara-darth-vader.jpg',                badge:'',               dark:false, active:true },
+  { id:13, name:'Máscara The Mandalorian',     category:'Decoración',fandom:'Star Wars',     price:280, img:'assets/mandalorian-deco-pared.jpg',             badge:'',               dark:false, active:true },
+  { id:14, name:'TIE Fighter (pared)',          category:'Decoración',fandom:'Star Wars',     price:280, img:'assets/tie-fighter-deco-pared.jpg',             badge:'',               dark:false, active:true },
   { id:15, name:'Perritos Minecraft',          category:'Figura',    fandom:'Minecraft',     price:200, img:'assets/perritos-minecraft.jpg',                 badge:'',               dark:false, active:true },
-  { id:16, name:'MÃ¡scara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:250, img:'assets/Obito.jpg',                              badge:'',               dark:false, active:true },
+  { id:16, name:'Máscara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:250, img:'assets/Obito.jpg',                              badge:'',               dark:false, active:true },
   { id:17, name:'TIE Fighter armable',         category:'Figura',    fandom:'Star Wars',     price:320, img:'assets/tie-fighter-armable.jpg',                badge:'',               dark:false, active:true },
-  { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:320, img:'assets/at-st-star-wars.jpg',                    badge:'âœ¨ Nuevo',        dark:false, active:true },
+  { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:320, img:'assets/at-st-star-wars.jpg',                    badge:'✨ Nuevo',        dark:false, active:true },
   { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:380, img:'assets/portavasos-star-wars.jpg',               badge:'',               dark:false, active:true },
 ];
 
 const API = 'https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws';
 
-// Fandom â†’ visual theme
+// Fandom → visual theme
 const FANDOM_META = {
   'Star Wars':     { color: '#111111',  grad: 'linear-gradient(135deg,#1e293b 0%,#0f172a 100%)' },
   'Minecraft':     { color: '#2a6f2a',  grad: 'linear-gradient(135deg,#4a7a2e 0%,#2a4f1a 100%)' },
   'Naruto':        { color: '#e87722',  grad: 'linear-gradient(135deg,#f97316 0%,#c2410c 100%)' },
-  'PokÃ©mon':       { color: '#dc2626',  grad: 'linear-gradient(135deg,#ef4444 0%,#991b1b 100%)' },
+  'Pokémon':       { color: '#dc2626',  grad: 'linear-gradient(135deg,#ef4444 0%,#991b1b 100%)' },
   'Demon Slayer':  { color: '#0ea5e9',  grad: 'linear-gradient(135deg,#38bdf8 0%,#0369a1 100%)' },
   'Hollow Knight': { color: '#334155',  grad: 'linear-gradient(135deg,#475569 0%,#1e293b 100%)' },
   'DC / Batman':   { color: '#1f1f1f',  grad: 'linear-gradient(135deg,#27272a 0%,#000000 100%)' },
@@ -39,13 +39,13 @@ const FANDOM_META = {
 
 const CAT_META = {
   'Llavero':    { label: 'Llaveros',           cols: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4', compact: true },
-  'LÃ¡mpara':    { label: 'LÃ¡mparas',           cols: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3', compact: false },
-  'DecoraciÃ³n': { label: 'DecoraciÃ³n de pared',cols: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3', compact: false },
+  'Lámpara':    { label: 'Lámparas',           cols: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3', compact: false },
+  'Decoración': { label: 'Decoración de pared',cols: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3', compact: false },
   'Figura':     { label: 'Figuras',            cols: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4', compact: true },
   'Set':        { label: 'Sets',               cols: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3', compact: false },
 };
 
-// â”€â”€â”€ Pixel helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Pixel helper ────────────────────────────────────────────────────────
 function aleraTrack(eventName, params) {
   try {
     if (typeof fbq === 'function'
@@ -63,8 +63,7 @@ async function getAllProducts() {
     const r = await fetch(API + '/products');
     const data = await r.json();
     if (data.length) {
-      // Map image paths â†’ prepend ../ for redesign folder
-      const mapped = data.map(p => ({ ...p, img: p.img ? (p.img.startsWith('http') || p.img.startsWith('../') ? p.img : '../' + p.img) : '' }));
+      const mapped = data.map(p => ({ ...p, img: p.img || '' }));
       _productsCache = mapped;
       return mapped;
     }
@@ -80,7 +79,7 @@ async function rebuildProductMap() {
   });
 }
 
-// â”€â”€â”€ Renderers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Renderers ──────────────────────────────────────────────────────────
 
 function productImgOrPlaceholder(p, dark) {
   if (p.img) {
@@ -94,7 +93,7 @@ function productPlaceholder(fandom, dark) {
   return `<div class="w-full h-full ${cls} flex items-end justify-start p-3">
     <div class="mono text-[10px] uppercase tracking-widest leading-tight">
       <div>// ${fandom || 'producto'}</div>
-      <div class="opacity-60">Â· foto pendiente</div>
+      <div class="opacity-60">· foto pendiente</div>
     </div>
   </div>`;
 }
@@ -117,7 +116,7 @@ function renderProductCard(p, compact) {
       : '';
 
   const addBtnCompact = agotado
-    ? `<button disabled class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-400 cursor-not-allowed flex items-center justify-center shrink-0">â€”</button>`
+    ? `<button disabled class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-400 cursor-not-allowed flex items-center justify-center shrink-0">—</button>`
     : `<button onclick="event.stopPropagation();addToCart(${p.id})" aria-label="Agregar" class="w-8 h-8 rounded-full btn-accent flex items-center justify-center shrink-0">${plusIcon(4)}</button>`;
 
   const addBtnFull = agotado
@@ -232,7 +231,7 @@ async function renderCatalog() {
       <div class="text-center py-20">
         <div class="inline-flex w-16 h-16 rounded-2xl items-center justify-center mb-4 placeholder-stripes"></div>
         <p class="text-zinc-700 font-semibold">No encontramos coincidencias</p>
-        <p class="text-zinc-400 text-sm mt-1">ProbÃ¡ con otro fandom o buscÃ¡ por nombre.</p>
+        <p class="text-zinc-400 text-sm mt-1">Probá con otro fandom o buscá por nombre.</p>
         <button onclick="setFilter('*');document.getElementById('search-input').value='';setSearch('')" class="mt-4 text-sm font-semibold underline" style="color:var(--accent-600)">Ver todos los productos</button>
       </div>`;
     return;
@@ -274,7 +273,7 @@ function initFadeUp() {
   });
 }
 
-// â”€â”€â”€ Hero card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Hero card ─────────────────────────────────────────────────────────
 function heroCardHTML(star) {
   const imgHtml = star.img
     ? `<img src="${star.img}" alt="${star.name}" class="w-full h-full object-cover" />`
@@ -295,11 +294,11 @@ function heroCardHTML(star) {
           </div>
         </div>
       </div>
-      <div class="absolute -top-3 -left-3 bg-zinc-950 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wide">ðŸ”¥ MÃ¡s vendido</div>
+      <div class="absolute -top-3 -left-3 bg-zinc-950 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wide">🔥 Más vendido</div>
       <!-- floating secondary card -->
       <div class="absolute -bottom-6 -right-4 sm:-right-8 w-32 aspect-square bg-white rounded-2xl shadow-xl border border-zinc-100 p-2 hidden sm:block rotate-6">
         <div class="w-full h-full placeholder-stripes rounded-xl flex items-end justify-start p-2">
-          <div class="mono text-[9px] text-zinc-500 leading-none">// prÃ³ximo<br/>drop</div>
+          <div class="mono text-[9px] text-zinc-500 leading-none">// próximo<br/>drop</div>
         </div>
       </div>
     </div>`;
@@ -309,7 +308,7 @@ async function renderHero() {
   const wrap = document.getElementById('hero-product-wrap');
   if (!wrap) return;
   const all = await getAllProducts();
-  const stars = all.filter(p => p.active && p.badge && p.badge.includes('MÃ¡s vendido'));
+  const stars = all.filter(p => p.active && p.badge && p.badge.includes('Más vendido'));
   const pool = stars.length ? stars : all.filter(p => p.active);
   if (!pool.length) return;
   let idx = 0;
@@ -326,7 +325,7 @@ async function renderHero() {
   }, 4500);
 }
 
-// â”€â”€â”€ Cart state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Cart state ────────────────────────────────────────────────────────
 let cart = JSON.parse(localStorage.getItem('alera_cart') || '{}');
 let deliveryZone = 'tgu';
 let deliveryPayment = 'contraentrega';
@@ -429,7 +428,7 @@ function renderCart() {
 
   // Header subtitle
   const hs = document.getElementById('cart-header-sub');
-  if (hs) hs.textContent = count === 0 ? 'VacÃ­o' : count === 1 ? '1 artÃ­culo' : count + ' artÃ­culos';
+  if (hs) hs.textContent = count === 0 ? 'Vacío' : count === 1 ? '1 artículo' : count + ' artículos';
 
   document.getElementById('cart-empty').style.display = ids.length ? 'none' : 'flex';
   document.getElementById('cart-footer').classList.toggle('hidden', ids.length === 0);
@@ -443,7 +442,7 @@ function renderCart() {
   // Subtotal/total
   const envio = deliveryZone === 'tgu' ? 70 : 90;
   document.getElementById('cart-subtotal').textContent = 'L ' + subtotal;
-  document.getElementById('cart-envio').textContent = deliveryZone === 'tgu' ? 'L 70' : 'L 90â€“120';
+  document.getElementById('cart-envio').textContent = deliveryZone === 'tgu' ? 'L 70' : 'L 90–120';
   document.getElementById('cart-total').textContent = 'L ' + (subtotal + envio);
 
   // Items
@@ -461,9 +460,9 @@ function renderCart() {
       ${imgHtml}
       <div class="flex-1 min-w-0">
         <div class="font-semibold text-sm truncate">${p.name}</div>
-        <div class="text-zinc-400 text-xs mt-0.5">${p.fandom} Â· L ${p.price}</div>
+        <div class="text-zinc-400 text-xs mt-0.5">${p.fandom} · L ${p.price}</div>
         <div class="flex items-center gap-2 mt-2">
-          <button onclick="changeQty(${id},-1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">âˆ’</button>
+          <button onclick="changeQty(${id},-1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">−</button>
           <span class="text-sm font-semibold w-5 text-center">${qty}</span>
           <button onclick="changeQty(${id},1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">+</button>
         </div>
@@ -487,9 +486,9 @@ function updateCheckoutSummary() {
   const envio = deliveryZone === 'tgu' ? 70 : 90;
   const totalEl = document.getElementById('checkout-total');
   if (!totalEl) return;
-  document.getElementById('checkout-items-label').textContent = count + (count===1?' artÃ­culo':' artÃ­culos');
+  document.getElementById('checkout-items-label').textContent = count + (count===1?' artículo':' artículos');
   document.getElementById('checkout-subtotal').textContent = 'L ' + subtotal;
-  document.getElementById('checkout-envio').textContent = deliveryZone === 'tgu' ? 'L 70' : 'L 90â€“120';
+  document.getElementById('checkout-envio').textContent = deliveryZone === 'tgu' ? 'L 70' : 'L 90–120';
   totalEl.textContent = 'L ' + (subtotal + envio);
 }
 
@@ -510,7 +509,7 @@ function setZone(zone) {
   renderCart();
 }
 
-function filterName(el) { el.value = el.value.replace(/[^a-zA-ZÃ¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“ÃšÃ¼ÃœÃ±Ã‘ ]/g, ''); checkDeliveryForm(); }
+function filterName(el) { el.value = el.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ ]/g, ''); checkDeliveryForm(); }
 function filterPhone(el) { el.value = el.value.replace(/[^0-9]/g, ''); checkDeliveryForm(); }
 
 function checkDeliveryForm() {
@@ -548,7 +547,7 @@ function onTransferFileChange() {
   const label = document.getElementById('transfer-file-label');
   if (file) {
     const name = file.name.length > 26 ? file.name.substring(0,23) + '...' : file.name;
-    label.textContent = 'âœ“ ' + name;
+    label.textContent = '✓ ' + name;
     label.classList.add('text-zinc-900','font-semibold');
     label.classList.remove('text-zinc-500');
   } else {
@@ -587,8 +586,8 @@ async function submitOrder() {
   const address = document.getElementById('delivery-address').value.trim();
   if (!name || !phone || !address) return;
   const now = Date.now();
-  if (now - _lastOrderTs < 30000) { alert('Por favor esperÃ¡ unos segundos antes de enviar otro pedido.'); return; }
-  if (name.length > 80 || phone.length > 15 || address.length > 150) { alert('Uno de los campos excede el largo mÃ¡ximo.'); return; }
+  if (now - _lastOrderTs < 30000) { alert('Por favor esperá unos segundos antes de enviar otro pedido.'); return; }
+  if (name.length > 80 || phone.length > 15 || address.length > 150) { alert('Uno de los campos excede el largo máximo.'); return; }
 
   const btn = document.getElementById('checkout-btn');
   btn.disabled = true;
@@ -650,7 +649,7 @@ async function submitOrder() {
     btn.disabled = false;
     checkDeliveryForm();
     console.error('submitOrder error:', e);
-    alert('No se pudo enviar el pedido: ' + (e.message || 'RevisÃ¡ tu conexiÃ³n.'));
+    alert('No se pudo enviar el pedido: ' + (e.message || 'Revisá tu conexión.'));
   }
 }
 
@@ -673,13 +672,13 @@ function resetCartSuccess() {
   backToItems();
 }
 
-// â”€â”€â”€ FAQ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── FAQ ───────────────────────────────────────────────────────────────
 const FAQS = [
-  { q: 'Â¿CÃ³mo hago un pedido?', a: 'AgregÃ¡ los productos al carrito, llenÃ¡ tus datos y hacÃ© click en "Hacer pedido". Te contactamos por WhatsApp para confirmar y coordinar la entrega.' },
-  { q: 'Â¿QuÃ© pasa si no estoy en Tegucigalpa?', a: 'Hacemos envÃ­os a todo Honduras. Fuera de TGU el costo es L 90â€“120 y tarda 3â€“5 dÃ­as hÃ¡biles. Te confirmamos dÃ­a exacto por WhatsApp.' },
-  { q: 'Â¿Puedo pagar contra entrega?', a: 'SÃ­, es nuestra opciÃ³n por defecto. PagÃ¡s cuando recibÃ­s el producto. Dentro de TGU es la opciÃ³n mÃ¡s popular.' },
-  { q: 'Â¿CuÃ¡nto tardan en hacer un personalizado?', a: 'Depende del personaje, pero usualmente entre 7â€“14 dÃ­as. Te confirmamos tiempo real cuando vemos tu idea.' },
-  { q: 'Â¿QuÃ© pasa si la pieza llega daÃ±ada?', a: 'La reponemos. Mandanos una foto por WhatsApp y arreglamos. Empacamos todo con burbuja y cuidado.' },
+  { q: '¿Cómo hago un pedido?', a: 'Agregá los productos al carrito, llená tus datos y hacé click en "Hacer pedido". Te contactamos por WhatsApp para confirmar y coordinar la entrega.' },
+  { q: '¿Qué pasa si no estoy en Tegucigalpa?', a: 'Hacemos envíos a todo Honduras. Fuera de TGU el costo es L 90–120 y tarda 3–5 días hábiles. Te confirmamos día exacto por WhatsApp.' },
+  { q: '¿Puedo pagar contra entrega?', a: 'Sí, es nuestra opción por defecto. Pagás cuando recibís el producto. Dentro de TGU es la opción más popular.' },
+  { q: '¿Cuánto tardan en hacer un personalizado?', a: 'Depende del personaje, pero usualmente entre 7–14 días. Te confirmamos tiempo real cuando vemos tu idea.' },
+  { q: '¿Qué pasa si la pieza llega dañada?', a: 'La reponemos. Mandanos una foto por WhatsApp y arreglamos. Empacamos todo con burbuja y cuidado.' },
 ];
 
 function renderFAQ() {
@@ -696,7 +695,7 @@ function renderFAQ() {
   `).join('');
 }
 
-// â”€â”€â”€ Tweaks (color palette) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Tweaks (color palette) ────────────────────────────────────────────
 const TWEAK_PALETTES_LIST = [
   { key:'mint',    swatch:'#14b8a6', label:'Mint (actual)' },
   { key:'indigo',  swatch:'#6366f1', label:'Indigo' },
@@ -752,7 +751,7 @@ window.addEventListener('message', (e) => {
 });
 try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e){}
 
-// â”€â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Init ──────────────────────────────────────────────────────────────
 (async function init() {
   await rebuildProductMap();
   renderHero();
