@@ -13,21 +13,18 @@ const MAX_BODY        = 1_500_000;
 const TOKEN_TTL       = 8 * 60 * 60 * 1000;
 const LIMITS          = { name: 80, phone: 15, address: 150 };
 const SETTINGS_ID     = 0;
-const ALLOWED_ORIGIN  = 'https://moialmendares.github.io';
 const RL_TABLE        = 'alera-ratelimit';
 const RL_MAX_ATTEMPTS = 5;
 const RL_WINDOW_SECS  = 300; // 5 minutos
 
-// ── Headers de seguridad + CORS ───────────────────────────────────────────────
+// ── Headers de seguridad ─────────────────────────────────────────────────────
+// CORS lo maneja AWS Function URL automáticamente (no duplicar headers aquí)
 function responseHeaders() {
   return {
-    'Access-Control-Allow-Origin':  ALLOWED_ORIGIN,
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'X-Content-Type-Options':       'nosniff',
-    'X-Frame-Options':              'DENY',
-    'Referrer-Policy':              'strict-origin-when-cross-origin',
-    'Strict-Transport-Security':    'max-age=31536000; includeSubDomains',
+    'X-Content-Type-Options':    'nosniff',
+    'X-Frame-Options':           'DENY',
+    'Referrer-Policy':           'strict-origin-when-cross-origin',
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
   };
 }
 
@@ -246,11 +243,6 @@ export const handler = async (event) => {
   const path   = event.rawPath || event.path || '/';
   const auth   = event.headers?.authorization || event.headers?.Authorization || '';
   const ip     = event.requestContext?.http?.sourceIp || null;
-
-  // Preflight CORS
-  if (method === 'OPTIONS') {
-    return { statusCode: 200, headers: responseHeaders(), body: '' };
-  }
 
   if (event.body && event.body.length > MAX_BODY)
     return resp(413, { error: 'Payload demasiado grande.' });
