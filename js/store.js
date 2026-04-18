@@ -1,571 +1,766 @@
-// ─── Store logic ─────────────────────────────────────────────────────────────
+﻿// â”€â”€â”€ Alera Redesign â€” Store logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Mantiene: Meta Pixel events, AWS Lambda endpoint, payload shape del backend,
+// localStorage del carrito, filtros y render dinÃ¡mico.
 
-    // Productos cargados desde localStorage (gestionados por admin.html)
-    const DEFAULT_PRODUCTS_LIST = [
-      { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'Pokémon',       price:150, emoji:'🔑',  img:'assets/cubone-mochila.png',                                          badge:'',               dark:false, active:true },
-      { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'Pokémon',       price:180, emoji:'🔑',  img:'assets/cubone.jpg',                                                  badge:'',               dark:true,  active:true },
-      { id:3,  name:'Llavero Hornet',              category:'Llavero',   fandom:'Hollow Knight', price:150, emoji:'🔑',  img:'assets/llavero-hornet.jpg',                  badge:'',               dark:false, active:true },
-      { id:4,  name:'Llavero Esqueleto Minecraft', category:'Llavero',   fandom:'Minecraft',     price:150, emoji:'💀',  img:'assets/llavero-esqueleto-minecraft.jpg',      badge:'',               dark:false, active:true },
-      { id:5,  name:'Llavero Mandalorian',         category:'Llavero',   fandom:'Star Wars',     price:150, emoji:'⚔️', img:'assets/llavero-mandalorian.jpg',              badge:'',               dark:false, active:true },
-      { id:6,  name:'Llaveros Star Wars',          category:'Llavero',   fandom:'Star Wars',     price:150, emoji:'⚔️', img:'assets/llaveros-star-wars.jpg',               badge:'',               dark:false, active:true },
-      { id:7,  name:'Llaveros Sharingan',          category:'Llavero',   fandom:'Naruto',        price:150, emoji:'👁️', img:'assets/llaveros-sharingan.jpg',               badge:'',               dark:false, active:true },
-      { id:8,  name:'Llavero Pokébola',            category:'Llavero',   fandom:'Pokémon',       price:150, emoji:'⚪🔴',img:'assets/llavero-pokebola.jpg',                badge:'',               dark:false, active:true },
-      { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:150, emoji:'🦇',  img:'assets/Batarang.jpg',                                                badge:'✨ Nuevo',        dark:false, active:true },
-      { id:10, name:'Lámpara Minecraft',           category:'Lámpara',   fandom:'Minecraft',     price:350, emoji:'🕯️', img:'assets/lampara-minecraft.jpg',                                       badge:'🔥 Más vendido', dark:false, active:true },
-      { id:11, name:'Lámpara Tanjiro Kamado',      category:'Lámpara',   fandom:'Demon Slayer',  price:350, emoji:'☀️',  img:'assets/lampara-tanjiro.jpg',              badge:'',               dark:false, active:true },
-      { id:12, name:'Máscara Darth Vader',         category:'Decoración',fandom:'Star Wars',     price:280, emoji:'🪖',  img:'assets/mascara-darth-vader.jpg',          badge:'',               dark:false, active:true },
-      { id:13, name:'Máscara The Mandalorian',     category:'Decoración',fandom:'Star Wars',     price:280, emoji:'⚔️', img:'assets/mandalorian-deco-pared.jpg',        badge:'',               dark:false, active:true },
-      { id:14, name:'TIE Fighter (pared)',          category:'Decoración',fandom:'Star Wars',     price:280, emoji:'🚀',  img:'assets/tie-fighter-deco-pared.jpg',        badge:'',               dark:false, active:true },
-      { id:15, name:'Perritos Minecraft',          category:'Figura',    fandom:'Minecraft',     price:200, emoji:'🐶',  img:'assets/perritos-minecraft.jpg',            badge:'',               dark:false, active:true },
-      { id:16, name:'Máscara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:250, emoji:'👺',  img:'assets/Obito.jpg',                         badge:'',               dark:false, active:true },
-      { id:17, name:'TIE Fighter armable',         category:'Figura',    fandom:'Star Wars',     price:320, emoji:'🚀',  img:'assets/tie-fighter-armable.jpg',           badge:'',               dark:false, active:true },
-      { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:320, emoji:'🤖',  img:'assets/at-st-star-wars.jpg',               badge:'✨ Nuevo',        dark:false, active:true },
-      { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:380, emoji:'🥤',  img:'assets/portavasos-star-wars.jpg',          badge:'',               dark:false, active:true },
-    ];
+const DEFAULT_PRODUCTS_LIST = [
+  { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'PokÃ©mon',       price:150, img:'assets/cubone-mochila.png',                     badge:'',               dark:false, active:true },
+  { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'PokÃ©mon',       price:180, img:'assets/cubone.jpg',                             badge:'',               dark:true,  active:true },
+  { id:3,  name:'Llavero Hornet',              category:'Llavero',   fandom:'Hollow Knight', price:150, img:'assets/llavero-hornet.jpg',                     badge:'',               dark:false, active:true },
+  { id:4,  name:'Llavero Esqueleto Minecraft', category:'Llavero',   fandom:'Minecraft',     price:150, img:'assets/llavero-esqueleto-minecraft.jpg',        badge:'',               dark:false, active:true },
+  { id:5,  name:'Llavero Mandalorian',         category:'Llavero',   fandom:'Star Wars',     price:150, img:'assets/llavero-mandalorian.jpg',                badge:'',               dark:false, active:true },
+  { id:6,  name:'Llaveros Star Wars',          category:'Llavero',   fandom:'Star Wars',     price:150, img:'assets/llaveros-star-wars.jpg',                 badge:'',               dark:false, active:true },
+  { id:7,  name:'Llaveros Sharingan',          category:'Llavero',   fandom:'Naruto',        price:150, img:'assets/llaveros-sharingan.jpg',                 badge:'',               dark:false, active:true },
+  { id:8,  name:'Llavero PokÃ©bola',            category:'Llavero',   fandom:'PokÃ©mon',       price:150, img:'assets/llavero-pokebola.jpg',                   badge:'',               dark:false, active:true },
+  { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:150, img:'assets/Batarang.jpg',                           badge:'âœ¨ Nuevo',        dark:false, active:true },
+  { id:10, name:'LÃ¡mpara Minecraft',           category:'LÃ¡mpara',   fandom:'Minecraft',     price:350, img:'assets/lampara-minecraft.jpg',                  badge:'ðŸ”¥ MÃ¡s vendido', dark:false, active:true },
+  { id:11, name:'LÃ¡mpara Tanjiro Kamado',      category:'LÃ¡mpara',   fandom:'Demon Slayer',  price:350, img:'assets/lampara-tanjiro.jpg',                    badge:'',               dark:false, active:true },
+  { id:12, name:'MÃ¡scara Darth Vader',         category:'DecoraciÃ³n',fandom:'Star Wars',     price:280, img:'assets/mascara-darth-vader.jpg',                badge:'',               dark:false, active:true },
+  { id:13, name:'MÃ¡scara The Mandalorian',     category:'DecoraciÃ³n',fandom:'Star Wars',     price:280, img:'assets/mandalorian-deco-pared.jpg',             badge:'',               dark:false, active:true },
+  { id:14, name:'TIE Fighter (pared)',          category:'DecoraciÃ³n',fandom:'Star Wars',     price:280, img:'assets/tie-fighter-deco-pared.jpg',             badge:'',               dark:false, active:true },
+  { id:15, name:'Perritos Minecraft',          category:'Figura',    fandom:'Minecraft',     price:200, img:'assets/perritos-minecraft.jpg',                 badge:'',               dark:false, active:true },
+  { id:16, name:'MÃ¡scara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:250, img:'assets/Obito.jpg',                              badge:'',               dark:false, active:true },
+  { id:17, name:'TIE Fighter armable',         category:'Figura',    fandom:'Star Wars',     price:320, img:'assets/tie-fighter-armable.jpg',                badge:'',               dark:false, active:true },
+  { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:320, img:'assets/at-st-star-wars.jpg',                    badge:'âœ¨ Nuevo',        dark:false, active:true },
+  { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:380, img:'assets/portavasos-star-wars.jpg',               badge:'',               dark:false, active:true },
+];
 
-    const API = 'https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws';
+const API = 'https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws';
 
-    // ─── Meta Pixel helper ──────────────────────────────────────────────────────
-    // Dispara eventos de Meta Pixel de forma segura. Si el Pixel ID no está
-    // configurado en index.html, no rompe nada — solo loguea en consola.
-    function aleraTrack(eventName, params) {
-      try {
-        if (typeof fbq === 'function'
-            && window.ALERA_META_PIXEL_ID
-            && window.ALERA_META_PIXEL_ID !== 'REPLACE_WITH_YOUR_PIXEL_ID') {
-          fbq('track', eventName, params || {});
-        }
-      } catch (e) {
-        console.warn('[Alera] Pixel track failed:', eventName, e);
+// Fandom â†’ visual theme
+const FANDOM_META = {
+  'Star Wars':     { color: '#111111',  grad: 'linear-gradient(135deg,#1e293b 0%,#0f172a 100%)' },
+  'Minecraft':     { color: '#2a6f2a',  grad: 'linear-gradient(135deg,#4a7a2e 0%,#2a4f1a 100%)' },
+  'Naruto':        { color: '#e87722',  grad: 'linear-gradient(135deg,#f97316 0%,#c2410c 100%)' },
+  'PokÃ©mon':       { color: '#dc2626',  grad: 'linear-gradient(135deg,#ef4444 0%,#991b1b 100%)' },
+  'Demon Slayer':  { color: '#0ea5e9',  grad: 'linear-gradient(135deg,#38bdf8 0%,#0369a1 100%)' },
+  'Hollow Knight': { color: '#334155',  grad: 'linear-gradient(135deg,#475569 0%,#1e293b 100%)' },
+  'DC / Batman':   { color: '#1f1f1f',  grad: 'linear-gradient(135deg,#27272a 0%,#000000 100%)' },
+};
+
+const CAT_META = {
+  'Llavero':    { label: 'Llaveros',           cols: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4', compact: true },
+  'LÃ¡mpara':    { label: 'LÃ¡mparas',           cols: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3', compact: false },
+  'DecoraciÃ³n': { label: 'DecoraciÃ³n de pared',cols: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3', compact: false },
+  'Figura':     { label: 'Figuras',            cols: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4', compact: true },
+  'Set':        { label: 'Sets',               cols: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3', compact: false },
+};
+
+// â”€â”€â”€ Pixel helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function aleraTrack(eventName, params) {
+  try {
+    if (typeof fbq === 'function'
+        && window.ALERA_META_PIXEL_ID
+        && window.ALERA_META_PIXEL_ID !== 'REPLACE_WITH_YOUR_PIXEL_ID') {
+      fbq('track', eventName, params || {});
+    }
+  } catch (e) { console.warn('[Alera] Pixel track failed:', eventName, e); }
+}
+
+let _productsCache = null;
+async function getAllProducts() {
+  if (_productsCache) return _productsCache;
+  try {
+    const r = await fetch(API + '/products');
+    const data = await r.json();
+    if (data.length) {
+      // Map image paths â†’ prepend ../ for redesign folder
+      const mapped = data.map(p => ({ ...p, img: p.img ? (p.img.startsWith('http') || p.img.startsWith('../') ? p.img : '../' + p.img) : '' }));
+      _productsCache = mapped;
+      return mapped;
+    }
+  } catch(e) {}
+  return DEFAULT_PRODUCTS_LIST;
+}
+
+let PRODUCTS = {};
+async function rebuildProductMap() {
+  PRODUCTS = {};
+  (await getAllProducts()).filter(p => p.active).forEach(p => {
+    PRODUCTS[p.id] = { name: p.name, price: p.price, img: p.img, cat: p.category, fandom: p.fandom };
+  });
+}
+
+// â”€â”€â”€ Renderers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function productImgOrPlaceholder(p, dark) {
+  if (p.img) {
+    return `<img src="${p.img}" alt="${p.name}" class="card-img w-full h-full object-cover${dark?' opacity-90':''}" onerror="this.parentElement.innerHTML=productPlaceholder(${JSON.stringify(p.fandom||'')}, ${dark})" />`;
+  }
+  return productPlaceholder(p.fandom || '', dark);
+}
+
+function productPlaceholder(fandom, dark) {
+  const cls = dark ? 'placeholder-stripes-dark text-zinc-500' : 'placeholder-stripes text-zinc-500';
+  return `<div class="w-full h-full ${cls} flex items-end justify-start p-3">
+    <div class="mono text-[10px] uppercase tracking-widest leading-tight">
+      <div>// ${fandom || 'producto'}</div>
+      <div class="opacity-60">Â· foto pendiente</div>
+    </div>
+  </div>`;
+}
+
+function plusIcon(size = 4) {
+  return `<svg class="w-${size} h-${size}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>`;
+}
+
+function renderProductCard(p, compact) {
+  const dark = p.dark;
+  const bg = dark ? 'bg-zinc-950 border-zinc-900' : 'bg-white border-zinc-100';
+  const txt = dark ? 'text-white' : 'text-zinc-900';
+  const sub = dark ? 'text-zinc-500' : 'text-zinc-400';
+
+  const agotado = p.stock === false;
+  const badgeHtml = agotado
+    ? `<span class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Agotado</span>`
+    : p.badge
+      ? `<span class="absolute top-3 left-3 z-10 bg-zinc-900/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide">${p.badge}</span>`
+      : '';
+
+  const addBtnCompact = agotado
+    ? `<button disabled class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-400 cursor-not-allowed flex items-center justify-center shrink-0">â€”</button>`
+    : `<button onclick="event.stopPropagation();addToCart(${p.id})" aria-label="Agregar" class="w-8 h-8 rounded-full btn-accent flex items-center justify-center shrink-0">${plusIcon(4)}</button>`;
+
+  const addBtnFull = agotado
+    ? `<button disabled class="font-bold text-sm bg-zinc-100 text-zinc-400 cursor-not-allowed px-4 py-2 rounded-xl flex items-center gap-1.5">Agotado</button>`
+    : `<button onclick="event.stopPropagation();addToCart(${p.id})" class="font-bold text-sm btn-accent px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">${plusIcon(4)} Agregar</button>`;
+
+  if (compact) {
+    return `
+      <div class="product-card ${bg} rounded-2xl overflow-hidden border relative${agotado?' opacity-60':''}">
+        <div class="aspect-square overflow-hidden relative ${dark?'bg-zinc-900':'bg-zinc-50'}">
+          ${badgeHtml}
+          ${productImgOrPlaceholder(p, dark)}
+        </div>
+        <div class="p-3">
+          <p class="text-[10px] font-semibold uppercase tracking-wider ${sub} truncate">${p.fandom||''}</p>
+          <h3 class="font-bold text-sm ${txt} leading-tight mt-0.5 truncate">${p.name}</h3>
+          <div class="mt-2.5 flex items-center justify-between">
+            <span class="font-black text-sm ${txt}">L ${p.price}</span>
+            ${addBtnCompact}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="product-card ${bg} rounded-3xl overflow-hidden border relative${agotado?' opacity-60':''}">
+      <div class="aspect-[4/5] sm:aspect-square overflow-hidden relative ${dark?'bg-zinc-900':'bg-zinc-50'}">
+        ${badgeHtml}
+        ${productImgOrPlaceholder(p, dark)}
+      </div>
+      <div class="p-4 sm:p-5">
+        <p class="text-[10px] font-semibold uppercase tracking-wider ${sub}">${p.fandom||''}</p>
+        <h3 class="font-bold text-base ${txt} leading-tight mt-0.5">${p.name}</h3>
+        <div class="mt-3 flex items-center justify-between">
+          <span class="font-black text-lg ${txt}">L ${p.price}</span>
+          ${addBtnFull}
+        </div>
+      </div>
+    </div>`;
+}
+
+let activeFilter = '*';
+let activeSearch = '';
+
+function setFilter(fandom) {
+  activeFilter = fandom;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-f') === fandom);
+  });
+  renderCatalog();
+  // Scroll a productos si viene de tile
+  const el = document.getElementById('productos');
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function setSearch(v) { activeSearch = v.toLowerCase().trim(); renderCatalog(); }
+
+async function renderFandomFilters() {
+  const root = document.getElementById('fandom-filters');
+  if (!root) return;
+  const all = (await getAllProducts()).filter(p => p.active);
+  const fandoms = [...new Set(all.map(p => p.fandom))];
+  const counts = Object.fromEntries(fandoms.map(f => [f, all.filter(p => p.fandom === f).length]));
+  root.innerHTML = [
+    `<button data-f="*" class="filter-btn active shrink-0 border border-zinc-200 text-sm font-semibold px-4 py-2 rounded-full whitespace-nowrap" onclick="setFilter('*')">Todos <span class="fandom-count">${all.length}</span></button>`,
+    ...fandoms.map(f =>
+      `<button data-f="${f}" class="filter-btn shrink-0 border border-zinc-200 text-zinc-700 text-sm font-semibold px-4 py-2 rounded-full whitespace-nowrap" onclick="setFilter('${f}')">${f} <span class="fandom-count">${counts[f]}</span></button>`
+    )
+  ].join('');
+}
+
+async function renderFandomTiles() {
+  const root = document.getElementById('fandom-tiles');
+  if (!root) return;
+  const all = (await getAllProducts()).filter(p => p.active);
+  const fandoms = [...new Set(all.map(p => p.fandom))];
+  const counts = Object.fromEntries(fandoms.map(f => [f, all.filter(p => p.fandom === f).length]));
+  // preview image = first product with img
+  const previewImg = f => (all.find(p => p.fandom === f && p.img) || {}).img || '';
+
+  root.innerHTML = fandoms.map(f => {
+    const meta = FANDOM_META[f] || { grad: 'linear-gradient(135deg,#52525b,#27272a)' };
+    const img = previewImg(f);
+    return `
+      <button onclick="setFilter('${f}')" class="group relative overflow-hidden rounded-2xl aspect-[4/5] sm:aspect-square text-left transition-transform hover:-translate-y-1" style="background:${meta.grad}">
+        ${img ? `<img src="${img}" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500" onerror="this.style.display='none'" />` : ''}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-4">
+          <div class="text-white/70 text-[10px] font-semibold uppercase tracking-widest">${counts[f]} producto${counts[f]>1?'s':''}</div>
+          <div class="text-white font-black text-lg sm:text-xl leading-tight mt-0.5">${f}</div>
+        </div>
+        <div class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </div>
+      </button>`;
+  }).join('');
+}
+
+async function renderCatalog() {
+  const root = document.getElementById('products-root');
+  if (!root) return;
+  let products = (await getAllProducts()).filter(p => p.active);
+  if (activeFilter !== '*') products = products.filter(p => p.fandom === activeFilter);
+  if (activeSearch) products = products.filter(p =>
+    p.name.toLowerCase().includes(activeSearch) ||
+    (p.fandom||'').toLowerCase().includes(activeSearch)
+  );
+  const cats = Object.keys(CAT_META).filter(c => products.some(p => p.category === c));
+
+  if (!cats.length) {
+    root.innerHTML = `
+      <div class="text-center py-20">
+        <div class="inline-flex w-16 h-16 rounded-2xl items-center justify-center mb-4 placeholder-stripes"></div>
+        <p class="text-zinc-700 font-semibold">No encontramos coincidencias</p>
+        <p class="text-zinc-400 text-sm mt-1">ProbÃ¡ con otro fandom o buscÃ¡ por nombre.</p>
+        <button onclick="setFilter('*');document.getElementById('search-input').value='';setSearch('')" class="mt-4 text-sm font-semibold underline" style="color:var(--accent-600)">Ver todos los productos</button>
+      </div>`;
+    return;
+  }
+
+  root.innerHTML = cats.map((cat, i) => {
+    const meta = CAT_META[cat];
+    const items = products.filter(p => p.category === cat);
+    return `
+      <div class="${i>0?'mt-14':''}">
+        <div class="flex items-baseline justify-between mb-5">
+          <h3 class="font-black text-xl tracking-tight">${meta.label}</h3>
+          <span class="text-xs text-zinc-400 font-medium">${items.length} ${items.length===1?'pieza':'piezas'}</span>
+        </div>
+        <div class="grid gap-3 sm:gap-4 ${meta.cols}">
+          ${items.map(p => renderProductCard(p, meta.compact)).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  rebuildProductMap();
+  initFadeUp();
+}
+
+function initFadeUp() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 40);
+        observer.unobserve(entry.target);
       }
-    }
-
-    let _productsCache = null;
-    async function getAllProducts() {
-      if (_productsCache) return _productsCache;
-      try {
-        const r = await fetch(API + '/products');
-        const data = await r.json();
-        if (data.length) { _productsCache = data; return data; }
-      } catch(e) {}
-      return DEFAULT_PRODUCTS_LIST;
-    }
-
-    // Mapa id→producto para el carrito
-    let PRODUCTS = {};
-    async function rebuildProductMap() {
-      PRODUCTS = {};
-      (await getAllProducts()).filter(p => p.active).forEach(p => {
-        PRODUCTS[p.id] = { name: p.name, price: p.price, img: p.img, cat: p.category, emoji: p.emoji };
-      });
-    }
-    rebuildProductMap();
-
-    // ─── Render catálogo dinámico ────────────────────────────────────────────
-    const CAT_META = {
-      'Llavero':    { icon: '🔑', label: 'Llaveros',          cols: 'sm:grid-cols-2 lg:grid-cols-4', pad: 'p-4', titleSize: 'text-base' },
-      'Lámpara':    { icon: '🕯️', label: 'Lámparas',          cols: 'sm:grid-cols-2 lg:grid-cols-3', pad: 'p-5', titleSize: 'text-lg'   },
-      'Decoración': { icon: '🖼️', label: 'Decoración de pared',cols: 'sm:grid-cols-2 lg:grid-cols-3', pad: 'p-5', titleSize: 'text-lg'   },
-      'Figura':     { icon: '🎭', label: 'Figuras y más',      cols: 'sm:grid-cols-2 lg:grid-cols-4', pad: 'p-4', titleSize: 'text-base' },
-      'Set':        { icon: '📦', label: 'Sets',               cols: 'sm:grid-cols-2 lg:grid-cols-3', pad: 'p-5', titleSize: 'text-lg'   },
-    };
-
-    function plusIcon(size = 4) {
-      return `<svg class="w-${size} h-${size}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>`;
-    }
-
-    function renderProductCard(p, meta) {
-      const dark = p.dark;
-      const bg   = dark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-zinc-100';
-      const txtColor  = dark ? 'text-white'   : 'text-zinc-900';
-      const subColor  = dark ? 'text-zinc-500' : 'text-zinc-400';
-      const btnHover  = dark ? 'hover:bg-mint-400' : 'hover:bg-mint-600';
-      const padSmall  = meta.titleSize === 'text-base';
-
-      const imgHtml = p.img
-        ? `<img src="${p.img}" alt="${p.name}" class="card-img w-full h-full object-cover${dark ? ' opacity-90' : ''}" />`
-        : `<div class="w-full h-full no-img flex items-center justify-center" style="font-size:${padSmall?'3rem':'3.75rem'}">${p.emoji || '📦'}</div>`;
-
-      const agotado = p.stock === false;
-
-      const badgeHtml = agotado
-        ? `<div class="absolute top-3 left-3 z-10"><span class="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">Agotado</span></div>`
-        : p.badge
-          ? `<div class="absolute top-3 left-3 z-10"><span class="bg-zinc-900/90 text-white text-xs font-bold px-3 py-1.5 rounded-full">${p.badge}</span></div>`
-          : '';
-
-      const btnSize = padSmall
-        ? `text-xs px-3 py-1.5 rounded-lg gap-1`
-        : `text-sm px-4 py-2 rounded-xl gap-1.5`;
-      const priceSize = padSmall ? '' : 'text-xl';
-
-      const addBtn = agotado
-        ? `<button disabled class="font-bold bg-zinc-200 text-zinc-400 cursor-not-allowed ${btnSize} flex items-center">Agotado</button>`
-        : `<button onclick="addToCart(${p.id})" class="font-bold bg-mint-500 ${btnHover} text-white ${btnSize} transition-colors flex items-center">${plusIcon(padSmall ? 3 : 4)} Agregar</button>`;
-
-      return `
-        <div class="product-card ${bg} rounded-3xl overflow-hidden border relative${agotado ? ' opacity-60' : ''}">
-          <div class="aspect-square overflow-hidden ${!p.img ? '' : (dark ? 'bg-zinc-900' : 'bg-zinc-50')}">
-            ${badgeHtml}
-            ${imgHtml}
-          </div>
-          <div class="${meta.pad}">
-            <p class="text-xs ${subColor}">${p.fandom || ''}</p>
-            <h3 class="font-bold ${meta.titleSize} ${txtColor} leading-tight mt-0.5">${p.name}</h3>
-            <div class="mt-3 flex items-center justify-between">
-              <span class="font-black ${priceSize} ${txtColor}">L ${p.price}</span>
-              ${addBtn}
-            </div>
-          </div>
-        </div>`;
-    }
-
-    let activeFilter = '*';
-    let activeSearch  = '';
-
-    function setFilter(fandom) {
-      activeFilter = fandom;
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${fandom}'`));
-      });
-      renderCatalog();
-    }
-
-    function setSearch(val) {
-      activeSearch = val.toLowerCase().trim();
-      renderCatalog();
-    }
-
-    async function renderCatalog() {
-      const root = document.getElementById('products-root');
-      if (!root) return;
-      let products = (await getAllProducts()).filter(p => p.active);
-      if (activeFilter !== '*') products = products.filter(p => p.fandom === activeFilter);
-      if (activeSearch) products = products.filter(p =>
-        p.name.toLowerCase().includes(activeSearch) ||
-        (p.fandom || '').toLowerCase().includes(activeSearch)
-      );
-      const cats = Object.keys(CAT_META).filter(cat => products.some(p => p.category === cat));
-
-      root.innerHTML = cats.length ? cats.map((cat, i) => {
-        const meta  = CAT_META[cat];
-        const items = products.filter(p => p.category === cat);
-        const mb    = i < cats.length - 1 ? 'mb-16' : '';
-        return `
-          <div class="${mb}">
-            <div class="mb-8">
-              <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
-              <h2 class="mt-1 text-2xl font-black tracking-tight">${meta.icon} ${meta.label}</h2>
-            </div>
-            <div class="grid gap-5 ${meta.cols}">
-              ${items.map(p => renderProductCard(p, meta)).join('')}
-            </div>
-          </div>`;
-      }).join('') : `<p class="text-zinc-400 text-center py-16">No hay productos en este fandom aún.</p>`;
-
-      rebuildProductMap();
-      initFadeUp();
-    }
-
-    function initFadeUp() {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, i) => {
-          if (entry.isIntersecting) {
-            setTimeout(() => entry.target.classList.add('visible'), i * 60);
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.1 });
-      document.querySelectorAll('.product-card').forEach(el => {
-        el.classList.add('fade-up');
-        observer.observe(el);
-      });
-    }
-
-    function heroCardHTML(star) {
-      return `
-        <div class="relative">
-          <div class="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-mint-200 to-mint-400 blur-2xl opacity-30 scale-110"></div>
-          <div class="float relative w-72 sm:w-80 aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-white/80">
-            ${star.img
-              ? `<img src="${star.img}" alt="${star.name}" class="w-full h-full object-cover" />`
-              : `<div class="w-full h-full no-img flex items-center justify-center text-7xl">${star.emoji||'📦'}</div>`}
-            <div class="absolute bottom-4 left-4 right-4">
-              <div class="bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg flex items-center justify-between">
-                <div>
-                  <div class="font-bold text-sm text-zinc-900">${star.name}</div>
-                  <div class="text-xs text-zinc-500 mt-0.5">${star.fandom} · ${star.category}</div>
-                </div>
-                <div class="text-mint-600 font-black text-sm">L ${star.price}</div>
-              </div>
-            </div>
-          </div>
-          <div class="absolute -top-3 -right-3 bg-zinc-900 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Más vendido 🔥</div>
-        </div>`;
-    }
-
-    async function renderHero() {
-      const wrap = document.getElementById('hero-product-wrap');
-      if (!wrap) return;
-      const allP  = await getAllProducts();
-      const stars = allP.filter(p => p.active && p.badge && p.badge.includes('Más vendido'));
-      const pool  = stars.length ? stars : allP.filter(p => p.active);
-      if (!pool.length) return;
-
-      let idx = 0;
-      wrap.innerHTML = heroCardHTML(pool[idx]);
-      if (pool.length === 1) return;
-
-      setInterval(() => {
-        wrap.style.opacity = '0';
-        wrap.style.transition = 'opacity 0.4s ease';
-        setTimeout(() => {
-          idx = (idx + 1) % pool.length;
-          wrap.innerHTML = heroCardHTML(pool[idx]);
-          wrap.style.opacity = '1';
-        }, 400);
-      }, 3500);
-    }
-
-    // Estado global — antes de cualquier render
-    let cart             = JSON.parse(localStorage.getItem('alera_cart') || '{}');
-    let deliveryZone     = 'tgu';
-    let deliveryPayment  = 'contraentrega';
-    let deliveryFormOpen = true;
-
-    function saveCart() {
-      localStorage.setItem('alera_cart', JSON.stringify(cart));
-    }
-
-    // Renderizar al cargar (esperar productos antes de pintar el carrito)
-    renderHero();
-    rebuildProductMap().then(() => {
-      renderCatalog();
-      renderCart();
     });
-    function toggleDeliveryForm() {
-      deliveryFormOpen = !deliveryFormOpen;
-      document.getElementById('delivery-form-body').style.display = deliveryFormOpen ? '' : 'none';
-      document.getElementById('delivery-chevron').style.transform  = deliveryFormOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.product-card').forEach(el => {
+    if (!el.classList.contains('fade-up')) {
+      el.classList.add('fade-up');
+      observer.observe(el);
     }
+  });
+}
 
-    function openCart() {
-      document.getElementById('cart-drawer').classList.add('open');
-      const bd = document.getElementById('cart-backdrop');
-      bd.classList.remove('pointer-events-none', 'opacity-0');
-      bd.classList.add('opacity-100');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeCart() {
-      document.getElementById('cart-drawer').classList.remove('open');
-      const bd = document.getElementById('cart-backdrop');
-      bd.classList.add('pointer-events-none', 'opacity-0');
-      bd.classList.remove('opacity-100');
-      document.body.style.overflow = '';
-    }
-
-    function showCartToast(msg) {
-      const existing = document.getElementById('cart-toast');
-      if (existing) existing.remove();
-      const t = document.createElement('div');
-      t.id = 'cart-toast';
-      t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] bg-zinc-900 text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 transition-all';
-      t.innerHTML = `<svg class="w-4 h-4 text-mint-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>${msg}`;
-      document.body.appendChild(t);
-      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
-    }
-
-    function addToCart(id) {
-      cart[id] = (cart[id] || 0) + 1;
-      saveCart();
-      renderCart();
-      showCartToast('Agregado al carrito');
-      const badge = document.getElementById('cart-badge');
-      badge.classList.remove('pop');
-      void badge.offsetWidth;
-      badge.classList.add('pop');
-
-      // Meta Pixel: AddToCart
-      const p = PRODUCTS[id];
-      if (p) {
-        aleraTrack('AddToCart', {
-          content_ids:  [String(id)],
-          content_name: p.name,
-          content_type: 'product',
-          currency:     'HNL',
-          value:        p.price,
-        });
-      }
-    }
-
-    function changeQty(id, delta) {
-      cart[id] = (cart[id] || 0) + delta;
-      if (cart[id] <= 0) delete cart[id];
-      saveCart();
-      renderCart();
-    }
-
-    function removeItem(id) {
-      delete cart[id];
-      saveCart();
-      renderCart();
-    }
-
-    function renderCart() {
-      const ids = Object.keys(cart).map(Number);
-      const total = ids.reduce((s, id) => s + PRODUCTS[id].price * cart[id], 0);
-      const count = ids.reduce((s, id) => s + cart[id], 0);
-
-      const badge = document.getElementById('cart-badge');
-      if (count > 0) {
-        badge.textContent = count;
-        badge.classList.remove('hidden');
-        badge.classList.add('flex');
-      } else {
-        badge.classList.add('hidden');
-        badge.classList.remove('flex');
-      }
-
-      document.getElementById('cart-empty').style.display = ids.length ? 'none' : 'flex';
-      document.getElementById('cart-footer').classList.toggle('hidden', ids.length === 0);
-      updateCartTotal(total);
-
-      const container = document.getElementById('cart-items');
-      container.querySelectorAll('.cart-item').forEach(el => el.remove());
-
-      ids.forEach(id => {
-        const p = PRODUCTS[id];
-        const qty = cart[id];
-        const div = document.createElement('div');
-        div.className = 'cart-item flex gap-3 items-center';
-        const imgHtml = p.img
-          ? `<img src="${p.img}" class="w-16 h-16 rounded-2xl object-cover shrink-0 border border-zinc-100" />`
-          : `<div class="w-16 h-16 rounded-2xl shrink-0 bg-zinc-100 flex items-center justify-center text-2xl">${p.cat === 'Llavero' ? '🔑' : p.cat === 'Lámpara' ? '🕯️' : '🎭'}</div>`;
-        div.innerHTML = `
-          ${imgHtml}
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-sm truncate">${p.name}</div>
-            <div class="text-zinc-400 text-xs mt-0.5">L ${p.price} c/u</div>
-            <div class="flex items-center gap-2 mt-2">
-              <button onclick="changeQty(${id},-1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">−</button>
-              <span class="text-sm font-semibold w-5 text-center">${qty}</span>
-              <button onclick="changeQty(${id},1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">+</button>
+// â”€â”€â”€ Hero card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function heroCardHTML(star) {
+  const imgHtml = star.img
+    ? `<img src="${star.img}" alt="${star.name}" class="w-full h-full object-cover" />`
+    : productPlaceholder(star.fandom||'', false);
+  return `
+    <div class="relative">
+      <div class="relative aspect-[4/5] rounded-[28px] overflow-hidden shadow-[0_30px_80px_-20px_rgba(0,0,0,0.2)] ring-1 ring-black/5">
+        ${imgHtml}
+        <div class="absolute bottom-4 left-4 right-4">
+          <div class="bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 truncate">${star.fandom||''}</div>
+              <div class="font-bold text-sm text-zinc-900 leading-tight truncate">${star.name}</div>
             </div>
-          </div>
-          <div class="flex flex-col items-end gap-2 shrink-0">
-            <button onclick="removeItem(${id})" class="text-zinc-300 hover:text-zinc-500 transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <button onclick="addToCart(${star.id})" class="btn-accent text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 shrink-0">
+              L ${star.price} ${plusIcon(3)}
             </button>
-            <span class="font-bold text-sm">L ${p.price * qty}</span>
-          </div>`;
-        container.appendChild(div);
-      });
-    }
+          </div>
+        </div>
+      </div>
+      <div class="absolute -top-3 -left-3 bg-zinc-950 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wide">ðŸ”¥ MÃ¡s vendido</div>
+      <!-- floating secondary card -->
+      <div class="absolute -bottom-6 -right-4 sm:-right-8 w-32 aspect-square bg-white rounded-2xl shadow-xl border border-zinc-100 p-2 hidden sm:block rotate-6">
+        <div class="w-full h-full placeholder-stripes rounded-xl flex items-end justify-start p-2">
+          <div class="mono text-[9px] text-zinc-500 leading-none">// prÃ³ximo<br/>drop</div>
+        </div>
+      </div>
+    </div>`;
+}
 
-    function updateCartTotal(subtotal) {
-      const envio = deliveryZone === 'tgu' ? 70 : 90;
-      const ids   = Object.keys(cart).map(Number);
-      const sub   = subtotal !== undefined ? subtotal : ids.reduce((s, id) => s + PRODUCTS[id].price * cart[id], 0);
-      document.getElementById('cart-subtotal').textContent = 'L ' + sub;
-      document.getElementById('cart-envio').textContent    = deliveryZone === 'tgu' ? 'L 70' : 'L 90-120';
-      document.getElementById('cart-total').textContent    = 'L ' + (sub + envio);
-    }
+async function renderHero() {
+  const wrap = document.getElementById('hero-product-wrap');
+  if (!wrap) return;
+  const all = await getAllProducts();
+  const stars = all.filter(p => p.active && p.badge && p.badge.includes('MÃ¡s vendido'));
+  const pool = stars.length ? stars : all.filter(p => p.active);
+  if (!pool.length) return;
+  let idx = 0;
+  wrap.innerHTML = heroCardHTML(pool[idx]);
+  if (pool.length === 1) return;
+  setInterval(() => {
+    wrap.style.transition = 'opacity 0.4s ease';
+    wrap.style.opacity = '0';
+    setTimeout(() => {
+      idx = (idx + 1) % pool.length;
+      wrap.innerHTML = heroCardHTML(pool[idx]);
+      wrap.style.opacity = '1';
+    }, 400);
+  }, 4500);
+}
 
-    function setZone(zone) {
-      deliveryZone = zone;
-      const isTgu = zone === 'tgu';
-      document.getElementById('btn-tgu').className   = `zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 transition-all ${isTgu  ? 'border-mint-500 bg-mint-50 text-mint-700' : 'border-zinc-200 text-zinc-500'}`;
-      document.getElementById('btn-fuera').className = `zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 transition-all ${!isTgu ? 'border-mint-500 bg-mint-50 text-mint-700' : 'border-zinc-200 text-zinc-500'}`;
-      updateCartTotal();
-    }
+// â”€â”€â”€ Cart state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+let cart = JSON.parse(localStorage.getItem('alera_cart') || '{}');
+let deliveryZone = 'tgu';
+let deliveryPayment = 'contraentrega';
 
-    function filterName(el) {
-      el.value = el.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ ]/g, '');
-      checkDeliveryForm();
-    }
+function saveCart() { localStorage.setItem('alera_cart', JSON.stringify(cart)); }
 
-    function filterPhone(el) {
-      el.value = el.value.replace(/[^0-9]/g, '');
-      checkDeliveryForm();
-    }
+function openCart() {
+  document.getElementById('cart-drawer').classList.add('open');
+  const bd = document.getElementById('cart-backdrop');
+  bd.classList.remove('pointer-events-none','opacity-0');
+  bd.classList.add('opacity-100');
+  document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+  document.getElementById('cart-drawer').classList.remove('open');
+  const bd = document.getElementById('cart-backdrop');
+  bd.classList.add('pointer-events-none','opacity-0');
+  bd.classList.remove('opacity-100');
+  document.body.style.overflow = '';
+  backToItems();
+}
 
-    function checkDeliveryForm() {
-      const name      = document.getElementById('delivery-name').value.trim();
-      const phone     = document.getElementById('delivery-phone').value.trim();
-      const address   = document.getElementById('delivery-address').value.trim();
-      const hasImg    = deliveryPayment !== 'transferencia' || !!document.getElementById('transfer-file').files[0];
-      const btn       = document.getElementById('checkout-btn');
-      const ready     = name.length >= 2 && phone.length >= 6 && address.length >= 3 && hasImg;
-      btn.disabled    = !ready;
-      btn.className   = `w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-xl transition-all text-sm ${
-        ready
-          ? 'bg-mint-500 hover:bg-mint-600 text-white cursor-pointer'
-          : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
-      }`;
-      if (!btn.textContent.includes('Enviando')) btn.textContent = 'Hacer pedido';
-    }
+function goToCheckout() {
+  document.getElementById('cart-step-items').classList.add('hidden');
+  document.getElementById('cart-step-checkout').classList.remove('hidden');
+  document.getElementById('cart-step-checkout').classList.add('flex');
+  updateCheckoutSummary();
+}
+function backToItems() {
+  document.getElementById('cart-step-items').classList.remove('hidden');
+  document.getElementById('cart-step-items').classList.add('flex');
+  document.getElementById('cart-step-checkout').classList.add('hidden');
+  document.getElementById('cart-step-checkout').classList.remove('flex');
+}
 
-    function setPayment(method) {
-      deliveryPayment = method;
-      const active = 'text-sm font-semibold py-2.5 rounded-xl border-2 border-mint-500 bg-mint-50 text-mint-700 transition-all';
-      const idle   = 'text-sm font-semibold py-2.5 rounded-xl border-2 border-zinc-200 text-zinc-500 transition-all';
-      document.getElementById('btn-contraentrega').className = `pay-btn ${method === 'contraentrega' ? active : idle}`;
-      document.getElementById('btn-transferencia').className  = `pay-btn ${method === 'transferencia'  ? active : idle}`;
-      document.getElementById('transfer-section').classList.toggle('hidden', method !== 'transferencia');
-      checkDeliveryForm();
-    }
+function showCartToast(msg) {
+  const ex = document.getElementById('cart-toast');
+  if (ex) ex.remove();
+  const t = document.createElement('div');
+  t.id = 'cart-toast';
+  t.className = 'fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-[70] bg-zinc-900 text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2';
+  t.innerHTML = `<svg class="w-4 h-4 shrink-0" style="color:var(--accent-400)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>${msg}`;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition='opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 1800);
+}
 
-    function onTransferFileChange() {
-      const file  = document.getElementById('transfer-file').files[0];
-      const label = document.getElementById('transfer-file-label');
-      if (file) {
-        const name = file.name.length > 26 ? file.name.substring(0, 23) + '...' : file.name;
-        label.textContent = '✓ ' + name;
-        label.classList.add('text-blue-700', 'font-semibold');
-        label.classList.remove('text-blue-500');
-      } else {
-        label.textContent = 'Seleccionar imagen...';
-        label.classList.remove('text-blue-700', 'font-semibold');
-        label.classList.add('text-blue-500');
-      }
-      checkDeliveryForm();
-    }
+function addToCart(id) {
+  cart[id] = (cart[id]||0) + 1;
+  saveCart();
+  renderCart();
+  showCartToast('Agregado al carrito');
+  const badge = document.getElementById('cart-badge');
+  badge.classList.remove('pop');
+  void badge.offsetWidth;
+  badge.classList.add('pop');
 
-    function compressImage(file, maxSize, quality) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let w = img.width, h = img.height;
-            if (w > h && w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
-            else if (h > maxSize)     { w = Math.round(w * maxSize / h); h = maxSize; }
-            canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality));
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
+  const p = PRODUCTS[id];
+  if (p) {
+    aleraTrack('AddToCart', {
+      content_ids: [String(id)], content_name: p.name, content_type: 'product',
+      currency: 'HNL', value: p.price,
+    });
+  }
+}
 
-    let _lastOrderTs = 0;
+function changeQty(id, delta) {
+  cart[id] = (cart[id]||0) + delta;
+  if (cart[id] <= 0) delete cart[id];
+  saveCart();
+  renderCart();
+}
+function removeItem(id) { delete cart[id]; saveCart(); renderCart(); }
 
-    async function submitOrder() {
-      const name    = document.getElementById('delivery-name').value.trim();
-      const phone   = document.getElementById('delivery-phone').value.trim();
-      const address = document.getElementById('delivery-address').value.trim();
-      if (!name || !phone || !address) return;
+function renderCart() {
+  const ids = Object.keys(cart).map(Number).filter(id => PRODUCTS[id]);
+  const count = ids.reduce((s,id) => s + cart[id], 0);
+  const subtotal = ids.reduce((s,id) => s + PRODUCTS[id].price * cart[id], 0);
 
-      // Anti-spam: máximo 1 pedido cada 30 segundos
-      const now = Date.now();
-      if (now - _lastOrderTs < 30000) {
-        alert('Por favor esperá unos segundos antes de enviar otro pedido.');
-        return;
-      }
+  const badge = document.getElementById('cart-badge');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.remove('hidden');
+    badge.classList.add('flex');
+  } else {
+    badge.classList.add('hidden');
+    badge.classList.remove('flex');
+  }
 
-      // Validar longitudes máximas
-      if (name.length > 80 || phone.length > 15 || address.length > 150) {
-        alert('Uno de los campos excede el largo máximo permitido.');
-        return;
-      }
+  // Mobile bar
+  const mb = document.getElementById('mobile-bar');
+  if (count > 0 && window.innerWidth < 768) {
+    mb.classList.remove('hidden');
+    mb.classList.add('flex');
+    document.getElementById('mb-count').textContent = count + (count===1?' item':' items');
+    document.getElementById('mb-total').textContent = subtotal;
+  } else {
+    mb.classList.add('hidden');
+    mb.classList.remove('flex');
+  }
 
-      const btn = document.getElementById('checkout-btn');
-      btn.disabled  = true;
-      btn.className = 'w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-xl transition-all text-sm bg-zinc-200 text-zinc-400 cursor-not-allowed';
-      btn.textContent = 'Enviando...';
+  // Header subtitle
+  const hs = document.getElementById('cart-header-sub');
+  if (hs) hs.textContent = count === 0 ? 'VacÃ­o' : count === 1 ? '1 artÃ­culo' : count + ' artÃ­culos';
 
-      // Compress transfer image if present
-      let transferImg = null;
-      if (deliveryPayment === 'transferencia') {
-        const file = document.getElementById('transfer-file').files[0];
-        if (file) transferImg = await compressImage(file, 900, 0.75);
-      }
+  document.getElementById('cart-empty').style.display = ids.length ? 'none' : 'flex';
+  document.getElementById('cart-footer').classList.toggle('hidden', ids.length === 0);
 
-      const envio      = deliveryZone === 'tgu' ? 70 : 90;
-      const ids        = Object.keys(cart).map(Number);
-      const subtotal   = ids.reduce((s, id) => s + PRODUCTS[id].price * cart[id], 0);
-      const totalFinal = subtotal + envio;
-      const orderId    = Date.now();
+  // Bundle hint
+  const bundle = document.getElementById('cart-bundle-hint');
+  const hasLlavero = ids.some(id => PRODUCTS[id].cat === 'Llavero');
+  const llaveroCount = ids.filter(id => PRODUCTS[id].cat === 'Llavero').reduce((s,id)=>s+cart[id],0);
+  if (bundle) bundle.classList.toggle('hidden', !(hasLlavero && llaveroCount < 2 && ids.length > 0));
 
-      // Meta Pixel: InitiateCheckout (el usuario confirmó el formulario y envía pedido)
-      aleraTrack('InitiateCheckout', {
-        content_ids:  ids.map(String),
-        content_type: 'product',
-        contents:     ids.map(id => ({ id: String(id), quantity: cart[id] })),
-        num_items:    ids.reduce((s, id) => s + cart[id], 0),
-        currency:     'HNL',
-        value:        totalFinal,
-      });
+  // Subtotal/total
+  const envio = deliveryZone === 'tgu' ? 70 : 90;
+  document.getElementById('cart-subtotal').textContent = 'L ' + subtotal;
+  document.getElementById('cart-envio').textContent = deliveryZone === 'tgu' ? 'L 70' : 'L 90â€“120';
+  document.getElementById('cart-total').textContent = 'L ' + (subtotal + envio);
 
-      const order = {
-        id:       orderId,
-        orderNum: (orderId % 9000) + 1,
-        date:     new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
-        customer: { name, phone, address },
-        items:    ids.map(id => ({ id: Number(id), name: PRODUCTS[id].name, qty: cart[id], price: PRODUCTS[id].price })),
-        subtotal,
-        shipping: envio,
-        total:    totalFinal,
-        zone:     deliveryZone,
-        payment:  deliveryPayment,
-        status:   'pendiente',
+  // Items
+  const container = document.getElementById('cart-items');
+  container.querySelectorAll('.cart-item').forEach(el => el.remove());
+  ids.forEach(id => {
+    const p = PRODUCTS[id];
+    const qty = cart[id];
+    const div = document.createElement('div');
+    div.className = 'cart-item flex gap-3 items-center';
+    const imgHtml = p.img
+      ? `<img src="${p.img}" class="w-16 h-16 rounded-2xl object-cover shrink-0 border border-zinc-100" onerror="this.outerHTML='<div class=\\'w-16 h-16 rounded-2xl shrink-0 placeholder-stripes\\'></div>'" />`
+      : `<div class="w-16 h-16 rounded-2xl shrink-0 placeholder-stripes"></div>`;
+    div.innerHTML = `
+      ${imgHtml}
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm truncate">${p.name}</div>
+        <div class="text-zinc-400 text-xs mt-0.5">${p.fandom} Â· L ${p.price}</div>
+        <div class="flex items-center gap-2 mt-2">
+          <button onclick="changeQty(${id},-1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">âˆ’</button>
+          <span class="text-sm font-semibold w-5 text-center">${qty}</span>
+          <button onclick="changeQty(${id},1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">+</button>
+        </div>
+      </div>
+      <div class="flex flex-col items-end gap-2 shrink-0">
+        <button onclick="removeItem(${id})" class="text-zinc-300 hover:text-zinc-500 transition-colors" aria-label="Eliminar">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <span class="font-bold text-sm">L ${p.price * qty}</span>
+      </div>`;
+    container.appendChild(div);
+  });
+
+  updateCheckoutSummary();
+}
+
+function updateCheckoutSummary() {
+  const ids = Object.keys(cart).map(Number).filter(id => PRODUCTS[id]);
+  const count = ids.reduce((s,id) => s + cart[id], 0);
+  const subtotal = ids.reduce((s,id) => s + PRODUCTS[id].price * cart[id], 0);
+  const envio = deliveryZone === 'tgu' ? 70 : 90;
+  const totalEl = document.getElementById('checkout-total');
+  if (!totalEl) return;
+  document.getElementById('checkout-items-label').textContent = count + (count===1?' artÃ­culo':' artÃ­culos');
+  document.getElementById('checkout-subtotal').textContent = 'L ' + subtotal;
+  document.getElementById('checkout-envio').textContent = deliveryZone === 'tgu' ? 'L 70' : 'L 90â€“120';
+  totalEl.textContent = 'L ' + (subtotal + envio);
+}
+
+function setZone(zone) {
+  deliveryZone = zone;
+  const tgu = document.getElementById('btn-tgu');
+  const fuera = document.getElementById('btn-fuera');
+  const active = 'text-left text-sm font-semibold py-3 px-3.5 rounded-2xl border-2 transition-all';
+  tgu.className = 'zone-btn ' + active;
+  fuera.className = 'zone-btn ' + active + ' border-zinc-200 text-zinc-500';
+  if (zone === 'tgu') {
+    tgu.style.cssText = 'border-color:var(--accent-500);background:var(--accent-50);color:var(--accent-700)';
+    fuera.style.cssText = '';
+  } else {
+    tgu.style.cssText = '';
+    fuera.style.cssText = 'border-color:var(--accent-500);background:var(--accent-50);color:var(--accent-700)';
+  }
+  renderCart();
+}
+
+function filterName(el) { el.value = el.value.replace(/[^a-zA-ZÃ¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“ÃšÃ¼ÃœÃ±Ã‘ ]/g, ''); checkDeliveryForm(); }
+function filterPhone(el) { el.value = el.value.replace(/[^0-9]/g, ''); checkDeliveryForm(); }
+
+function checkDeliveryForm() {
+  const name = document.getElementById('delivery-name').value.trim();
+  const phone = document.getElementById('delivery-phone').value.trim();
+  const address = document.getElementById('delivery-address').value.trim();
+  const btn = document.getElementById('checkout-btn');
+  const ready = name.length >= 2 && phone.length >= 6 && address.length >= 3;
+  btn.disabled = !ready;
+  btn.className = 'w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-2xl transition-all text-sm ' +
+    (ready ? 'btn-accent cursor-pointer' : 'bg-zinc-200 text-zinc-400 cursor-not-allowed');
+  if (!btn.textContent.includes('Enviando')) btn.textContent = 'Hacer pedido';
+}
+
+function setPayment(method) {
+  deliveryPayment = method;
+  const ce = document.getElementById('btn-contraentrega');
+  const tr = document.getElementById('btn-transferencia');
+  const base = 'pay-btn text-left text-sm font-semibold py-3 px-3.5 rounded-2xl border-2 transition-all';
+  ce.className = base;
+  tr.className = base + ' border-zinc-200 text-zinc-500';
+  if (method === 'contraentrega') {
+    ce.style.cssText = 'border-color:var(--accent-500);background:var(--accent-50);color:var(--accent-700)';
+    tr.style.cssText = '';
+  } else {
+    ce.style.cssText = '';
+    tr.style.cssText = 'border-color:var(--accent-500);background:var(--accent-50);color:var(--accent-700)';
+  }
+  document.getElementById('transfer-section').classList.toggle('hidden', method !== 'transferencia');
+  checkDeliveryForm();
+}
+
+function onTransferFileChange() {
+  const file = document.getElementById('transfer-file').files[0];
+  const label = document.getElementById('transfer-file-label');
+  if (file) {
+    const name = file.name.length > 26 ? file.name.substring(0,23) + '...' : file.name;
+    label.textContent = 'âœ“ ' + name;
+    label.classList.add('text-zinc-900','font-semibold');
+    label.classList.remove('text-zinc-500');
+  } else {
+    label.textContent = 'Subir comprobante (opcional)';
+    label.classList.remove('text-zinc-900','font-semibold');
+    label.classList.add('text-zinc-500');
+  }
+  checkDeliveryForm();
+}
+
+function compressImage(file, maxSize, quality) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > h && w > maxSize) { h = Math.round(h*maxSize/w); w = maxSize; }
+        else if (h > maxSize) { w = Math.round(w*maxSize/h); h = maxSize; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
       };
-      if (transferImg) order.transferImg = transferImg;
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
-      try {
-        const r = await fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) });
-        if (!r.ok) {
-          const errData = await r.json().catch(() => ({}));
-          throw new Error(errData.error || `Error ${r.status}`);
-        }
-        _lastOrderTs = Date.now();
+let _lastOrderTs = 0;
 
-        // Meta Pixel: Purchase (pedido enviado con éxito al backend)
-        aleraTrack('Purchase', {
-          content_ids:  ids.map(String),
-          content_type: 'product',
-          contents:     ids.map(id => ({ id: String(id), quantity: cart[id] })),
-          num_items:    ids.reduce((s, id) => s + cart[id], 0),
-          currency:     'HNL',
-          value:        totalFinal,
-        });
+async function submitOrder() {
+  const name = document.getElementById('delivery-name').value.trim();
+  const phone = document.getElementById('delivery-phone').value.trim();
+  const address = document.getElementById('delivery-address').value.trim();
+  if (!name || !phone || !address) return;
+  const now = Date.now();
+  if (now - _lastOrderTs < 30000) { alert('Por favor esperÃ¡ unos segundos antes de enviar otro pedido.'); return; }
+  if (name.length > 80 || phone.length > 15 || address.length > 150) { alert('Uno de los campos excede el largo mÃ¡ximo.'); return; }
 
-        cart = {};
-        saveCart();
-        renderCart();
-        closeCart();
-        btn.textContent = 'Hacer pedido';
-        btn.disabled = false;
-        document.getElementById('success-order-num').textContent = '#' + String(order.orderNum).padStart(3, '0');
-        const sc = document.getElementById('cart-success');
-        sc.style.display = 'flex';
-        requestAnimationFrame(() => requestAnimationFrame(() => { sc.style.transform = 'translateX(0)'; }));
-      } catch(e) {
-        btn.disabled = false;
-        checkDeliveryForm();
-        console.error('submitOrder error:', e);
-        alert('No se pudo enviar el pedido: ' + (e.message || 'Revisá tu conexión.'));
-      }
+  const btn = document.getElementById('checkout-btn');
+  btn.disabled = true;
+  btn.className = 'w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-2xl transition-all text-sm bg-zinc-200 text-zinc-400 cursor-not-allowed';
+  btn.textContent = 'Enviando...';
+
+  let transferImg = null;
+  if (deliveryPayment === 'transferencia') {
+    const file = document.getElementById('transfer-file').files[0];
+    if (file) transferImg = await compressImage(file, 900, 0.75);
+  }
+
+  const envio = deliveryZone === 'tgu' ? 70 : 90;
+  const ids = Object.keys(cart).map(Number).filter(id => PRODUCTS[id]);
+  const subtotal = ids.reduce((s,id) => s + PRODUCTS[id].price * cart[id], 0);
+  const totalFinal = subtotal + envio;
+  const orderId = Date.now();
+
+  aleraTrack('InitiateCheckout', {
+    content_ids: ids.map(String), content_type: 'product',
+    contents: ids.map(id => ({ id: String(id), quantity: cart[id] })),
+    num_items: ids.reduce((s,id)=>s+cart[id],0),
+    currency: 'HNL', value: totalFinal,
+  });
+
+  const order = {
+    id: orderId,
+    orderNum: (orderId % 9000) + 1,
+    date: new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+    customer: { name, phone, address },
+    items: ids.map(id => ({ id: Number(id), name: PRODUCTS[id].name, qty: cart[id], price: PRODUCTS[id].price })),
+    subtotal, shipping: envio, total: totalFinal,
+    zone: deliveryZone, payment: deliveryPayment, status: 'pendiente',
+  };
+  if (transferImg) order.transferImg = transferImg;
+
+  try {
+    const r = await fetch(API + '/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) });
+    if (!r.ok) {
+      const errData = await r.json().catch(() => ({}));
+      throw new Error(errData.error || `Error ${r.status}`);
     }
+    _lastOrderTs = Date.now();
 
-    function resetCartSuccess() {
-      const sc = document.getElementById('cart-success');
-      sc.style.transform = 'translateX(100%)';
-      setTimeout(() => { sc.style.display = 'none'; sc.style.transform = ''; }, 350);
-      document.getElementById('delivery-name').value    = '';
-      document.getElementById('delivery-phone').value   = '';
-      document.getElementById('delivery-address').value = '';
-      document.getElementById('transfer-file').value    = '';
-      document.getElementById('transfer-file-label').textContent = 'Seleccionar imagen...';
-      document.getElementById('transfer-file-label').classList.remove('text-blue-700','font-semibold');
-      document.getElementById('transfer-file-label').classList.add('text-blue-500');
-      deliveryZone    = 'tgu';
-      deliveryPayment = 'contraentrega';
-      setZone('tgu');
-      setPayment('contraentrega');
-      checkDeliveryForm();
-    }
+    aleraTrack('Purchase', {
+      content_ids: ids.map(String), content_type: 'product',
+      contents: ids.map(id => ({ id: String(id), quantity: cart[id] })),
+      num_items: ids.reduce((s,id)=>s+cart[id],0),
+      currency: 'HNL', value: totalFinal,
+    });
+
+    cart = {}; saveCart(); renderCart();
+    btn.textContent = 'Hacer pedido'; btn.disabled = false;
+    document.getElementById('success-order-num').textContent = '#' + String(order.orderNum).padStart(3,'0');
+    const sc = document.getElementById('cart-success');
+    sc.style.display = 'flex';
+    requestAnimationFrame(() => requestAnimationFrame(() => { sc.style.transform = 'translateX(0)'; }));
+  } catch(e) {
+    btn.disabled = false;
+    checkDeliveryForm();
+    console.error('submitOrder error:', e);
+    alert('No se pudo enviar el pedido: ' + (e.message || 'RevisÃ¡ tu conexiÃ³n.'));
+  }
+}
+
+function resetCartSuccess() {
+  const sc = document.getElementById('cart-success');
+  sc.style.transform = 'translateX(100%)';
+  setTimeout(() => { sc.style.display = 'none'; sc.style.transform = ''; }, 350);
+  ['delivery-name','delivery-phone','delivery-address','transfer-file'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const lbl = document.getElementById('transfer-file-label');
+  if (lbl) {
+    lbl.textContent = 'Subir comprobante (opcional)';
+    lbl.classList.remove('text-zinc-900','font-semibold');
+    lbl.classList.add('text-zinc-500');
+  }
+  deliveryZone = 'tgu'; deliveryPayment = 'contraentrega';
+  setZone('tgu'); setPayment('contraentrega');
+  checkDeliveryForm();
+  backToItems();
+}
+
+// â”€â”€â”€ FAQ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const FAQS = [
+  { q: 'Â¿CÃ³mo hago un pedido?', a: 'AgregÃ¡ los productos al carrito, llenÃ¡ tus datos y hacÃ© click en "Hacer pedido". Te contactamos por WhatsApp para confirmar y coordinar la entrega.' },
+  { q: 'Â¿QuÃ© pasa si no estoy en Tegucigalpa?', a: 'Hacemos envÃ­os a todo Honduras. Fuera de TGU el costo es L 90â€“120 y tarda 3â€“5 dÃ­as hÃ¡biles. Te confirmamos dÃ­a exacto por WhatsApp.' },
+  { q: 'Â¿Puedo pagar contra entrega?', a: 'SÃ­, es nuestra opciÃ³n por defecto. PagÃ¡s cuando recibÃ­s el producto. Dentro de TGU es la opciÃ³n mÃ¡s popular.' },
+  { q: 'Â¿CuÃ¡nto tardan en hacer un personalizado?', a: 'Depende del personaje, pero usualmente entre 7â€“14 dÃ­as. Te confirmamos tiempo real cuando vemos tu idea.' },
+  { q: 'Â¿QuÃ© pasa si la pieza llega daÃ±ada?', a: 'La reponemos. Mandanos una foto por WhatsApp y arreglamos. Empacamos todo con burbuja y cuidado.' },
+];
+
+function renderFAQ() {
+  const root = document.getElementById('faq-list');
+  if (!root) return;
+  root.innerHTML = FAQS.map((f,i) => `
+    <details class="group py-5">
+      <summary class="flex items-center justify-between cursor-pointer list-none">
+        <span class="font-semibold text-base pr-4">${f.q}</span>
+        <span class="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center shrink-0 transition-transform group-open:rotate-45" style="color:var(--accent-600)">${plusIcon(4)}</span>
+      </summary>
+      <p class="mt-3 text-zinc-500 leading-relaxed text-sm pr-12">${f.a}</p>
+    </details>
+  `).join('');
+}
+
+// â”€â”€â”€ Tweaks (color palette) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const TWEAK_PALETTES_LIST = [
+  { key:'mint',    swatch:'#14b8a6', label:'Mint (actual)' },
+  { key:'indigo',  swatch:'#6366f1', label:'Indigo' },
+  { key:'coral',   swatch:'#f35d14', label:'Coral' },
+  { key:'magenta', swatch:'#ec4899', label:'Magenta' },
+  { key:'lime',    swatch:'#84cc16', label:'Lima' },
+];
+
+function renderTweakPalette() {
+  const root = document.getElementById('tweak-palette');
+  if (!root) return;
+  const current = (window.TWEAK_DEFAULTS && window.TWEAK_DEFAULTS.accent) || 'mint';
+  root.innerHTML = TWEAK_PALETTES_LIST.map(p => `
+    <button onclick="applyAccent('${p.key}')" title="${p.label}"
+      class="relative aspect-square rounded-xl border-2 ${current===p.key?'border-zinc-900':'border-transparent hover:border-zinc-300'} transition-all"
+      style="background:${p.swatch}">
+      ${current===p.key ? `<svg class="w-4 h-4 text-white absolute inset-0 m-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>` : ''}
+    </button>
+  `).join('');
+}
+
+function applyAccent(key) {
+  const p = window.PALETTES && window.PALETTES[key];
+  if (!p) return;
+  const r = document.documentElement.style;
+  Object.entries(p).forEach(([k,v]) => { if (k!=='name') r.setProperty('--accent-'+k, v); });
+  window.TWEAK_DEFAULTS.accent = key;
+  renderTweakPalette();
+  // Re-render chrome that uses inline color
+  setZone(deliveryZone); setPayment(deliveryPayment);
+  // Persist to file via editmode protocol
+  try { window.parent.postMessage({type:'__edit_mode_set_keys', edits:{accent:key}}, '*'); } catch(e){}
+}
+
+// expose palettes for runtime
+window.PALETTES = {
+  mint:    { 50:'#f0fdf8',100:'#ccfbef',200:'#99f6e0',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e', name:'Mint' },
+  indigo:  { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca', name:'Indigo' },
+  coral:   { 50:'#fff4ed',100:'#ffe5d3',200:'#fecaa6',300:'#fca96f',400:'#fb7d3a',500:'#f35d14',600:'#e4450a',700:'#bd330b', name:'Coral' },
+  magenta: { 50:'#fdf2f8',100:'#fce7f3',200:'#fbcfe8',300:'#f9a8d4',400:'#f472b6',500:'#ec4899',600:'#db2777',700:'#be185d', name:'Magenta' },
+  lime:    { 50:'#f7fee7',100:'#ecfccb',200:'#d9f99d',300:'#bef264',400:'#a3e635',500:'#84cc16',600:'#65a30d',700:'#4d7c0f', name:'Lima' },
+};
+window.TWEAK_DEFAULTS = window.TWEAK_DEFAULTS || { accent: 'mint' };
+
+// Edit mode listener FIRST, then announce
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode') {
+    document.getElementById('tweaks-panel').classList.add('open');
+  } else if (d.type === '__deactivate_edit_mode') {
+    document.getElementById('tweaks-panel').classList.remove('open');
+  }
+});
+try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e){}
+
+// â”€â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+(async function init() {
+  await rebuildProductMap();
+  renderHero();
+  await renderFandomFilters();
+  await renderFandomTiles();
+  await renderCatalog();
+  renderCart();
+  renderFAQ();
+  renderTweakPalette();
+  window.addEventListener('resize', () => renderCart());
+})();

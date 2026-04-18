@@ -1,18 +1,17 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alera — Coleccionables pop culture</title>
-  <meta name="description" content="Coleccionables y decoración pop culture. Llaveros, lámparas y figuras de Star Wars, Minecraft, Naruto, Pokémon y más. Hecho en Honduras, envíos a todo el país." />
-  <meta property="og:title" content="Alera — Coleccionables pop culture" />
-  <meta property="og:description" content="Llaveros, lámparas y decoración de tus universos favoritos. Gaming, anime y cultura pop — hecho a mano en Honduras." />
-  <meta property="og:image" content="assets/lampara-minecraft.jpg" />
-  <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#14b8a6" />
-  <link rel="icon" type="image/svg+xml" href="assets/logo-symbol.svg" />
+﻿<!DOCTYPE html><html lang="es" style="--accent-50: #f0fdf8; --accent-100: #ccfbef; --accent-200: #99f6e0; --accent-300: #5eead4; --accent-400: #2dd4bf; --accent-500: #14b8a6; --accent-600: #0d9488; --accent-700: #0f766e;"><head>
+<script>window.addEventListener('error',function(e){if(!e.filename||e.message==='Script error.'){e.stopImmediatePropagation();e.preventDefault();return false;}},true);window.onerror=function(msg,src){if(!src||msg==='Script error.')return true;};</script>
 
-  <!-- Meta Pixel Code -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alera â€” Coleccionables pop culture</title>
+  <meta name="description" content="Coleccionables y decoraciÃ³n pop culture. Llaveros, lÃ¡mparas y figuras de Star Wars, Minecraft, Naruto, PokÃ©mon y mÃ¡s. Hecho en Honduras, envÃ­os a todo el paÃ­s.">
+  <meta property="og:title" content="Alera â€” Coleccionables pop culture">
+  <meta property="og:description" content="Llaveros, lÃ¡mparas y decoraciÃ³n de tus universos favoritos. Gaming, anime y cultura pop â€” hecho a mano en Honduras.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#14b8a6">
+  <link rel="icon" type="image/svg+xml" href="assets/logo-symbol.svg">
+
+  <!-- Meta Pixel â€” disabled in redesign preview; originals preserved in production build -->
   <script>
     // Pixel ID de Alera en Meta Business (Events Manager → Data Sources).
     window.ALERA_META_PIXEL_ID = '1054808999886336';
@@ -30,664 +29,646 @@
   <!-- End Meta Pixel Code -->
 
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            mint: { 50:'#f0fdf8',100:'#ccfbef',200:'#99f6e0',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e' }
-          }
-        }
-      }
-    }
+    // TWEAK: paleta de color principal
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "accent": "mint"
+    }/*EDITMODE-END*/;
+
+    const PALETTES = {
+      mint:    { 50:'#f0fdf8',100:'#ccfbef',200:'#99f6e0',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e', name:'Mint (actual)' },
+      indigo:  { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca', name:'Indigo' },
+      coral:   { 50:'#fff4ed',100:'#ffe5d3',200:'#fecaa6',300:'#fca96f',400:'#fb7d3a',500:'#f35d14',600:'#e4450a',700:'#bd330b', name:'Coral' },
+      magenta: { 50:'#fdf2f8',100:'#fce7f3',200:'#fbcfe8',300:'#f9a8d4',400:'#f472b6',500:'#ec4899',600:'#db2777',700:'#be185d', name:'Magenta' },
+      lime:    { 50:'#f7fee7',100:'#ecfccb',200:'#d9f99d',300:'#bef264',400:'#a3e635',500:'#84cc16',600:'#65a30d',700:'#4d7c0f', name:'Lima' },
+    };
+
+    const accent = PALETTES[TWEAK_DEFAULTS.accent] || PALETTES.mint;
+    tailwind.config = { theme: { extend: { colors: { accent, mint: PALETTES.mint } } } };
+
+    // Aplicar CSS vars
+    const r = document.documentElement.style;
+    Object.entries(accent).forEach(([k,v]) => { if (k!=='name') r.setProperty('--accent-'+k, v); });
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .hero-blob { position:absolute; border-radius:9999px; filter:blur(80px); pointer-events:none; }
-    .card-img { transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
+    :root {
+      --accent-50: #f0fdf8; --accent-100: #ccfbef; --accent-200: #99f6e0;
+      --accent-300: #5eead4; --accent-400: #2dd4bf; --accent-500: #14b8a6;
+      --accent-600: #0d9488; --accent-700: #0f766e;
+    }
+    body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; font-feature-settings: "ss01","cv11"; }
+    .serif { font-family: 'Bricolage Grotesque', 'Geist', sans-serif; font-weight: 600; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; }
+    h1, h2, h3, h4 { letter-spacing: -0.02em; }
+    .mono { font-family: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace; }
+
+    /* Placeholder sutil con rayas en vez de emoji */
+    .placeholder-stripes {
+      background-image:
+        linear-gradient(135deg, transparent 0%, transparent 46%, var(--accent-100) 46%, var(--accent-100) 54%, transparent 54%),
+        linear-gradient(45deg, transparent 0%, transparent 46%, var(--accent-100) 46%, var(--accent-100) 54%, transparent 54%);
+      background-size: 14px 14px;
+      background-color: #fafaf9;
+    }
+    .placeholder-stripes-dark {
+      background-image:
+        linear-gradient(135deg, transparent 0%, transparent 46%, #1a1a1f 46%, #1a1a1f 54%, transparent 54%),
+        linear-gradient(45deg, transparent 0%, transparent 46%, #1a1a1f 46%, #1a1a1f 54%, transparent 54%);
+      background-size: 14px 14px;
+      background-color: #0a0a0b;
+    }
+    /* Card interactions */
+    .product-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .product-card:active { transform: scale(0.98); }
+    .product-card .card-img { transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); }
     .product-card:hover .card-img { transform: scale(1.06); }
-    .product-card { transition: box-shadow 0.25s ease, transform 0.25s ease; }
-    .product-card:hover { transform: translateY(-4px); box-shadow: 0 24px 48px -12px rgba(14,165,144,0.15), 0 8px 16px -8px rgba(0,0,0,0.08); }
-    @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(3deg)} }
-    .float { animation: float 6s ease-in-out infinite; }
-    @keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
+    @media (hover:hover) {
+      .product-card:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -18px rgba(0,0,0,0.12); }
+    }
+
+    /* Drawer */
     #cart-drawer { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
     #cart-drawer.open { transform: translateX(0); }
     #cart-backdrop { transition: opacity 0.3s ease; }
     #cart-success { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 60; }
+
+    /* Badge pop */
     @keyframes pop { 0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)} }
     .pop { animation: pop 0.3s ease; }
-    .no-img { background: linear-gradient(135deg, #1c1c2e 0%, #2d2d44 100%); }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+
+    /* Marquee */
+    @keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
+
+    /* Fade up on scroll */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
     .fade-up { opacity:0; }
-    .fade-up.visible { animation: fadeUp 0.5s ease forwards; }
-    .filter-btn { transition: all 0.2s ease; }
-    .filter-btn.active { background: #14b8a6; color: #fff; border-color: #14b8a6; }
+    .fade-up.visible { animation: fadeUp 0.45s ease forwards; }
+
+    /* Filter chip */
+    .filter-btn { transition: all 0.18s ease; }
+    .filter-btn.active {
+      background: var(--accent-500);
+      color: #fff;
+      border-color: var(--accent-500);
+    }
+
+    /* Sticky mobile bar */
+    @keyframes slideUp { from{transform:translateY(100%)}to{transform:translateY(0)} }
+    #mobile-bar.show { animation: slideUp 0.3s ease forwards; }
+
+    /* Hero glow */
+    .hero-glow {
+      background: radial-gradient(ellipse at center, var(--accent-200) 0%, transparent 70%);
+      opacity: 0.5;
+    }
+
+    /* Toast */
+    @keyframes toastIn { from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)} }
+    #cart-toast { animation: toastIn 0.25s ease; }
+
+    /* Subtle ticker underline for section labels */
+    .eyebrow {
+      color: var(--accent-600);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .btn-accent {
+      background: var(--accent-500);
+      color: white;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+    .btn-accent:hover { background: var(--accent-600); }
+    .btn-accent:active { transform: scale(0.97); }
+
+    .ring-accent:focus { outline: none; box-shadow: 0 0 0 3px var(--accent-200); }
+
+    /* Fandom chip with count */
+    .fandom-count {
+      background: rgba(255,255,255,0.5);
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 10px;
+      margin-left: 6px;
+      font-weight: 700;
+    }
+    .filter-btn.active .fandom-count { background: rgba(255,255,255,0.22); color: white; }
+
+    /* Section dividers â€” subtle */
+    .hair { height: 1px; background: linear-gradient(to right, transparent, #e4e4e7, transparent); }
+
+    /* Tweaks panel */
+    #tweaks-panel {
+      display: none;
+      position: fixed;
+      bottom: 16px; right: 16px;
+      width: 260px;
+      background: white;
+      border: 1px solid #e4e4e7;
+      border-radius: 16px;
+      padding: 14px;
+      z-index: 80;
+      box-shadow: 0 20px 60px -20px rgba(0,0,0,0.2);
+      font-size: 13px;
+    }
+    #tweaks-panel.open { display: block; }
   </style>
-</head>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.-right-1\.5{right:-0.375rem}.-top-1\.5{top:-0.375rem}.bottom-0{bottom:0px}.left-0{left:0px}.left-3\.5{left:0.875rem}.right-0{right:0px}.right-\[-200px\]{right:-200px}.top-0{top:0px}.top-1\/2{top:50%}.top-16{top:4rem}.top-\[-200px\]{top:-200px}.z-10{z-index:10}.z-20{z-index:20}.z-30{z-index:30}.z-40{z-index:40}.z-50{z-index:50}.-mx-5{margin-left:-1.25rem;margin-right:-1.25rem}.mx-5{margin-left:1.25rem;margin-right:1.25rem}.mx-auto{margin-left:auto;margin-right:auto}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.ml-auto{margin-left:auto}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-5{margin-top:1.25rem}.mt-6{margin-top:1.5rem}.mt-7{margin-top:1.75rem}.mt-8{margin-top:2rem}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.aspect-\[4\/5\]{aspect-ratio:4/5}.h-1\.5{height:0.375rem}.h-10{height:2.5rem}.h-16{height:4rem}.h-20{height:5rem}.h-3{height:0.75rem}.h-3\.5{height:0.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-7{height:1.75rem}.h-8{height:2rem}.h-96{height:24rem}.h-\[18px\]{height:18px}.h-\[600px\]{height:600px}.h-full{height:100%}.w-1\.5{width:0.375rem}.w-10{width:2.5rem}.w-16{width:4rem}.w-20{width:5rem}.w-3{width:0.75rem}.w-3\.5{width:0.875rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-7{width:1.75rem}.w-8{width:2rem}.w-96{width:24rem}.w-\[18px\]{width:18px}.w-\[600px\]{width:600px}.w-auto{width:auto}.w-full{width:100%}.max-w-3xl{max-width:48rem}.max-w-6xl{max-width:72rem}.max-w-\[340px\]{max-width:340px}.max-w-lg{max-width:32rem}.max-w-md{max-width:28rem}.max-w-xl{max-width:36rem}.max-w-xs{max-width:20rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/3{--tw-translate-y:-33.333333%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-1\/3{--tw-translate-x:33.333333%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-all{-webkit-user-select:all;user-select:all}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.grid-cols-5{grid-template-columns:repeat(5, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:0.125rem}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-10{gap:2.5rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.-space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(-0.5rem * var(--tw-space-x-reverse));margin-left:calc(-0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-zinc-100 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(244 244 245 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-x-hidden{overflow-x:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.whitespace-nowrap{white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-\[32px\]{border-radius:32px}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-x{border-left-width:1px;border-right-width:1px}.border-y{border-top-width:1px;border-bottom-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.border-zinc-100{--tw-border-opacity:1;border-color:rgb(244 244 245 / var(--tw-border-opacity, 1))}.border-zinc-200{--tw-border-opacity:1;border-color:rgb(228 228 231 / var(--tw-border-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-\[\#25D366\]{--tw-bg-opacity:1;background-color:rgb(37 211 102 / var(--tw-bg-opacity, 1))}.bg-black\/40{background-color:rgb(0 0 0 / 0.4)}.bg-white\/85{background-color:rgb(255 255 255 / 0.85)}.bg-white\/90{background-color:rgb(255 255 255 / 0.9)}.bg-zinc-200{--tw-bg-opacity:1;background-color:rgb(228 228 231 / var(--tw-bg-opacity, 1))}.bg-zinc-300{--tw-bg-opacity:1;background-color:rgb(212 212 216 / var(--tw-bg-opacity, 1))}.bg-zinc-50{--tw-bg-opacity:1;background-color:rgb(250 250 250 / var(--tw-bg-opacity, 1))}.bg-zinc-950{--tw-bg-opacity:1;background-color:rgb(9 9 11 / var(--tw-bg-opacity, 1))}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-16{padding-top:4rem;padding-bottom:4rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-20{padding-top:5rem;padding-bottom:5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-0\.5{padding-bottom:0.125rem}.pb-16{padding-bottom:4rem}.pb-20{padding-bottom:5rem}.pl-10{padding-left:2.5rem}.pr-4{padding-right:1rem}.pt-12{padding-top:3rem}.pt-2{padding-top:0.5rem}.text-left{text-align:left}.text-center{text-align:center}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[42px\]{font-size:42px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-\[0\.95\]{line-height:0.95}.leading-\[1\.02\]{line-height:1.02}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-zinc-900{--tw-text-opacity:1;color:rgb(24 24 27 / var(--tw-text-opacity, 1))}.text-accent-600{--tw-text-opacity:1;color:rgb(13 148 136 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-zinc-400{--tw-text-opacity:1;color:rgb(161 161 170 / var(--tw-text-opacity, 1))}.text-zinc-500{--tw-text-opacity:1;color:rgb(113 113 122 / var(--tw-text-opacity, 1))}.text-zinc-600{--tw-text-opacity:1;color:rgb(82 82 91 / var(--tw-text-opacity, 1))}.text-zinc-700{--tw-text-opacity:1;color:rgb(63 63 70 / var(--tw-text-opacity, 1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.opacity-0{opacity:0}.opacity-20{opacity:0.2}.opacity-40{opacity:0.4}.opacity-70{opacity:0.7}.opacity-80{opacity:0.8}.opacity-90{opacity:0.9}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_-10px_30px_-10px_rgba\(0\2c 0\2c 0\2c 0\.08\)\]{--tw-shadow:0 -10px 30px -10px rgba(0,0,0,0.08);--tw-shadow-colored:0 -10px 30px -10px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-green-200{--tw-shadow-color:#bbf7d0;--tw-shadow:var(--tw-shadow-colored)}.outline-none{outline:2px solid transparent;outline-offset:2px}.blur-3xl{--tw-blur:blur(64px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:border-zinc-300:hover{--tw-border-opacity:1;border-color:rgb(212 212 216 / var(--tw-border-opacity, 1))}.hover\:border-zinc-400:hover{--tw-border-opacity:1;border-color:rgb(161 161 170 / var(--tw-border-opacity, 1))}.hover\:bg-\[\#1ebe5d\]:hover{--tw-bg-opacity:1;background-color:rgb(30 190 93 / var(--tw-bg-opacity, 1))}.hover\:bg-zinc-100:hover{--tw-bg-opacity:1;background-color:rgb(244 244 245 / var(--tw-bg-opacity, 1))}.hover\:bg-zinc-50:hover{--tw-bg-opacity:1;background-color:rgb(250 250 250 / var(--tw-bg-opacity, 1))}.hover\:text-zinc-700:hover{--tw-text-opacity:1;color:rgb(63 63 70 / var(--tw-text-opacity, 1))}.hover\:text-zinc-900:hover{--tw-text-opacity:1;color:rgb(24 24 27 / var(--tw-text-opacity, 1))}.group:hover .group-hover\:scale-110{--tw-scale-x:1.1;--tw-scale-y:1.1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:-mx-6{margin-left:-1.5rem;margin-right:-1.5rem}.sm\:mb-12{margin-bottom:3rem}.sm\:inline{display:inline}.sm\:w-72{width:18rem}.sm\:max-w-\[380px\]{max-width:380px}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:flex-row{flex-direction:row}.sm\:p-12{padding:3rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:py-20{padding-top:5rem;padding-bottom:5rem}.sm\:py-24{padding-top:6rem;padding-bottom:6rem}.sm\:text-5xl{font-size:3rem;line-height:1}.sm\:text-6xl{font-size:3.75rem;line-height:1}.sm\:text-\[56px\]{font-size:56px}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 768px){.md\:flex{display:flex}.md\:hidden{display:none}}@media (min-width: 1024px){.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.lg\:grid-cols-\[1\.1fr_1fr\]{grid-template-columns:1.1fr 1fr}.lg\:justify-end{justify-content:flex-end}.lg\:gap-16{gap:4rem}.lg\:gap-20{gap:5rem}.lg\:p-16{padding:4rem}.lg\:pb-24{padding-bottom:6rem}.lg\:pt-16{padding-top:4rem}.lg\:text-\[68px\]{font-size:68px}}</style></head>
 <body class="bg-white text-zinc-900 antialiased overflow-x-hidden">
 
-  <!-- CARRITO DRAWER -->
+  <!-- CARRITO BACKDROP + DRAWER -->
   <div id="cart-backdrop" class="fixed inset-0 bg-black/40 z-40 opacity-0 pointer-events-none" onclick="closeCart()"></div>
-  <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col translate-x-full">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
-      <h2 class="font-bold text-lg">Tu carrito</h2>
-      <button onclick="closeCart()" class="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+  <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col translate-x-full">
+    <header class="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
+      <div>
+        <h2 class="font-bold text-lg">Tu carrito</h2>
+        <p class="text-xs text-zinc-400 mt-0.5" id="cart-header-sub">0 artÃ­culos</p>
+      </div>
+      <button onclick="closeCart()" class="p-2 rounded-xl hover:bg-zinc-100 transition-colors" aria-label="Cerrar">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
-    </div>
-    <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4">
-      <div id="cart-empty" class="flex flex-col items-center justify-center h-full text-zinc-400 gap-3">
-        <svg class="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
-        <p class="text-sm">Tu carrito está vacío</p>
-      </div>
-    </div>
-    <div id="cart-footer" class="hidden border-t border-zinc-100 p-5 space-y-4 overflow-y-auto">
-      <div class="space-y-1">
-        <div class="flex justify-between items-center text-sm text-zinc-400">
-          <span>Subtotal</span>
-          <span id="cart-subtotal">L 0</span>
-        </div>
-        <div class="flex justify-between items-center text-sm text-zinc-400">
-          <span>Envío</span>
-          <span id="cart-envio">—</span>
-        </div>
-        <div class="flex justify-between items-center pt-1 border-t border-zinc-100">
-          <span class="font-semibold text-sm">Total</span>
-          <span id="cart-total" class="font-black text-xl">L 0</span>
-        </div>
-      </div>
+    </header>
 
-      <!-- Trust badge -->
-      <div class="flex items-center gap-2.5 bg-mint-50 border border-mint-200 rounded-xl px-3.5 py-2.5">
-        <span class="text-lg">🔒</span>
-        <p class="text-xs text-mint-700 font-medium leading-snug">Pedido seguro. Te contactamos para confirmar la entrega.</p>
-      </div>
-
-      <!-- Datos de entrega (colapsable) -->
-      <div class="space-y-2.5">
-        <button type="button" onclick="toggleDeliveryForm()" class="w-full flex items-center justify-between group">
-          <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Datos de entrega</p>
-          <svg id="delivery-chevron" class="w-4 h-4 text-zinc-400 transition-transform duration-200 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
-        </button>
-        <div id="delivery-form-body" class="space-y-2.5">
-
-        <input id="delivery-name" type="text" placeholder="Nombre completo *" maxlength="80" autocomplete="name"
-          class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
-          oninput="filterName(this)" />
-        <input id="delivery-phone" type="tel" inputmode="numeric" placeholder="Teléfono *" maxlength="15" autocomplete="tel"
-          class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
-          oninput="filterPhone(this)" />
-
-        <!-- Selector TGU -->
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" id="btn-tgu" onclick="setZone('tgu')"
-            class="zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 border-mint-500 bg-mint-50 text-mint-700 transition-all">
-            🏙️ Dentro de TGU<br/><span class="text-xs font-normal">L 70 · 1–2 días</span>
-          </button>
-          <button type="button" id="btn-fuera" onclick="setZone('fuera')"
-            class="zone-btn text-sm font-semibold py-2.5 rounded-xl border-2 border-zinc-200 text-zinc-500 transition-all">
-            🚚 Fuera de TGU<br/><span class="text-xs font-normal">L 90–120 · 3–5 días</span>
-          </button>
-        </div>
-
-        <input id="delivery-address" type="text" placeholder="Dirección de entrega *" maxlength="150" autocomplete="street-address"
-          class="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
-          oninput="checkDeliveryForm()" />
-
-        <!-- Método de pago -->
-        <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide pt-1">Método de pago</p>
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" id="btn-contraentrega" onclick="setPayment('contraentrega')"
-            class="pay-btn text-sm font-semibold py-2.5 rounded-xl border-2 border-mint-500 bg-mint-50 text-mint-700 transition-all">
-            💵 Al recibir<br/><span class="text-xs font-normal">Pago contra entrega</span>
-          </button>
-          <button type="button" id="btn-transferencia" onclick="setPayment('transferencia')"
-            class="pay-btn text-sm font-semibold py-2.5 rounded-xl border-2 border-zinc-200 text-zinc-500 transition-all">
-            🏦 Transferencia<br/><span class="text-xs font-normal">Pagar por adelantado</span>
-          </button>
-        </div>
-
-        <!-- Transfer upload section (hidden until transferencia selected) -->
-        <div id="transfer-section" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3.5 space-y-2.5">
-          <p class="text-xs font-semibold text-blue-700">Datos para transferencia</p>
-          <div class="text-xs text-blue-600 space-y-0.5">
-            <p>🏦 BAC Honduras</p>
-            <p>📋 Cuenta: <span class="font-mono font-bold select-all">746722511</span></p>
-            <p>👤 A nombre de: <span class="font-semibold">MOISES GONZALO ALMENDARES ORTEZ</span></p>
+    <!-- PASO 1: items -->
+    <div id="cart-step-items" class="flex-1 flex flex-col overflow-hidden">
+      <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4">
+        <div id="cart-empty" class="flex flex-col items-center justify-center h-full text-zinc-400 gap-3 py-16">
+          <div class="w-16 h-16 rounded-2xl placeholder-stripes flex items-center justify-center">
+            <svg class="w-7 h-7 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272"></path></svg>
           </div>
-          <div>
-            <p class="text-xs text-blue-600 mb-1.5">Sube el comprobante (opcional):</p>
-            <label class="flex items-center gap-2 cursor-pointer bg-white border border-blue-200 hover:border-blue-400 rounded-xl px-3.5 py-2.5 transition-all">
-              <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-              <span id="transfer-file-label" class="text-xs text-blue-500 truncate">Seleccionar imagen...</span>
-              <input id="transfer-file" type="file" accept="image/*" class="hidden" onchange="onTransferFileChange()"/>
+          <p class="text-sm">Tu carrito estÃ¡ vacÃ­o</p>
+          <button onclick="closeCart()" class="text-xs font-semibold text-accent-600" style="color:var(--accent-600)">Ver productos â†’</button>
+        </div>
+      </div>
+
+      <!-- Bundle nudge -->
+      <div id="cart-bundle-hint" class="hidden mx-5 mb-3 rounded-2xl p-3 flex items-start gap-2.5" style="background:var(--accent-50);border:1px solid var(--accent-100)">
+        <div class="text-lg leading-none mt-0.5">ðŸ’¡</div>
+        <p class="text-xs leading-snug" style="color:var(--accent-700)">
+          <span class="font-semibold">SumÃ¡ otro llavero</span> y te sale mÃ¡s rentable el envÃ­o â€” mismo costo, mÃ¡s piezas.
+        </p>
+      </div>
+
+      <footer id="cart-footer" class="hidden border-t border-zinc-100 p-5 space-y-3">
+        <div class="space-y-1">
+          <div class="flex justify-between text-sm text-zinc-500">
+            <span>Subtotal</span>
+            <span id="cart-subtotal" class="font-semibold text-zinc-700">L 0</span>
+          </div>
+          <div class="flex justify-between text-sm text-zinc-500">
+            <span>EnvÃ­o (estimado)</span>
+            <span id="cart-envio">L 70</span>
+          </div>
+          <div class="flex justify-between pt-2 mt-1 border-t border-zinc-100">
+            <span class="font-bold text-sm">Total</span>
+            <span id="cart-total" class="font-black text-xl">L 0</span>
+          </div>
+        </div>
+        <button onclick="goToCheckout()" class="w-full btn-accent font-bold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2">
+          Continuar
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+        </button>
+        <p class="text-[11px] text-center text-zinc-400">PodÃ©s pagar contra entrega o por transferencia.</p>
+      </footer>
+    </div>
+
+    <!-- PASO 2: checkout -->
+    <div id="cart-step-checkout" class="hidden flex-1 flex flex-col overflow-hidden">
+      <div class="flex-1 overflow-y-auto p-5 space-y-5">
+        <button onclick="backToItems()" class="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+          Volver al carrito
+        </button>
+
+        <!-- Zona -->
+        <div>
+          <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Destino</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="btn-tgu" onclick="setZone('tgu')" class="zone-btn text-left text-sm font-semibold py-3 px-3.5 rounded-2xl border-2 transition-all" style="border-color:var(--accent-500);background:var(--accent-50);color:var(--accent-700)">
+              <div>Dentro de TGU</div>
+              <div class="text-[11px] font-normal opacity-70 mt-0.5">L 70 Â· 1â€“2 dÃ­as</div>
+            </button>
+            <button type="button" id="btn-fuera" onclick="setZone('fuera')" class="zone-btn text-left text-sm font-semibold py-3 px-3.5 rounded-2xl border-2 border-zinc-200 text-zinc-500 transition-all">
+              <div>Fuera de TGU</div>
+              <div class="text-[11px] font-normal opacity-70 mt-0.5">L 90â€“120 Â· 3â€“5 dÃ­as</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Datos -->
+        <div class="space-y-2.5">
+          <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Tus datos</p>
+          <input id="delivery-name" type="text" placeholder="Nombre completo" maxlength="80" autocomplete="name" class="w-full border border-zinc-200 rounded-2xl px-4 py-3 text-sm outline-none ring-accent transition-all" oninput="filterName(this)">
+          <input id="delivery-phone" type="tel" inputmode="numeric" placeholder="WhatsApp / TelÃ©fono" maxlength="15" autocomplete="tel" class="w-full border border-zinc-200 rounded-2xl px-4 py-3 text-sm outline-none ring-accent transition-all" oninput="filterPhone(this)">
+          <input id="delivery-address" type="text" placeholder="DirecciÃ³n de entrega" maxlength="150" autocomplete="street-address" class="w-full border border-zinc-200 rounded-2xl px-4 py-3 text-sm outline-none ring-accent transition-all" oninput="checkDeliveryForm()">
+        </div>
+
+        <!-- Pago -->
+        <div>
+          <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2">MÃ©todo de pago</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="btn-contraentrega" onclick="setPayment('contraentrega')" class="pay-btn text-left text-sm font-semibold py-3 px-3.5 rounded-2xl border-2 transition-all" style="border-color:var(--accent-500);background:var(--accent-50);color:var(--accent-700)">
+              <div>Al recibir</div>
+              <div class="text-[11px] font-normal opacity-70 mt-0.5">Contra entrega</div>
+            </button>
+            <button type="button" id="btn-transferencia" onclick="setPayment('transferencia')" class="pay-btn text-left text-sm font-semibold py-3 px-3.5 rounded-2xl border-2 border-zinc-200 text-zinc-500 transition-all">
+              <div>Transferencia</div>
+              <div class="text-[11px] font-normal opacity-70 mt-0.5">BAC Â· por adelantado</div>
+            </button>
+          </div>
+
+          <div id="transfer-section" class="hidden mt-3 bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-2.5">
+            <p class="text-xs font-bold text-zinc-700">Datos para transferencia</p>
+            <div class="text-xs text-zinc-500 space-y-1 font-medium">
+              <p>BAC Honduras Â· Cuenta <span class="mono font-bold text-zinc-900 select-all">746722511</span></p>
+              <p>A nombre de <span class="font-semibold text-zinc-900">MoisÃ©s Almendares Ortez</span></p>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer bg-white border border-zinc-200 hover:border-zinc-400 rounded-xl px-3 py-2 transition-all mt-1">
+              <svg class="w-4 h-4 text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"></path></svg>
+              <span id="transfer-file-label" class="text-xs text-zinc-500 truncate">Subir comprobante (opcional)</span>
+              <input id="transfer-file" type="file" accept="image/*" class="hidden" onchange="onTransferFileChange()">
             </label>
           </div>
         </div>
-        </div><!-- /delivery-form-body -->
+
+        <!-- Resumen mini -->
+        <div class="rounded-2xl bg-zinc-50 p-4 space-y-1.5 text-sm">
+          <div class="flex justify-between text-zinc-500">
+            <span id="checkout-items-label">Subtotal</span>
+            <span id="checkout-subtotal" class="font-semibold text-zinc-700">L 0</span>
+          </div>
+          <div class="flex justify-between text-zinc-500">
+            <span>EnvÃ­o</span>
+            <span id="checkout-envio">L 70</span>
+          </div>
+          <div class="flex justify-between pt-2 mt-1 border-t border-zinc-200">
+            <span class="font-bold">Total</span>
+            <span id="checkout-total" class="font-black text-lg">L 70</span>
+          </div>
+        </div>
       </div>
 
-      <button id="checkout-btn" onclick="submitOrder()" disabled
-        class="w-full flex items-center justify-center gap-2.5 bg-zinc-200 text-zinc-400 cursor-not-allowed font-bold py-3.5 rounded-xl transition-all text-sm">
-        Hacer pedido
-      </button>
-      <p class="text-xs text-center text-zinc-400">Te contactamos para confirmar tu pedido.</p>
+      <footer class="border-t border-zinc-100 p-5 space-y-2">
+        <button id="checkout-btn" onclick="submitOrder()" disabled="" class="w-full flex items-center justify-center gap-2.5 bg-zinc-200 text-zinc-400 cursor-not-allowed font-bold py-3.5 rounded-2xl transition-all text-sm">
+          Hacer pedido
+        </button>
+        <p class="text-[11px] text-center text-zinc-400">Te contactamos por WhatsApp para confirmar.</p>
+      </footer>
     </div>
-  </div>
+  </aside>
 
-  <!-- Order success screen (fixed overlay, same position as cart-drawer) -->
-  <div id="cart-success" style="display:none;transform:translateX(100%)" class="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl flex flex-col items-center justify-center p-8 text-center gap-5">
-    <div class="w-20 h-20 bg-mint-100 rounded-full flex items-center justify-center">
-      <svg class="w-10 h-10 text-mint-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+  <!-- Order success -->
+  <div id="cart-success" style="display:none;transform:translateX(100%)" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col items-center justify-center p-8 text-center gap-5 z-50">
+    <div class="w-20 h-20 rounded-full flex items-center justify-center" style="background:var(--accent-100)">
+      <svg class="w-10 h-10" style="color:var(--accent-600)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>
     </div>
     <div>
-      <p class="font-black text-2xl">¡Pedido listo!</p>
-      <p class="text-sm text-zinc-400 mt-1.5">Pedido <span id="success-order-num" class="font-mono font-bold text-zinc-700">#001</span></p>
+      <p class="serif text-4xl">Â¡Pedido listo!</p>
+      <p class="text-sm text-zinc-400 mt-2">Pedido <span id="success-order-num" class="mono font-bold text-zinc-700">#001</span></p>
     </div>
-    <p class="text-sm text-zinc-500 leading-relaxed max-w-xs">Recibimos tu pedido. Te contactaremos pronto para coordinar la entrega.</p>
-    <button onclick="closeCart(); resetCartSuccess()"
-      class="mt-1 bg-mint-500 hover:bg-mint-600 text-white font-bold px-8 py-3.5 rounded-xl transition-colors text-sm w-full max-w-xs">
-      ¡Genial!
+    <p class="text-sm text-zinc-500 leading-relaxed max-w-xs">Recibimos tu pedido. Te contactamos por WhatsApp para coordinar la entrega.</p>
+    <button onclick="closeCart(); resetCartSuccess()" class="mt-1 btn-accent font-bold px-8 py-3.5 rounded-2xl text-sm w-full max-w-xs">
+      Â¡Genial!
     </button>
   </div>
 
   <!-- HEADER -->
-  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-zinc-100">
-    <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+  <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-zinc-100">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
       <a href="#" class="flex items-center gap-2.5 group">
-        <img src="assets/logo-symbol.svg" alt="Alera" class="h-8 w-auto group-hover:scale-110 transition-transform duration-200" />
-        <span class="font-bold text-lg tracking-tight">Alera</span>
+        <img src="../assets/logo-symbol.svg" alt="Alera" class="h-8 w-auto group-hover:scale-110 transition-transform duration-200">
+        <span class="font-black text-lg tracking-tight">alera</span>
       </a>
-      <nav class="hidden sm:flex items-center gap-8 text-sm text-zinc-500">
+      <nav class="hidden md:flex items-center gap-8 text-sm text-zinc-500">
         <a href="#productos" class="hover:text-zinc-900 transition-colors">Productos</a>
+        <a href="#fandoms" class="hover:text-zinc-900 transition-colors">Fandoms</a>
         <a href="#nosotros" class="hover:text-zinc-900 transition-colors">Nosotros</a>
         <a href="#contacto" class="hover:text-zinc-900 transition-colors">Contacto</a>
       </nav>
-      <button onclick="openCart()" class="relative flex items-center gap-2 border border-zinc-200 hover:border-zinc-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors hover:bg-zinc-50">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+      <button onclick="openCart()" class="relative flex items-center gap-2 border border-zinc-200 hover:border-zinc-300 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors hover:bg-zinc-50" aria-label="Abrir carrito">
+        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"></path></svg>
         <span class="hidden sm:inline">Carrito</span>
-        <span id="cart-badge" class="hidden absolute -top-2 -right-2 bg-mint-500 text-white text-[10px] font-black w-5 h-5 rounded-full items-center justify-center">0</span>
+        <span id="cart-badge" class="hidden absolute -top-1.5 -right-1.5 text-white text-[10px] font-black w-5 h-5 rounded-full items-center justify-center" style="background:var(--accent-500)">0</span>
       </button>
     </div>
   </header>
 
   <!-- HERO -->
-  <section class="relative min-h-[88vh] flex items-center overflow-hidden">
-    <div class="hero-blob w-[500px] h-[500px] bg-mint-100 opacity-60 top-[-80px] right-[-100px]"></div>
-    <div class="hero-blob w-[300px] h-[300px] bg-mint-200 opacity-40 bottom-[60px] right-[200px]"></div>
-    <div class="hero-blob w-[200px] h-[200px] bg-teal-100 opacity-50 top-[30%] left-[-60px]"></div>
-    <div class="max-w-5xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+  <section class="relative overflow-hidden">
+    <div class="absolute hero-glow w-[600px] h-[600px] top-[-200px] right-[-200px] rounded-full blur-3xl pointer-events-none"></div>
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 pt-12 pb-16 lg:pt-16 lg:pb-24 grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16 items-center relative z-10">
       <div>
-        <div class="flex flex-wrap gap-2 mb-6">
-          <span class="inline-flex items-center gap-2 bg-mint-50 text-mint-700 text-xs font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full border border-mint-200">
-            <span class="w-1.5 h-1.5 rounded-full bg-mint-500 inline-block"></span>
-            Hecho en Honduras
+        <div class="flex flex-wrap gap-1.5 mb-6">
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full border" style="color:var(--accent-700);border-color:var(--accent-200);background:var(--accent-50)">
+            <span class="w-1.5 h-1.5 rounded-full inline-block" style="background:var(--accent-500)"></span>
+            Hecho a mano Â· Honduras
           </span>
-          <span class="inline-flex items-center gap-2 bg-mint-50 text-mint-700 text-xs font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full border border-mint-200">
-            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            Envíos a todo Honduras
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full border border-zinc-200 text-zinc-600 bg-white">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            EnvÃ­os a todo el paÃ­s
           </span>
         </div>
-        <h1 class="text-4xl sm:text-5xl font-black tracking-tight leading-[1.05]">
-          Coleccionables<br/>para fans de<br/><span class="text-mint-600">verdad.</span>
+        <h1 class="text-[42px] sm:text-[56px] lg:text-[68px] font-black tracking-tight leading-[0.95]">
+          Tu universo<br>favorito,<br>
+          <span class="serif italic font-normal" style="color:var(--accent-600)">en tus manos.</span>
         </h1>
-        <p class="mt-6 text-zinc-500 text-lg leading-relaxed max-w-sm">
-          Llaveros, lámparas y decoración de tus universos favoritos. Gaming, anime y cultura pop — hecho a mano.
+        <p class="mt-5 text-zinc-500 text-base sm:text-lg leading-relaxed max-w-md">
+          Llaveros, lÃ¡mparas y decoraciÃ³n de Star Wars, Minecraft, Naruto, PokÃ©mon y mÃ¡s â€” hechas a mano por un fan, para fans.
         </p>
-        <div class="mt-8 flex flex-wrap gap-3">
-          <a href="#productos" class="inline-flex items-center gap-2 bg-mint-500 hover:bg-mint-600 text-white font-semibold px-6 py-3.5 rounded-xl shadow-lg shadow-mint-200 transition-all duration-200 text-sm">
-            Ver catálogo
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        <div class="mt-7 flex flex-wrap gap-2.5">
+          <a href="#productos" class="inline-flex items-center gap-2 btn-accent font-semibold px-6 py-3.5 rounded-2xl text-sm shadow-lg" style="box-shadow:0 12px 30px -10px var(--accent-300)">
+            Ver catÃ¡logo
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
           </a>
-          <a href="#contacto" class="inline-flex items-center gap-2 text-zinc-700 font-semibold px-6 py-3.5 rounded-xl border border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50 transition-all duration-200 text-sm">
+          <a href="#contacto" class="inline-flex items-center gap-2 text-zinc-700 font-semibold px-6 py-3.5 rounded-2xl border border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50 transition-all text-sm">
             Pedir personalizado
           </a>
         </div>
-        <!-- Fandoms -->
-        <div class="mt-10 flex flex-wrap gap-2">
-          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">⚔️ Star Wars</span>
-          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🎮 Minecraft</span>
-          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🍃 Naruto</span>
-          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🔴 Pokémon</span>
-          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🌸 Demon Slayer</span>
-          <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full font-medium">🐛 Hollow Knight</span>
+
+        <!-- Social proof strip -->
+        <div class="mt-8 flex items-center gap-4">
+          <div class="flex -space-x-2">
+            <div class="w-8 h-8 rounded-full border-2 border-white" style="background:linear-gradient(135deg,var(--accent-300),var(--accent-500))"></div>
+            <div class="w-8 h-8 rounded-full border-2 border-white bg-zinc-300" style="background:linear-gradient(135deg,#fde68a,#f59e0b)"></div>
+            <div class="w-8 h-8 rounded-full border-2 border-white" style="background:linear-gradient(135deg,#fbcfe8,#ec4899)"></div>
+            <div class="w-8 h-8 rounded-full border-2 border-white" style="background:linear-gradient(135deg,#c7d2fe,#6366f1)"></div>
+          </div>
+          <div class="text-xs text-zinc-500 leading-tight">
+            <div class="flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" style="color:#f59e0b" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.449a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.449a1 1 0 00-1.175 0l-3.37 2.449c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118l-3.37-2.449c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"></path></svg>
+              <span class="font-bold text-zinc-700">+200 fans</span> compraron en Honduras
+            </div>
+            <div class="text-zinc-400 mt-0.5">Respuesta por WhatsApp en menos de 1h</div>
+          </div>
         </div>
       </div>
-      <div class="relative flex justify-center lg:justify-end" id="hero-product-wrap">
-        <!-- Renderizado por JS -->
+
+      <!-- Hero producto -->
+      <div class="relative flex justify-center lg:justify-end">
+        <div id="hero-product-wrap" class="relative w-full max-w-[340px] sm:max-w-[380px]">
+          <!-- Rendered by JS -->
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- STRIP -->
-  <div class="bg-mint-500 text-white overflow-hidden py-3">
-    <div class="flex gap-12 whitespace-nowrap text-sm font-medium" style="animation: marquee 20s linear infinite;">
-      <span>✦ Star Wars</span><span>✦ Minecraft</span><span>✦ Naruto</span><span>✦ Pokémon</span><span>✦ Demon Slayer</span><span>✦ Hollow Knight</span><span>✦ Hecho en Honduras</span><span>✦ Envíos a todo Honduras</span>
-      <span>✦ Star Wars</span><span>✦ Minecraft</span><span>✦ Naruto</span><span>✦ Pokémon</span><span>✦ Demon Slayer</span><span>✦ Hollow Knight</span><span>✦ Hecho en Honduras</span><span>✦ Envíos a todo Honduras</span>
+  <!-- Trust row -->
+  <div class="border-y border-zinc-100 bg-white">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 py-4 grid grid-cols-3 gap-4 text-center">
+      <div>
+        <div class="text-[11px] font-bold uppercase tracking-widest" style="color:var(--accent-600)">Seguro</div>
+        <div class="text-xs sm:text-sm text-zinc-700 font-medium mt-0.5">Paga al recibir</div>
+      </div>
+      <div class="border-x border-zinc-100">
+        <div class="text-[11px] font-bold uppercase tracking-widest" style="color:var(--accent-600)">RÃ¡pido</div>
+        <div class="text-xs sm:text-sm text-zinc-700 font-medium mt-0.5">Respuesta &lt; 1h</div>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold uppercase tracking-widest" style="color:var(--accent-600)">Hecho a mano</div>
+        <div class="text-xs sm:text-sm text-zinc-700 font-medium mt-0.5">Por un fan</div>
+      </div>
     </div>
   </div>
 
+  <!-- MARQUEE -->
+  <div class="text-white overflow-hidden py-3" style="background:var(--accent-500)">
+    <div class="flex gap-10 whitespace-nowrap text-sm font-medium" style="animation: marquee 24s linear infinite;">
+      <span>â˜… Star Wars</span><span>â˜… Minecraft</span><span>â˜… Naruto</span><span>â˜… PokÃ©mon</span><span>â˜… Demon Slayer</span><span>â˜… Hollow Knight</span><span>â˜… DC / Batman</span><span>â˜… Hecho en Honduras</span>
+      <span>â˜… Star Wars</span><span>â˜… Minecraft</span><span>â˜… Naruto</span><span>â˜… PokÃ©mon</span><span>â˜… Demon Slayer</span><span>â˜… Hollow Knight</span><span>â˜… DC / Batman</span><span>â˜… Hecho en Honduras</span>
+    </div>
+  </div>
+
+  <!-- FANDOMS SECTION -->
+  <section id="fandoms" class="py-16 sm:py-24">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6">
+      <div class="mb-10 sm:mb-12">
+        <span class="eyebrow">Navegar por fandom</span>
+        <h2 class="serif text-4xl sm:text-5xl mt-1 tracking-tight">ElegÃ­ tu universo</h2>
+      </div>
+      <div id="fandom-tiles" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </section>
+
   <!-- PRODUCTOS -->
-  <section id="productos" class="py-24">
-    <!-- Buscador + Filtros por fandom -->
-    <div class="max-w-5xl mx-auto px-6 mb-10 space-y-4">
-      <div class="relative max-w-sm">
-        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.804 7.5 7.5 0 0015.803 15.803z"/></svg>
-        <input id="search-input" type="text" placeholder="Buscar producto..."
-          class="w-full pl-10 pr-4 py-2.5 border border-zinc-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-mint-400 transition-all"
-          oninput="setSearch(this.value)" />
+  <section id="productos" class="pb-20">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6">
+      <div class="mb-8 flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <span class="eyebrow">CatÃ¡logo</span>
+          <h2 class="serif text-4xl sm:text-5xl mt-1 tracking-tight">Todo el catÃ¡logo</h2>
+        </div>
+        <div class="relative w-full sm:w-72">
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.804 7.5 7.5 0 0015.803 15.803z"></path></svg>
+          <input id="search-input" type="text" placeholder="Buscar en todo el catÃ¡logo..." class="w-full pl-10 pr-4 py-2.5 border border-zinc-200 rounded-full text-sm outline-none ring-accent transition-all" oninput="setSearch(this.value)">
+        </div>
       </div>
-      <div class="flex flex-wrap gap-2" id="fandom-filters">
-        <button class="filter-btn active border border-zinc-200 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('*')">Todos</button>
-        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Star Wars')">⚔️ Star Wars</button>
-        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Minecraft')">🎮 Minecraft</button>
-        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Naruto')">🍃 Naruto</button>
-        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Pokémon')">🔴 Pokémon</button>
-        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Demon Slayer')">🌸 Demon Slayer</button>
-        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('Hollow Knight')">🐛 Hollow Knight</button>
-        <button class="filter-btn border border-zinc-200 text-zinc-600 text-sm font-semibold px-4 py-2 rounded-full" onclick="setFilter('DC / Batman')">🦇 Batman</button>
+
+      <!-- Filter chips (sticky below header on mobile) -->
+      <div class="sticky top-16 z-20 bg-white/90 backdrop-blur-md -mx-5 sm:-mx-6 px-5 sm:px-6 py-3 border-b border-zinc-100">
+        <div class="flex gap-2 overflow-x-auto pb-0.5 scrollbar-none" id="fandom-filters" style="scrollbar-width:none">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <div id="products-root" class="mt-8">
+        <!-- Rendered by JS -->
       </div>
     </div>
-    <div id="products-root" class="max-w-5xl mx-auto px-6">
-      <!-- Renderizado dinámicamente por JS -->
-    </div>
-    <!-- fallback estático por si JS no carga aún (oculto) -->
-    <div class="hidden max-w-5xl mx-auto px-6">
+  </section>
 
-      <!-- Llaveros -->
-      <div class="mb-16">
-        <div class="flex items-end justify-between mb-8">
-          <div>
-            <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
-            <h2 class="mt-1 text-2xl font-black tracking-tight">🔑 Llaveros</h2>
+  <!-- TESTIMONIOS (WhatsApp-style) -->
+  <section class="py-16 sm:py-20 border-t border-zinc-100" style="background:var(--accent-50)">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6">
+      <div class="mb-10 text-center">
+        <span class="eyebrow">Lo que dicen</span>
+        <h2 class="serif text-4xl sm:text-5xl mt-1 tracking-tight">Fans felices.</h2>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-white rounded-3xl p-5 shadow-sm border border-white">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background:linear-gradient(135deg,var(--accent-400),var(--accent-600))">C</div>
+            <div>
+              <div class="font-bold text-sm">Carlos M.</div>
+              <div class="text-xs text-zinc-400">Tegucigalpa</div>
+            </div>
+            <div class="ml-auto flex gap-0.5" style="color:#f59e0b">â˜…â˜…â˜…â˜…â˜…</div>
           </div>
+          <p class="text-sm text-zinc-700 leading-relaxed">Le regalÃ© la lÃ¡mpara de Minecraft a mi sobrino y casi se desmaya. La calidad es lo que esperaba y mÃ¡s. ðŸ”¥</p>
         </div>
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square overflow-hidden bg-zinc-50">
-              <img src="assets/cubone-mochila.png" alt="Llavero Cubone" class="card-img w-full h-full object-cover" />
+        <div class="bg-white rounded-3xl p-5 shadow-sm border border-white">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background:linear-gradient(135deg,#fbcfe8,#ec4899)">A</div>
+            <div>
+              <div class="font-bold text-sm">Andrea P.</div>
+              <div class="text-xs text-zinc-400">San Pedro Sula</div>
             </div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Pokémon</p>
-              <h3 class="font-bold leading-tight">Llavero Cubone</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 150</span>
-                <button onclick="addToCart(1)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
+            <div class="ml-auto flex gap-0.5" style="color:#f59e0b">â˜…â˜…â˜…â˜…â˜…</div>
           </div>
-
-          <div class="product-card bg-zinc-950 rounded-3xl overflow-hidden border border-zinc-800">
-            <div class="aspect-square overflow-hidden">
-              <img src="assets/cubone.jpg" alt="Llavero Cubone Glow" class="card-img w-full h-full object-cover opacity-90" />
+          <p class="text-sm text-zinc-700 leading-relaxed">PedÃ­ los llaveros de Naruto. LlegÃ³ en 3 dÃ­as a SPS, sÃºper bien empacado y justo como en las fotos. Ya encarguÃ© mÃ¡s.</p>
+        </div>
+        <div class="bg-white rounded-3xl p-5 shadow-sm border border-white">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background:linear-gradient(135deg,#fde68a,#f59e0b)">L</div>
+            <div>
+              <div class="font-bold text-sm">Luis R.</div>
+              <div class="text-xs text-zinc-400">La Ceiba</div>
             </div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-500">Pokémon</p>
-              <h3 class="font-bold text-white leading-tight">Llavero Cubone Glow</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black text-white">L 180</span>
-                <button onclick="addToCart(2)" class="text-xs font-bold bg-mint-500 hover:bg-mint-400 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
+            <div class="ml-auto flex gap-0.5" style="color:#f59e0b">â˜…â˜…â˜…â˜…â˜…</div>
           </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">🔑</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Hollow Knight</p>
-              <h3 class="font-bold leading-tight">Llavero Hornet</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 150</span>
-                <button onclick="addToCart(3)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">💀</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Minecraft</p>
-              <h3 class="font-bold leading-tight">Llavero Esqueleto</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 150</span>
-                <button onclick="addToCart(4)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">⚔️</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Star Wars</p>
-              <h3 class="font-bold leading-tight">Llavero Mandalorian</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 150</span>
-                <button onclick="addToCart(5)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">⚔️</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Star Wars</p>
-              <h3 class="font-bold leading-tight">Llaveros Star Wars – varios</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 150</span>
-                <button onclick="addToCart(6)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">👁️</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Naruto</p>
-              <h3 class="font-bold leading-tight">Llaveros Sharingan</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 150</span>
-                <button onclick="addToCart(7)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">⚪🔴</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Pokémon</p>
-              <h3 class="font-bold leading-tight">Llavero Pokébola</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 150</span>
-                <button onclick="addToCart(8)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
+          <p class="text-sm text-zinc-700 leading-relaxed">Me hicieron un llavero personalizado con un personaje medio obscuro que amo. Respondieron rÃ¡pido por WhatsApp. 10/10.</p>
         </div>
       </div>
-
-      <!-- Lámparas -->
-      <div class="mb-16">
-        <div class="mb-8">
-          <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
-          <h2 class="mt-1 text-2xl font-black tracking-tight">🕯️ Lámparas</h2>
-        </div>
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100 relative">
-            <div class="absolute top-3 left-3 z-10">
-              <span class="bg-zinc-900/90 text-white text-xs font-bold px-3 py-1.5 rounded-full">🔥 Más vendido</span>
-            </div>
-            <div class="aspect-square overflow-hidden bg-zinc-900">
-              <img src="assets/lampara-minecraft.jpg" alt="Lámpara Minecraft" class="card-img w-full h-full object-cover" />
-            </div>
-            <div class="p-5">
-              <p class="text-xs text-zinc-400">Minecraft</p>
-              <h3 class="font-bold text-lg leading-tight">Lámpara Minecraft</h3>
-              <p class="text-sm text-zinc-400 mt-0.5">LED cálida incluida</p>
-              <div class="mt-4 flex items-center justify-between">
-                <span class="font-black text-xl">L 350</span>
-                <button onclick="addToCart(9)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-6xl">☀️</div>
-            <div class="p-5">
-              <p class="text-xs text-zinc-400">Demon Slayer</p>
-              <h3 class="font-bold text-lg leading-tight">Lámpara Tanjiro Kamado</h3>
-              <p class="text-sm text-zinc-400 mt-0.5">Kimetsu no Yaiba</p>
-              <div class="mt-4 flex items-center justify-between">
-                <span class="font-black text-xl">L 350</span>
-                <button onclick="addToCart(10)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Decoración de pared -->
-      <div class="mb-16">
-        <div class="mb-8">
-          <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
-          <h2 class="mt-1 text-2xl font-black tracking-tight">🖼️ Decoración de pared</h2>
-        </div>
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-6xl">🪖</div>
-            <div class="p-5">
-              <p class="text-xs text-zinc-400">Star Wars</p>
-              <h3 class="font-bold text-lg leading-tight">Máscara Darth Vader</h3>
-              <div class="mt-4 flex items-center justify-between">
-                <span class="font-black text-xl">L 280</span>
-                <button onclick="addToCart(11)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-6xl">⚔️</div>
-            <div class="p-5">
-              <p class="text-xs text-zinc-400">Star Wars</p>
-              <h3 class="font-bold text-lg leading-tight">Máscara The Mandalorian</h3>
-              <div class="mt-4 flex items-center justify-between">
-                <span class="font-black text-xl">L 280</span>
-                <button onclick="addToCart(12)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-6xl">🚀</div>
-            <div class="p-5">
-              <p class="text-xs text-zinc-400">Star Wars</p>
-              <h3 class="font-bold text-lg leading-tight">TIE Fighter</h3>
-              <div class="mt-4 flex items-center justify-between">
-                <span class="font-black text-xl">L 280</span>
-                <button onclick="addToCart(13)" class="text-sm font-bold bg-mint-500 hover:bg-mint-600 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Figuras y más -->
-      <div>
-        <div class="mb-8">
-          <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Categoría</span>
-          <h2 class="mt-1 text-2xl font-black tracking-tight">🎭 Figuras y más</h2>
-        </div>
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">🐶</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Minecraft</p>
-              <h3 class="font-bold leading-tight">Perritos Minecraft</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 200</span>
-                <button onclick="addToCart(14)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">👺</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Naruto</p>
-              <h3 class="font-bold leading-tight">Máscara Obito Uchiha</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 250</span>
-                <button onclick="addToCart(15)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">🚀</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Star Wars</p>
-              <h3 class="font-bold leading-tight">TIE Fighter armable</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 320</span>
-                <button onclick="addToCart(16)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-card bg-white rounded-3xl overflow-hidden border border-zinc-100">
-            <div class="aspect-square no-img flex items-center justify-center text-5xl">🥤</div>
-            <div class="p-4">
-              <p class="text-xs text-zinc-400">Star Wars</p>
-              <h3 class="font-bold leading-tight">Set Portavasos Star Wars</h3>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="font-black">L 380</span>
-                <button onclick="addToCart(17)" class="text-xs font-bold bg-mint-500 hover:bg-mint-600 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
     </div>
   </section>
 
   <!-- PERSONALIZADOS -->
-  <section class="pb-24">
-    <div class="max-w-5xl mx-auto px-6">
-      <div class="relative bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-3xl overflow-hidden p-8 sm:p-12">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-mint-500 opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
-        <div class="relative z-10 flex flex-col sm:flex-row items-start gap-8">
-          <div class="flex-1">
-            <span class="text-mint-400 text-xs font-semibold uppercase tracking-widest">Personalizados</span>
-            <h2 class="mt-2 text-3xl sm:text-4xl font-black text-white tracking-tight">¿No encontraste lo que buscás?</h2>
-            <p class="mt-3 text-zinc-400 leading-relaxed max-w-md">Mandanos tu idea — si existe un personaje o universo que amás, podemos hacerlo. Consultanos sin compromiso.</p>
-            <a href="#contacto" class="mt-6 inline-flex items-center gap-2.5 bg-mint-500 hover:bg-mint-400 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm">
-              Pedir personalizado por WhatsApp
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            </a>
-          </div>
+  <section class="py-16 sm:py-24">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6">
+      <div class="relative bg-zinc-950 rounded-[32px] overflow-hidden p-8 sm:p-12 lg:p-16">
+        <div class="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3 pointer-events-none opacity-20" style="background:var(--accent-400)"></div>
+        <div class="relative z-10 max-w-xl">
+          <span class="eyebrow" style="color:var(--accent-400)">Personalizados</span>
+          <h2 class="serif text-4xl sm:text-6xl text-white mt-2 tracking-tight leading-none">Â¿Y si tu favorito no estÃ¡?</h2>
+          <p class="mt-5 text-zinc-400 leading-relaxed max-w-md text-base sm:text-lg">
+            Mandanos una foto de tu personaje o universo. Si se puede hacer a mano, lo hacemos. Sin compromiso.
+          </p>
+          <a href="https://wa.me/50495902564" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2.5 btn-accent font-semibold px-6 py-3.5 rounded-2xl text-sm">
+            Consultar por WhatsApp
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+          </a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ENVÍOS -->
-  <section class="bg-mint-50 border-y border-mint-100 py-16">
-    <div class="max-w-5xl mx-auto px-6">
-      <div class="text-center mb-10">
-        <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Envíos</span>
-        <h2 class="mt-2 text-3xl font-black tracking-tight">Te lo llevamos a donde estés</h2>
+  <!-- ENVÃOS -->
+  <section class="py-16 sm:py-20 border-t border-zinc-100">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6">
+      <div class="mb-10">
+        <span class="eyebrow">EnvÃ­os</span>
+        <h2 class="serif text-4xl sm:text-5xl mt-1 tracking-tight">Te lo llevamos a donde estÃ©s.</h2>
       </div>
-      <div class="grid sm:grid-cols-3 gap-5">
-        <div class="bg-white rounded-2xl p-6 border border-mint-100 shadow-sm">
-          <div class="text-3xl mb-3">🏙️</div>
-          <div class="font-bold text-zinc-900">Dentro de Tegucigalpa</div>
-          <div class="text-3xl font-black text-mint-600 mt-2">L 70</div>
-          <div class="text-zinc-400 text-sm mt-1">Entrega en 1–2 días</div>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl p-6 border border-zinc-200">
+          <div class="text-[11px] font-bold uppercase tracking-widest text-zinc-400">Tegucigalpa</div>
+          <div class="serif text-5xl mt-2" style="color:var(--accent-600)">L 70</div>
+          <div class="text-zinc-500 text-sm mt-3 font-medium">Entrega en 1â€“2 dÃ­as hÃ¡biles</div>
         </div>
-        <div class="bg-white rounded-2xl p-6 border border-mint-100 shadow-sm">
-          <div class="text-3xl mb-3">🚚</div>
-          <div class="font-bold text-zinc-900">Fuera de Tegucigalpa</div>
-          <div class="text-3xl font-black text-mint-600 mt-2">L 90 – 120</div>
-          <div class="text-zinc-400 text-sm mt-1">Entrega en 3–5 días</div>
+        <div class="rounded-3xl p-6 border border-zinc-200">
+          <div class="text-[11px] font-bold uppercase tracking-widest text-zinc-400">Resto del paÃ­s</div>
+          <div class="serif text-5xl mt-2" style="color:var(--accent-600)">L 90â€“120</div>
+          <div class="text-zinc-500 text-sm mt-3 font-medium">Entrega en 3â€“5 dÃ­as hÃ¡biles</div>
         </div>
-        <div class="bg-white rounded-2xl p-6 border border-mint-100 shadow-sm">
-          <div class="text-3xl mb-3">💬</div>
-          <div class="font-bold text-zinc-900">Coordinamos por WhatsApp</div>
-          <div class="text-zinc-500 text-sm mt-2">Pago contra entrega o transferencia. Te confirmamos el día exacto.</div>
+        <div class="rounded-3xl p-6 text-white" style="background:var(--accent-600)">
+          <div class="text-[11px] font-bold uppercase tracking-widest opacity-80">Coordinamos</div>
+          <div class="serif text-3xl mt-2 leading-tight">Por WhatsApp,<br>de fan a fan.</div>
+          <div class="text-sm mt-3 opacity-90 font-medium">Pago contra entrega o transferencia. Te confirmamos dÃ­a exacto.</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- NOSOTROS -->
-  <section id="nosotros" class="border-t border-zinc-100 py-20">
-    <div class="max-w-5xl mx-auto px-6">
-      <div class="max-w-lg">
-        <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Nosotros</span>
-        <h2 class="mt-2 text-3xl font-black tracking-tight">¿Quiénes somos?</h2>
-        <p class="mt-4 text-zinc-500 leading-relaxed text-lg">
-          Somos <span class="font-semibold text-zinc-900">Alera</span>, una tienda hondureña de coleccionables y decoración temática para fans de gaming, anime y cultura pop. Creamos piezas únicas de tus universos favoritos — desde Star Wars hasta Pokémon — hechas con dedicación. Hacemos envíos a todo Honduras.
+  <section id="nosotros" class="py-16 sm:py-20 border-t border-zinc-100">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 grid lg:grid-cols-2 gap-10 lg:gap-20 items-start">
+      <div class="aspect-[4/5] rounded-[32px] overflow-hidden placeholder-stripes relative">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="text-center">
+            <div class="mono text-[11px] text-zinc-500 uppercase tracking-widest">// foto del taller</div>
+            <div class="mono text-[10px] text-zinc-400 mt-1">Â· reemplazar con una foto real Â·</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="eyebrow">Nosotros</span>
+        <h2 class="serif text-4xl sm:text-6xl mt-2 tracking-tight leading-[1.02]">
+          Somos un proyecto<br>
+          <span class="italic" style="color:var(--accent-600)">100% hondureÃ±o</span>
+        </h2>
+        <p class="mt-6 text-zinc-500 leading-relaxed text-base sm:text-lg max-w-lg">
+          Alera naciÃ³ del deseo de tener piezas reales de los universos que amamos â€” sin tener que esperar un mes y pagar aduana. Cada llavero, cada lÃ¡mpara, cada figura la armamos a mano en Tegucigalpa.
         </p>
+        <div class="mt-8 grid grid-cols-3 gap-4 max-w-md">
+          <div>
+            <div class="serif text-4xl" style="color:var(--accent-600)">+200</div>
+            <div class="text-xs text-zinc-500 mt-1">Pedidos entregados</div>
+          </div>
+          <div>
+            <div class="serif text-4xl" style="color:var(--accent-600)">7</div>
+            <div class="text-xs text-zinc-500 mt-1">Fandoms en stock</div>
+          </div>
+          <div>
+            <div class="serif text-4xl" style="color:var(--accent-600)">100%</div>
+            <div class="text-xs text-zinc-500 mt-1">Hecho a mano</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="py-16 sm:py-20 border-t border-zinc-100">
+    <div class="max-w-3xl mx-auto px-5 sm:px-6">
+      <div class="mb-10">
+        <span class="eyebrow">Preguntas</span>
+        <h2 class="serif text-4xl sm:text-5xl mt-1 tracking-tight">Lo que mÃ¡s nos preguntan.</h2>
+      </div>
+      <div class="divide-y divide-zinc-100 border-y border-zinc-100" id="faq-list">
+        <!-- Rendered by JS -->
       </div>
     </div>
   </section>
 
   <!-- CONTACTO -->
-  <section id="contacto" class="py-20">
-    <div class="max-w-5xl mx-auto px-6 text-center">
-      <span class="text-mint-600 text-xs font-semibold uppercase tracking-widest">Contacto</span>
-      <h2 class="mt-2 text-3xl font-black tracking-tight">¿Listo para pedir?</h2>
-      <p class="mt-3 text-zinc-500">Escribinos por WhatsApp y te respondemos enseguida.</p>
-      <a href="https://wa.me/50495902564" target="_blank" rel="noopener noreferrer"
-        class="mt-8 inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold px-8 py-4 rounded-2xl transition-colors text-base shadow-lg shadow-green-200">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.553 4.103 1.523 5.824L.057 23.107a.75.75 0 0 0 .921.911l5.344-1.47A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.5c-1.967 0-3.81-.512-5.407-1.41l-.387-.224-3.17.872.888-3.088-.245-.398A10.452 10.452 0 0 1 1.5 12C1.5 6.201 6.201 1.5 12 1.5S22.5 6.201 22.5 12 17.799 22.5 12 22.5z"/></svg>
+  <section id="contacto" class="py-20 text-center">
+    <div class="max-w-3xl mx-auto px-5 sm:px-6">
+      <span class="eyebrow">Contacto</span>
+      <h2 class="serif text-4xl sm:text-6xl mt-2 tracking-tight">Â¿Listo para pedir?</h2>
+      <p class="mt-4 text-zinc-500 text-base sm:text-lg">Escribinos por WhatsApp y te respondemos enseguida.</p>
+      <a href="https://wa.me/50495902564" target="_blank" rel="noopener noreferrer" class="mt-8 inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold px-8 py-4 rounded-2xl transition-colors text-base shadow-lg shadow-green-200">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"></path><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.553 4.103 1.523 5.824L.057 23.107a.75.75 0 0 0 .921.911l5.344-1.47A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22.5c-1.967 0-3.81-.512-5.407-1.41l-.387-.224-3.17.872.888-3.088-.245-.398A10.452 10.452 0 0 1 1.5 12C1.5 6.201 6.201 1.5 12 1.5S22.5 6.201 22.5 12 17.799 22.5 12 22.5z"></path></svg>
         Escribinos por WhatsApp
       </a>
-      <p class="mt-4 text-zinc-400 text-sm font-medium">+504 9590-2564</p>
-      <p class="mt-1 text-zinc-400 text-xs">Coordinás el pago y el envío directamente con nosotros.</p>
+      <p class="mt-4 text-zinc-400 text-sm font-medium mono">+504 9590-2564</p>
     </div>
   </section>
 
   <!-- FOOTER -->
-  <footer class="border-t border-zinc-100 py-8">
-    <div class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-400">
+  <footer class="border-t border-zinc-100 py-10">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-400">
       <div class="flex items-center gap-2.5">
-        <img src="assets/logo-symbol.svg" alt="Alera" class="h-5 w-auto opacity-30" />
-        <span>© 2026 Alera</span>
+        <img src="../assets/logo-symbol.svg" alt="Alera" class="h-5 w-auto opacity-40">
+        <span>Â© 2026 Alera Â· Hecho en Honduras</span>
       </div>
       <div class="flex gap-6">
         <a href="#" class="hover:text-zinc-700 transition-colors">Instagram</a>
         <a href="#" class="hover:text-zinc-700 transition-colors">Facebook</a>
-        <a href="#" class="hover:text-zinc-700 transition-colors">WhatsApp</a>
+        <a href="https://wa.me/50495902564" class="hover:text-zinc-700 transition-colors">WhatsApp</a>
       </div>
     </div>
   </footer>
 
+  <!-- Sticky mobile bar -->
+  <div id="mobile-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-zinc-200 px-4 py-3 z-40 hidden items-center justify-between shadow-[0_-10px_30px_-10px_rgba(0,0,0,0.08)] md:hidden">
+    <div>
+      <div class="text-[11px] text-zinc-400 uppercase tracking-widest font-bold">Carrito</div>
+      <div class="font-black text-lg"><span id="mb-count">0</span> Â· L <span id="mb-total">0</span></div>
+    </div>
+    <button onclick="openCart()" class="btn-accent font-bold px-5 py-3 rounded-2xl text-sm flex items-center gap-2">
+      Ver carrito
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+    </button>
+  </div>
+
+
   <script src="js/store.js"></script>
-</body>
-</html>
+
+</body></html>
