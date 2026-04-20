@@ -295,12 +295,6 @@ function heroCardHTML(star) {
         </div>
       </div>
       <div class="absolute -top-3 -left-3 bg-zinc-950 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wide">🔥 Más vendido</div>
-      <!-- floating secondary card -->
-      <div class="absolute -bottom-6 -right-4 sm:-right-8 w-32 aspect-square bg-white rounded-2xl shadow-xl border border-zinc-100 p-2 hidden sm:block rotate-6">
-        <div class="w-full h-full placeholder-stripes rounded-xl flex items-end justify-start p-2">
-          <div class="mono text-[9px] text-zinc-500 leading-none">// próximo<br/>drop</div>
-        </div>
-      </div>
     </div>`;
 }
 
