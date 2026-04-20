@@ -20,9 +20,15 @@ async function loadData() {
 }
 
 function getProducts() { return _products; }
-function saveProducts(products) {
+async function saveProducts(products) {
   _products = products;
-  authFetch(API + '/products', { method:'PUT', body:JSON.stringify(products) }).catch(console.error);
+  try {
+    const r = await authFetch(API + '/products', { method:'PUT', body:JSON.stringify(products) });
+    if (!r || !r.ok) throw new Error('respuesta no ok');
+  } catch(e) {
+    console.error('saveProducts:', e);
+    showToast('Error al guardar cambios — verificá tu conexión', false);
+  }
 }
 
 function getOrders() { return _orders; }
@@ -294,6 +300,69 @@ function saveManualOrder() {
   _orders.unshift(order);
   authFetch(API + '/orders', { method:'POST', body:JSON.stringify(order) }).catch(console.error);
   closeOrderModal(); renderStats(); renderOrders(); updatePendingBadge();
+}
+
+// ─── Add Product Modal ────────────────────────────────────────────────────────
+const AP_CATEGORIES = ['Llavero','Lámpara','Decoración','Figura','Set','Otro'];
+
+function openAddProductModal() {
+  document.getElementById('ap-name').value     = '';
+  document.getElementById('ap-price').value    = '';
+  document.getElementById('ap-fandom').value   = '';
+  document.getElementById('ap-emoji').value    = '';
+  document.getElementById('ap-desc').value     = '';
+  document.getElementById('ap-img').value      = '';
+  document.getElementById('ap-category').value = 'Otro';
+  document.getElementById('ap-error').classList.add('hidden');
+  document.getElementById('ap-modal-overlay').classList.remove('hidden');
+  document.getElementById('ap-name').focus();
+}
+
+function closeAddProductModal() {
+  document.getElementById('ap-modal-overlay').classList.add('hidden');
+}
+
+async function submitAddProduct() {
+  const name     = document.getElementById('ap-name').value.trim();
+  const price    = parseFloat(document.getElementById('ap-price').value);
+  const category = document.getElementById('ap-category').value;
+  const fandom   = document.getElementById('ap-fandom').value.trim();
+  const emoji    = document.getElementById('ap-emoji').value.trim() || '📦';
+  const desc     = document.getElementById('ap-desc').value.trim();
+  const img      = document.getElementById('ap-img').value.trim();
+  const errEl    = document.getElementById('ap-error');
+  const btn      = document.getElementById('ap-submit-btn');
+
+  if (!name)            { errEl.textContent = 'El nombre es obligatorio.';         errEl.classList.remove('hidden'); return; }
+  if (!price || price <= 0) { errEl.textContent = 'El precio debe ser mayor a 0.'; errEl.classList.remove('hidden'); return; }
+  errEl.classList.add('hidden');
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  try {
+    const r = await authFetch(API + '/products', {
+      method: 'POST',
+      body: JSON.stringify({ name, price, category, fandom, emoji, desc, img }),
+    });
+    const data = await r?.json();
+    if (!r || !r.ok) {
+      errEl.textContent = data?.error || 'Error al guardar.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if (data?.product) _products.push(data.product);
+    closeAddProductModal();
+    renderAll();
+    showToast('Producto agregado ✓');
+  } catch(e) {
+    console.error('addProduct:', e);
+    errEl.textContent = 'Error de conexión. Intentá de nuevo.';
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar producto';
+  }
 }
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────

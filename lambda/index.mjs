@@ -367,6 +367,48 @@ export const handler = async (event) => {
       return resp(200, items);
     }
 
+    // ── POST /products  (agregar producto — admin o vendedor) ──────────────
+    if (method === 'POST' && path.startsWith('/products')) {
+      const claims = verifyToken(auth);
+      if (!claims || !['admin', 'vendedor'].includes(claims.role)) return unauth();
+
+      let product;
+      try { product = JSON.parse(event.body); }
+      catch { return resp(400, { error: 'JSON inválido.' }); }
+
+      if (!product || typeof product !== 'object')
+        return resp(400, { error: 'Producto inválido.' });
+      if (!product.name || typeof product.name !== 'string' || !product.name.trim())
+        return resp(400, { error: 'El nombre es obligatorio.' });
+      if (!product.price || isNaN(Number(product.price)) || Number(product.price) <= 0)
+        return resp(400, { error: 'El precio debe ser mayor a 0.' });
+
+      // Determine next ID
+      const existing    = await db.send(new ScanCommand({ TableName: 'alera-products' }));
+      const existingItems = (existing.Items || []).map(i => unmarshall(i)).filter(i => i.id !== SETTINGS_ID);
+      const maxId       = existingItems.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0);
+
+      const newProduct = {
+        id:       maxId + 1,
+        name:     stripHtml(product.name.trim()).slice(0, 80),
+        price:    Math.max(0, Number(product.price)),
+        category: stripHtml(String(product.category || 'Otro')).slice(0, 40),
+        fandom:   stripHtml(String(product.fandom || '')).slice(0, 40),
+        emoji:    stripHtml(String(product.emoji || '📦')).slice(0, 4),
+        desc:     stripHtml(String(product.desc || '')).slice(0, 300),
+        img:      typeof product.img === 'string' ? product.img.slice(0, 500) : '',
+        active:   true,
+        stock:    true,
+      };
+
+      await db.send(new PutItemCommand({
+        TableName: 'alera-products',
+        Item: marshall(newProduct, { removeUndefinedValues: true }),
+      }));
+
+      return resp(200, { ok: true, product: newProduct });
+    }
+
     // ── PUT /products  (solo admin) ─────────────────────────────────────────
     if (method === 'PUT' && path.startsWith('/products')) {
       const claims = verifyToken(auth);
