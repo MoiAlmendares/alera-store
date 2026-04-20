@@ -454,6 +454,9 @@ export const handler = async (event) => {
       order        = sanitizeOrder(order);
       order.id     = Date.now() * 1000 + Math.floor(Math.random() * 1000); // siempre server-side
       order.status = 'pendiente';
+      // Si el pedido lo crea un usuario autenticado (vendedor/admin), estampar su usuario
+      const orderClaims = verifyToken(auth);
+      if (orderClaims?.user) order.vendedor = String(orderClaims.user).slice(0, 40);
 
       await db.send(new PutItemCommand({ TableName: 'alera-orders', Item: marshall(order, { removeUndefinedValues: true }) }));
       try { await sendOrderEmail(order); } catch(e) { console.error('SES:', e); }

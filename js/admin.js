@@ -637,16 +637,23 @@
     };
 
     // ─── Commission Calculator ────────────────────────────────────────────────
-    let comPeriod = 'mes';
+    let comPeriod   = 'mes';
+    let comVendedor = null; // null = todos los vendedores
 
     function setComPeriod(period) {
       comPeriod = period;
+      comVendedor = null; // resetear filtro al cambiar período
       document.querySelectorAll('.com-period-btn').forEach(b => {
         b.classList.remove('bg-zinc-900','text-white');
         b.classList.add('bg-zinc-100','text-zinc-600');
       });
       const btn = document.getElementById('cperiod-' + period);
       if (btn) { btn.classList.add('bg-zinc-900','text-white'); btn.classList.remove('bg-zinc-100','text-zinc-600'); }
+      renderComisiones();
+    }
+
+    function setComVendedor(v) {
+      comVendedor = (comVendedor === v) ? null : v; // toggle
       renderComisiones();
     }
 
@@ -668,8 +675,56 @@
     }
 
     function renderComisiones() {
-      const orders   = getComOrders();
-      const pct      = Math.max(0, Math.min(100, parseFloat(document.getElementById('com-pct').value) || 0));
+      const allOrders = getComOrders(); // todos los del período, sin filtrar por vendedor
+      const pct = Math.max(0, Math.min(100, parseFloat(document.getElementById('com-pct').value) || 0));
+
+      // ── Construir mapa por vendedor ──────────────────────────────────────────
+      const vendorMap = {};
+      for (const o of allOrders) {
+        const key   = o.vendedor || '__web__';
+        const label = o.vendedor || 'Tienda web';
+        if (!vendorMap[key]) vendorMap[key] = { key, label, orders: [], ventas: 0 };
+        vendorMap[key].orders.push(o);
+        vendorMap[key].ventas += o.total;
+      }
+      const vendors = Object.values(vendorMap).sort((a, b) => b.ventas - a.ventas);
+
+      // ── Cards por vendedor ───────────────────────────────────────────────────
+      const vendorDiv = document.getElementById('com-by-vendor');
+      if (vendors.length > 1 || (vendors.length === 1 && vendors[0].key !== '__web__')) {
+        vendorDiv.classList.remove('hidden');
+        const clearBtn = comVendedor
+          ? `<button onclick="setComVendedor(null)" class="mt-3 text-xs text-zinc-400 hover:text-zinc-700 transition-colors flex items-center gap-1"><span>✕</span> Ver todos los vendedores</button>`
+          : '';
+        vendorDiv.innerHTML = `
+          <div class="bg-white rounded-2xl border border-zinc-200 p-5">
+            <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-4">Desglose por vendedor</p>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              ${vendors.map(v => {
+                const com      = Math.round(v.ventas * pct / 100);
+                const isActive = comVendedor === v.key;
+                const border   = isActive ? 'border-teal-500 bg-teal-50' : 'border-zinc-200 hover:border-zinc-300 bg-zinc-50 hover:bg-white';
+                const nameClr  = isActive ? 'text-teal-700' : 'text-zinc-900';
+                const safeKey  = esc(v.key);
+                return `<button data-vkey="${safeKey}" onclick="setComVendedor(this.dataset.vkey)"
+                  class="text-left p-4 rounded-xl border-2 transition-all ${border}">
+                  <div class="font-bold text-sm ${nameClr}">${esc(v.label)}</div>
+                  <div class="text-xs text-zinc-500 mt-0.5">${v.orders.length} pedido${v.orders.length !== 1 ? 's' : ''} entregado${v.orders.length !== 1 ? 's' : ''}</div>
+                  <div class="flex items-center justify-between mt-3 gap-2">
+                    <span class="text-sm font-semibold text-zinc-700">L ${v.ventas.toLocaleString('es-HN')}</span>
+                    <span class="text-xs font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">com. L ${com.toLocaleString('es-HN')}</span>
+                  </div>
+                </button>`;
+              }).join('')}
+            </div>
+            ${clearBtn}
+          </div>`;
+      } else {
+        vendorDiv.classList.add('hidden');
+      }
+
+      // ── Filtrar por vendedor seleccionado ────────────────────────────────────
+      const orders   = comVendedor ? allOrders.filter(o => (o.vendedor || '__web__') === comVendedor) : allOrders;
       const ventas   = orders.reduce((s, o) => s + o.total, 0);
       const comision = Math.round(ventas * pct / 100);
       const neto     = ventas - comision;
@@ -679,6 +734,11 @@
       document.getElementById('com-comision').textContent = 'L ' + comision.toLocaleString('es-HN');
       document.getElementById('com-neto').textContent     = 'L ' + neto.toLocaleString('es-HN');
 
+      const vendLabel = comVendedor ? (vendorMap[comVendedor]?.label || comVendedor) : null;
+      document.getElementById('com-table-title').textContent = vendLabel
+        ? `Pedidos de ${vendLabel}`
+        : 'Pedidos del período';
+
       const tbody = document.getElementById('com-table-body');
       const empty = document.getElementById('com-empty');
 
@@ -686,16 +746,18 @@
       empty.classList.add('hidden');
 
       tbody.innerHTML = orders.map(o => {
-        const oComision   = Math.round(o.total * pct / 100);
-        const itemsSummary = o.items.map(i => `${i.qty}x ${i.name}`).join(', ');
+        const oComision    = Math.round(o.total * pct / 100);
+        const itemsSummary = o.items.map(i => `${i.qty}x ${esc(i.name)}`).join(', ');
+        const vendLabel    = esc(o.vendedor || 'Web');
         return `
           <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors">
             <td class="px-6 py-3 text-xs font-mono text-zinc-400">#${String(o.orderNum).padStart(3,'0')}</td>
             <td class="px-4 py-3">
-              <div class="font-semibold text-sm">${o.customer.name}</div>
-              <div class="text-xs text-zinc-400">${o.customer.phone}</div>
+              <div class="font-semibold text-sm">${esc(o.customer.name)}</div>
+              <div class="text-xs text-zinc-400">${esc(o.customer.phone)}</div>
             </td>
-            <td class="px-4 py-3 text-xs text-zinc-500 whitespace-nowrap">${o.date}</td>
+            <td class="px-4 py-3 text-xs text-zinc-500 whitespace-nowrap">${esc(o.date)}</td>
+            <td class="px-4 py-3"><span class="text-xs font-semibold bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">${vendLabel}</span></td>
             <td class="px-4 py-3 text-xs text-zinc-500 max-w-xs truncate">${itemsSummary}</td>
             <td class="px-4 py-3 text-sm font-bold text-right">L ${o.total}</td>
             <td class="px-6 py-3 text-sm font-semibold text-mint-600 text-right">L ${oComision}</td>
