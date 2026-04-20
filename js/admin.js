@@ -20,14 +20,21 @@
         if (!r) return;
         const fresh = await r.json();
         if (!Array.isArray(fresh)) return;
-        const prevPending = _orders.filter(o => o.status === 'pendiente').length;
-        const newPending  = fresh.filter(o => o.status === 'pendiente').length;
+        const prevPending   = _orders.filter(o => o.status === 'pendiente').length;
+        const prevEntregado = _orders.filter(o => o.status === 'entregado').length;
+        const newPending    = fresh.filter(o => o.status === 'pendiente').length;
+        const newEntregado  = fresh.filter(o => o.status === 'entregado').length;
         _orders = fresh;
         updatePendingBadge();
-        if (currentTab === 'orders') { renderStats(); renderOrders(); }
+        if (currentTab === 'orders')      { renderStats(); renderOrders(); }
+        if (currentTab === 'comisiones')  { renderComisiones(); }
         if (newPending > prevPending) {
           const diff = newPending - prevPending;
           showToast(`🛒 ${diff} pedido${diff > 1 ? 's' : ''} nuevo${diff > 1 ? 's' : ''}!`);
+        }
+        if (newEntregado > prevEntregado) {
+          const diff = newEntregado - prevEntregado;
+          showToast(`✓ ${diff} pedido${diff > 1 ? 's' : ''} marcado${diff > 1 ? 's' : ''} como entregado${diff > 1 ? 's' : ''}`);
         }
       } catch(e) { console.error('poll:', e); }
     }
@@ -815,7 +822,7 @@
         startMs = new Date(py, pm, 1).getTime();
         endMs   = new Date(py, pm + 1, 0, 23, 59, 59, 999).getTime();
       }
-      return orders.filter(o => o.id >= startMs && o.id <= endMs);
+      return orders.filter(o => { const ts = Math.floor(o.id / 1000); return ts >= startMs && ts <= endMs; });
     }
 
     function renderComisiones() {
