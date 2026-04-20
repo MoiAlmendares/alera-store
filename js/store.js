@@ -513,7 +513,8 @@ function checkDeliveryForm() {
   const phone = document.getElementById('delivery-phone').value.trim();
   const address = document.getElementById('delivery-address').value.trim();
   const btn = document.getElementById('checkout-btn');
-  const ready = name.length >= 2 && phone.length >= 6 && address.length >= 3;
+  const hasTransfer = deliveryPayment !== 'transferencia' || !!document.getElementById('transfer-file').files[0];
+  const ready = name.length >= 2 && phone.length >= 6 && address.length >= 3 && hasTransfer;
   btn.disabled = !ready;
   btn.className = 'w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-2xl transition-all text-sm ' +
     (ready ? 'btn-accent cursor-pointer' : 'bg-zinc-200 text-zinc-400 cursor-not-allowed');
@@ -547,7 +548,7 @@ function onTransferFileChange() {
     label.classList.add('text-zinc-900','font-semibold');
     label.classList.remove('text-zinc-500');
   } else {
-    label.textContent = 'Subir comprobante (opcional)';
+    label.textContent = 'Subir comprobante *';
     label.classList.remove('text-zinc-900','font-semibold');
     label.classList.add('text-zinc-500');
   }
