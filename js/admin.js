@@ -483,6 +483,78 @@
       renderTable();
     }
 
+    // ─── Galería extra (slots 2-5) ────────────────────────────────────────────
+    // Cada slot es { url: string } — se llena al subir o al editar un producto
+    let gallerySlots = ['', '', '', '']; // índices 0-3 → fotos 2-5
+
+    function renderGallerySlots() {
+      const container = document.getElementById('gallery-slots');
+      container.innerHTML = gallerySlots.map((url, i) => `
+        <div class="relative group">
+          <div class="aspect-square rounded-xl border-2 border-dashed ${url ? 'border-zinc-200' : 'border-zinc-200'} overflow-hidden bg-zinc-50 flex items-center justify-center cursor-pointer hover:border-mint-400 transition-colors"
+               onclick="document.getElementById('gallery-file-${i}').click()">
+            ${url
+              ? `<img src="${url}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\\'text-zinc-300 text-2xl\\'>📷</span>'" />`
+              : `<span class="text-zinc-300 text-2xl">+</span>`}
+            <input id="gallery-file-${i}" type="file" accept="image/*" class="hidden"
+              data-slot="${i}" onchange="handleGalleryUpload(event)" />
+          </div>
+          ${url ? `<button onclick="clearGallerySlot(${i})" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none">&times;</button>` : ''}
+          <p class="text-[10px] text-zinc-400 text-center mt-1">Foto ${i + 2}</p>
+        </div>`).join('');
+    }
+
+    async function handleGalleryUpload(event) {
+      const file = event.target.files[0];
+      const slot = Number(event.target.dataset.slot);
+      if (!file) return;
+
+      // Preview inmediato
+      const reader = new FileReader();
+      reader.onload = e => {
+        gallerySlots[slot] = e.target.result; // temporal base64 para preview
+        renderGallerySlots();
+      };
+      reader.readAsDataURL(file);
+
+      // Subir a S3 vía Lambda
+      try {
+        const base64 = await fileToBase64(file);
+        const r = await authFetch(API + '/upload', {
+          method: 'POST',
+          body: JSON.stringify({ data: base64, mime: file.type }),
+        });
+        const data = await r?.json();
+        if (r?.ok && data?.url) {
+          gallerySlots[slot] = data.url; // reemplazar con URL de S3
+          renderGallerySlots();
+        } else {
+          showToast('Error al subir la foto ' + (slot + 2), false);
+          gallerySlots[slot] = '';
+          renderGallerySlots();
+        }
+      } catch(e) {
+        console.error('gallery upload:', e);
+        showToast('Error de conexión al subir foto', false);
+        gallerySlots[slot] = '';
+        renderGallerySlots();
+      }
+    }
+
+    function clearGallerySlot(slot) {
+      gallerySlots[slot] = '';
+      renderGallerySlots();
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = e => resolve(e.target.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
     // ─── Modal ───────────────────────────────────────────────────────────────
     function openModal(id) {
       editingId = id || null;
@@ -519,9 +591,7 @@
         }
         // Cargar fotos adicionales de la galería
         const extraImgs = Array.isArray(p.imgs) ? p.imgs.slice(1, 5) : [];
-        for (let i = 0; i < 4; i++) {
-          document.getElementById(`f-img-extra-${i + 2}`).value = extraImgs[i] || '';
-        }
+        gallerySlots = [0,1,2,3].map(i => extraImgs[i] || '');
       } else {
         document.getElementById('f-name').value = '';
         document.getElementById('f-category').value = 'Llavero';
@@ -531,8 +601,9 @@
         document.getElementById('f-badge').value = '';
         document.getElementById('f-img-url').value = '';
         document.getElementById('f-desc').value = '';
-        for (let i = 2; i <= 5; i++) document.getElementById(`f-img-extra-${i}`).value = '';
+        gallerySlots = ['', '', '', ''];
       }
+      renderGallerySlots();
 
       document.getElementById('modal-overlay').classList.remove('hidden');
     }
@@ -585,19 +656,43 @@
       }
     }
 
-    function handleImageUpload(event) {
+    async function handleImageUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
+
+      // Preview inmediato
       const reader = new FileReader();
       reader.onload = e => {
-        uploadedImgData = e.target.result;
-        document.getElementById('img-preview').src = uploadedImgData;
+        document.getElementById('img-preview').src = e.target.result;
         document.getElementById('img-preview-wrap').classList.remove('hidden');
         document.getElementById('img-placeholder-icon').style.display = 'none';
-        document.getElementById('img-upload-label').textContent = file.name;
+        document.getElementById('img-upload-label').textContent = 'Subiendo…';
         document.getElementById('f-img-url').value = '';
+        uploadedImgData = '';
       };
       reader.readAsDataURL(file);
+
+      // Subir a S3
+      try {
+        const base64 = await fileToBase64(file);
+        const r = await authFetch(API + '/upload', {
+          method: 'POST',
+          body: JSON.stringify({ data: base64, mime: file.type }),
+        });
+        const data = await r?.json();
+        if (r?.ok && data?.url) {
+          uploadedImgData = '';
+          document.getElementById('f-img-url').value = data.url;
+          document.getElementById('img-preview').src = data.url;
+          document.getElementById('img-upload-label').textContent = '✓ Subida correctamente';
+        } else {
+          showToast('Error al subir la imagen', false);
+          document.getElementById('img-upload-label').textContent = 'Error — intentá de nuevo';
+        }
+      } catch(e) {
+        console.error('img upload:', e);
+        showToast('Error de conexión al subir imagen', false);
+      }
     }
 
     function handleUrlInput() {
@@ -623,7 +718,7 @@
       errEl.classList.add('hidden');
 
       const imgVal    = uploadedImgData || document.getElementById('f-img-url').value.trim();
-      const extraImgs = [2,3,4,5].map(n => document.getElementById(`f-img-extra-${n}`).value.trim()).filter(Boolean);
+      const extraImgs = gallerySlots.filter(Boolean);
       const imgs      = [imgVal, ...extraImgs].filter(Boolean);
 
       const product = {

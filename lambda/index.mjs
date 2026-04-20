@@ -1,13 +1,18 @@
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac, timingSafeEqual, randomBytes } from 'crypto';
 import {
   DynamoDBClient, ScanCommand, PutItemCommand, UpdateItemCommand,
   GetItemCommand, DeleteItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 const db  = new DynamoDBClient({ region: 'us-east-2' });
 const ses = new SESClient({ region: 'us-east-1' });
+const s3  = new S3Client({ region: 'us-east-2' });
+
+const S3_BUCKET   = 'alera-media';
+const S3_BASE_URL = `https://${S3_BUCKET}.s3.us-east-2.amazonaws.com`;
 
 const MAX_BODY        = 1_500_000;
 const TOKEN_TTL       = 8 * 60 * 60 * 1000;
@@ -529,6 +534,35 @@ export const handler = async (event) => {
 
       await db.send(new UpdateItemCommand(cmdInput));
       return resp(200, { ok: true });
+    }
+
+    // ── POST /upload  (subir imagen — solo admin) ───────────────────────────
+    if (method === 'POST' && path.startsWith('/upload')) {
+      const claims = verifyToken(auth);
+      if (!claims || claims.role !== 'admin') return unauth();
+
+      let body;
+      try { body = JSON.parse(event.body); } catch { return resp(400, { error: 'JSON inválido.' }); }
+
+      const { data, mime } = body || {};
+      if (!data || !mime) return resp(400, { error: 'Faltan campos data y mime.' });
+
+      const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowed.includes(mime)) return resp(400, { error: 'Tipo de imagen no permitido.' });
+
+      const ext     = mime.split('/')[1].replace('jpeg', 'jpg');
+      const key     = `productos/${randomBytes(12).toString('hex')}.${ext}`;
+      const buffer  = Buffer.from(data, 'base64');
+
+      if (buffer.length > 4_000_000) return resp(400, { error: 'Imagen demasiado grande (máx 4 MB).' });
+
+      await s3.send(new PutObjectCommand({
+        Bucket: S3_BUCKET, Key: key,
+        Body: buffer, ContentType: mime,
+        CacheControl: 'public, max-age=31536000',
+      }));
+
+      return resp(200, { url: `${S3_BASE_URL}/${key}` });
     }
 
     return resp(404, { error: 'Not found.' });
