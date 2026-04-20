@@ -3,25 +3,25 @@
 // localStorage del carrito, filtros y render dinámico.
 
 const DEFAULT_PRODUCTS_LIST = [
-  { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'Pokémon',       price:195,  img:'assets/cubone-mochila.png',                     badge:'',               dark:false, active:true },
-  { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'Pokémon',       price:195,  img:'assets/cubone.jpg',                             badge:'',               dark:true,  active:true },
-  { id:3,  name:'Llavero Hornet',              category:'Llavero',   fandom:'Hollow Knight', price:80,   img:'assets/llavero-hornet.jpg',                     badge:'',               dark:false, active:true },
-  { id:4,  name:'Llavero Esqueleto Minecraft', category:'Llavero',   fandom:'Minecraft',     price:115,  img:'assets/llavero-esqueleto-minecraft.jpg',        badge:'',               dark:false, active:true },
-  { id:5,  name:'Llavero Mandalorian',         category:'Llavero',   fandom:'Star Wars',     price:115,  img:'assets/llavero-mandalorian.jpg',                badge:'',               dark:false, active:true },
-  { id:6,  name:'Llaveros Star Wars',          category:'Llavero',   fandom:'Star Wars',     price:80,   img:'assets/llaveros-star-wars.jpg',                 badge:'',               dark:false, active:true },
-  { id:7,  name:'Llaveros Sharingan',          category:'Llavero',   fandom:'Naruto',        price:80,   img:'assets/llaveros-sharingan.jpg',                 badge:'',               dark:false, active:true },
-  { id:8,  name:'Llavero Pokébola',            category:'Llavero',   fandom:'Pokémon',       price:175,  img:'assets/llavero-pokebola.jpg',                   badge:'',               dark:false, active:true },
-  { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:115,  img:'assets/Batarang.jpg',                           badge:'✨ Nuevo',        dark:false, active:true },
-  { id:10, name:'Lámpara Minecraft',           category:'Lámpara',   fandom:'Minecraft',     price:290,  img:'assets/lampara-minecraft.jpg',                  badge:'🔥 Más vendido', dark:false, active:true },
-  { id:11, name:'Lámpara Tanjiro Kamado',      category:'Lámpara',   fandom:'Demon Slayer',  price:2300, img:'assets/lampara-tanjiro.jpg',                    badge:'',               dark:false, active:true },
-  { id:12, name:'Máscara Darth Vader',         category:'Decoración',fandom:'Star Wars',     price:630,  img:'assets/mascara-darth-vader.jpg',                badge:'',               dark:false, active:true },
-  { id:13, name:'Máscara The Mandalorian',     category:'Decoración',fandom:'Star Wars',     price:575,  img:'assets/mandalorian-deco-pared.jpg',             badge:'',               dark:false, active:true },
-  { id:14, name:'TIE Fighter (pared)',          category:'Decoración',fandom:'Star Wars',     price:520,  img:'assets/tie-fighter-deco-pared.jpg',             badge:'',               dark:false, active:true },
-  { id:15, name:'Perritos Minecraft',          category:'Figura',    fandom:'Minecraft',     price:175,  img:'assets/perritos-minecraft.jpg',                 badge:'',               dark:false, active:true },
-  { id:16, name:'Máscara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:805,  img:'assets/Obito.jpg',                              badge:'',               dark:false, active:true },
-  { id:17, name:'TIE Fighter armable',         category:'Figura',    fandom:'Star Wars',     price:115,  img:'assets/tie-fighter-armable.jpg',                badge:'',               dark:false, active:true },
-  { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:140,  img:'assets/at-st-star-wars.jpg',                    badge:'✨ Nuevo',        dark:false, active:true },
-  { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:435,  img:'assets/portavasos-star-wars.jpg',               badge:'',               dark:false, active:true },
+  { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'Pokémon',       price:195,  img:'assets/cubone-mochila.png',                     badge:'',               dark:false, active:true, desc:'Cubone hecho a mano en resina, pintado con detalle. Resistente y liviano — ideal para mochila o llaves. Cada pieza es única.' },
+  { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'Pokémon',       price:195,  img:'assets/cubone.jpg',                             badge:'',               dark:true,  active:true, desc:'La versión oscura de Cubone que brilla en la oscuridad. Mismo acabado artesanal con pigmento fosforescente. Recarga con cualquier luz.' },
+  { id:3,  name:'Llavero Hornet',              category:'Llavero',   fandom:'Hollow Knight', price:80,   img:'assets/llavero-hornet.jpg',                     badge:'',               dark:false, active:true, desc:'La protagonista de Hollow Knight en miniatura. Detalle fino en resina con colores profundos, capturando la esencia del personaje.' },
+  { id:4,  name:'Llavero Esqueleto Minecraft', category:'Llavero',   fandom:'Minecraft',     price:115,  img:'assets/llavero-esqueleto-minecraft.jpg',        badge:'',               dark:false, active:true, desc:'El mob más icónico del juego hecho llavero. Resina sólida pintada a mano, perfecto para el gamer que lleva el juego hasta en las llaves.' },
+  { id:5,  name:'Llavero Mandalorian',         category:'Llavero',   fandom:'Star Wars',     price:115,  img:'assets/llavero-mandalorian.jpg',                badge:'',               dark:false, active:true, desc:'This is the way — en tu llavero. El Mandaloriano en resina con acabado mate y detalle en pintura acrílica.' },
+  { id:6,  name:'Llaveros Star Wars',          category:'Llavero',   fandom:'Star Wars',     price:80,   img:'assets/llaveros-star-wars.jpg',                 badge:'',               dark:false, active:true, desc:'Personajes clásicos de Star Wars en llavero — Darth Vader, Yoda, Stormtrooper y más. Resina pintada a mano, cada pieza única.' },
+  { id:7,  name:'Llaveros Sharingan',          category:'Llavero',   fandom:'Naruto',        price:80,   img:'assets/llaveros-sharingan.jpg',                 badge:'',               dark:false, active:true, desc:'El ojo de los Uchiha en llavero. Diferentes diseños — Itachi, Sasuke, Obito. Resinados con colores intensos.' },
+  { id:8,  name:'Llavero Pokébola',            category:'Llavero',   fandom:'Pokémon',       price:175,  img:'assets/llavero-pokebola.jpg',                   badge:'',               dark:false, active:true, desc:'La Pokébola clásica hecha en resina. Rojo y blanco con separación nítida. Para atrapar a todos... o al menos tus llaves.' },
+  { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:115,  img:'assets/Batarang.jpg',                           badge:'✨ Nuevo',        dark:false, active:true, desc:'El arma favorita de Batman en formato llavero. Metal con detalle grabado y peso real. Nuevo en colección.' },
+  { id:10, name:'Lámpara Minecraft',           category:'Lámpara',   fandom:'Minecraft',     price:290,  img:'assets/lampara-minecraft.jpg',                  badge:'🔥 Más vendido', dark:false, active:true, desc:'Lámpara decorativa estilo antorcha de Minecraft. Luz LED cálida, diseño cúbico fiel al juego. Enchufe estándar hondureño.' },
+  { id:11, name:'Lámpara Tanjiro Kamado',      category:'Lámpara',   fandom:'Demon Slayer',  price:2300, img:'assets/lampara-tanjiro.jpg',                    badge:'',               dark:false, active:true, desc:'Lámpara artística de Tanjiro con motivos de Demon Slayer. Pintada a mano, luz ambiente perfecta para cuarto o escritorio.' },
+  { id:12, name:'Máscara Darth Vader',         category:'Decoración',fandom:'Star Wars',     price:630,  img:'assets/mascara-darth-vader.jpg',                badge:'',               dark:false, active:true, desc:'Réplica decorativa de la máscara de Darth Vader para pared. PLA de alta resistencia, acabado negro brillante. ~30cm de alto.' },
+  { id:13, name:'Máscara The Mandalorian',     category:'Decoración',fandom:'Star Wars',     price:575,  img:'assets/mandalorian-deco-pared.jpg',             badge:'',               dark:false, active:true, desc:'Máscara del Mandaloriano para decoración de pared. Impresión 3D en PLA, pintada a mano con efecto metálico.' },
+  { id:14, name:'TIE Fighter (pared)',          category:'Decoración',fandom:'Star Wars',     price:520,  img:'assets/tie-fighter-deco-pared.jpg',             badge:'',               dark:false, active:true, desc:'TIE Fighter de Star Wars para colgar en pared. Impresión 3D de alta calidad a escala decorativa.' },
+  { id:15, name:'Perritos Minecraft',          category:'Figura',    fandom:'Minecraft',     price:175,  img:'assets/perritos-minecraft.jpg',                 badge:'',               dark:false, active:true, desc:'Los lobos de Minecraft en versión figura decorativa. Pintados a mano, ideales para estante o escritorio.' },
+  { id:16, name:'Máscara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:805,  img:'assets/Obito.jpg',                              badge:'',               dark:false, active:true, desc:'La máscara espiral de Obito — naranja con espiral blanca. Figura decorativa en resina, ideal para estante.' },
+  { id:17, name:'TIE Fighter armable',         category:'Figura',    fandom:'Star Wars',     price:115,  img:'assets/tie-fighter-armable.jpg',                badge:'',               dark:false, active:true, desc:'TIE Fighter de Star Wars para armar vos mismo. Viene en piezas, PLA de calidad con diseño detallado.' },
+  { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:140,  img:'assets/at-st-star-wars.jpg',                    badge:'✨ Nuevo',        dark:false, active:true, desc:'El AT-ST del Imperio en figura armable. Ideal para exhibición, incluye instrucciones de ensamblaje.' },
+  { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:435,  img:'assets/portavasos-star-wars.jpg',               badge:'',               dark:false, active:true, desc:'Set de 5 portavasos con contenedor — Darth Vader, Stormtrooper, R2-D2, BB-8 y Yoda. MDF pintado a mano.' },
 ];
 
 const API = 'https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws';
@@ -74,7 +74,9 @@ async function getAllProducts() {
 let PRODUCTS = {};
 async function rebuildProductMap() {
   PRODUCTS = {};
-  (await getAllProducts()).filter(p => p.active).forEach(p => {
+  const all = await getAllProducts();
+  window._allProducts = all;
+  all.filter(p => p.active).forEach(p => {
     PRODUCTS[p.id] = { name: p.name, price: p.price, img: p.img, cat: p.category, fandom: p.fandom };
   });
 }
@@ -125,7 +127,7 @@ function renderProductCard(p, compact) {
 
   if (compact) {
     return `
-      <div class="product-card ${bg} rounded-2xl overflow-hidden border relative${agotado?' opacity-60':''}">
+      <div class="product-card cursor-pointer ${bg} rounded-2xl overflow-hidden border relative${agotado?' opacity-60':''}" onclick="openProductDetail(${p.id})">
         <div class="aspect-square overflow-hidden relative ${dark?'bg-zinc-900':'bg-zinc-50'}">
           ${badgeHtml}
           ${productImgOrPlaceholder(p, dark)}
@@ -142,7 +144,7 @@ function renderProductCard(p, compact) {
   }
 
   return `
-    <div class="product-card ${bg} rounded-3xl overflow-hidden border relative${agotado?' opacity-60':''}">
+    <div class="product-card cursor-pointer ${bg} rounded-3xl overflow-hidden border relative${agotado?' opacity-60':''}" onclick="openProductDetail(${p.id})">
       <div class="aspect-[4/5] sm:aspect-square overflow-hidden relative ${dark?'bg-zinc-900':'bg-zinc-50'}">
         ${badgeHtml}
         ${productImgOrPlaceholder(p, dark)}
@@ -279,7 +281,7 @@ function heroCardHTML(star) {
     ? `<img src="${star.img}" alt="${star.name}" loading="lazy" class="w-full h-full object-cover" />`
     : productPlaceholder(star.fandom||'', false);
   return `
-    <div class="relative">
+    <div class="relative cursor-pointer" onclick="openProductDetail(${star.id})">
       <div class="relative aspect-[4/5] rounded-[28px] overflow-hidden shadow-[0_30px_80px_-20px_rgba(0,0,0,0.2)] ring-1 ring-black/5">
         ${imgHtml}
         <div class="absolute bottom-4 left-4 right-4">
@@ -698,6 +700,62 @@ const TWEAK_PALETTES_LIST = [
   { key:'lime',    swatch:'#84cc16', label:'Lima' },
 ];
 
+// ─── Product detail modal ─────────────────────────────────────────────────
+function openProductDetail(id) {
+  const p = (window._allProducts || []).find(x => x.id === id) || PRODUCTS[id];
+  if (!p) return;
+
+  const modal = document.getElementById('product-detail-modal');
+  if (!modal) return;
+
+  // Imagen
+  const imgWrap = modal.querySelector('#pd-img-wrap');
+  imgWrap.innerHTML = p.img
+    ? `<img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover" />`
+    : productPlaceholder(p.fandom || '', p.dark);
+
+  // Textos
+  modal.querySelector('#pd-fandom').textContent  = p.fandom || '';
+  modal.querySelector('#pd-name').textContent    = p.name;
+  modal.querySelector('#pd-price').textContent   = 'L ' + p.price;
+  modal.querySelector('#pd-desc').textContent    = p.desc || 'Producto hecho a mano en Tegucigalpa, Honduras.';
+  modal.querySelector('#pd-badge').textContent   = p.badge || '';
+  modal.querySelector('#pd-badge').className     = p.badge ? 'inline-block bg-zinc-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide mb-3' : 'hidden';
+
+  // Botón agregar
+  const btn = modal.querySelector('#pd-add-btn');
+  if (p.stock === false) {
+    btn.textContent = 'Agotado';
+    btn.disabled = true;
+    btn.className = 'w-full font-bold py-4 rounded-2xl bg-zinc-100 text-zinc-400 cursor-not-allowed text-base';
+  } else {
+    btn.textContent = '';
+    btn.innerHTML = `${plusIcon(5)} Agregar al carrito — L ${p.price}`;
+    btn.disabled = false;
+    btn.className = 'w-full font-bold py-4 rounded-2xl btn-accent text-base flex items-center justify-center gap-2';
+    btn.onclick = () => { addToCart(id); closeProductDetail(); };
+  }
+
+  // Mostrar
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => {
+    modal.querySelector('#pd-sheet').classList.remove('translate-y-full');
+    modal.querySelector('#pd-sheet').classList.add('translate-y-0');
+  });
+}
+
+function closeProductDetail() {
+  const modal = document.getElementById('product-detail-modal');
+  if (!modal) return;
+  modal.querySelector('#pd-sheet').classList.remove('translate-y-0');
+  modal.querySelector('#pd-sheet').classList.add('translate-y-full');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }, 320);
+}
+
 // ─── Init ──────────────────────────────────────────────────────────────
 (async function init() {
   await rebuildProductMap();
@@ -708,4 +766,5 @@ const TWEAK_PALETTES_LIST = [
   renderCart();
   renderFAQ();
   window.addEventListener('resize', () => renderCart());
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProductDetail(); });
 })();
