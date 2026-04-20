@@ -586,6 +586,7 @@
         document.getElementById('f-badge').value = p.badge || '';
         document.getElementById('f-img-url').value = p.img || '';
         document.getElementById('f-desc').value    = p.desc || '';
+        document.getElementById('f-g').value       = p.g    || '';
         darkOn  = p.dark || false;
         stockOn = p.stock !== false;
         updateDarkToggle();
@@ -608,6 +609,7 @@
         document.getElementById('f-badge').value = '';
         document.getElementById('f-img-url').value = '';
         document.getElementById('f-desc').value = '';
+        document.getElementById('f-g').value    = '';
         gallerySlots = ['', '', '', ''];
       }
       renderGallerySlots();
@@ -734,6 +736,7 @@
         category: document.getElementById('f-category').value,
         fandom:   document.getElementById('f-fandom').value.trim(),
         price,
+        g:        parseFloat(document.getElementById('f-g').value) || 0,
         emoji:    document.getElementById('f-emoji').value.trim(),
         badge:    document.getElementById('f-badge').value,
         img:      imgVal,
@@ -829,16 +832,33 @@
       const allOrders = getComOrders(); // todos los del período, sin filtrar por vendedor
       const pct = Math.max(0, Math.min(100, parseFloat(document.getElementById('com-pct').value) || 0));
 
+      // ── Mapa de productos para leer los gramos ───────────────────────────────
+      const prodMap = {};
+      for (const p of getProducts()) prodMap[p.id] = p;
+
+      // ── Ganancia neta de un pedido ───────────────────────────────────────────
+      // costo material = Σ(qty × g/1000 × 800 L/kg)
+      // ganancia bruta = costo × 4
+      // ganancia neta  = ganancia bruta × 0.85  (descuenta 15% ISV)
+      function orderNetProfit(o) {
+        let mat = 0;
+        for (const item of (o.items || [])) {
+          const g = (prodMap[item.id]?.g) || 0;
+          mat += (item.qty || 1) * (g / 1000) * 800;
+        }
+        return Math.round(mat * 4 * 0.85);
+      }
+
       // ── Construir mapa por vendedor ──────────────────────────────────────────
       const vendorMap = {};
       for (const o of allOrders) {
         const key   = o.vendedor || '__web__';
         const label = o.vendedor || 'Tienda web';
-        if (!vendorMap[key]) vendorMap[key] = { key, label, orders: [], ventas: 0 };
+        if (!vendorMap[key]) vendorMap[key] = { key, label, orders: [], netProfit: 0 };
         vendorMap[key].orders.push(o);
-        vendorMap[key].ventas += o.total;
+        vendorMap[key].netProfit += orderNetProfit(o);
       }
-      const vendors = Object.values(vendorMap).sort((a, b) => b.ventas - a.ventas);
+      const vendors = Object.values(vendorMap).sort((a, b) => b.netProfit - a.netProfit);
 
       // ── Cards por vendedor ───────────────────────────────────────────────────
       const vendorDiv = document.getElementById('com-by-vendor');
@@ -852,7 +872,7 @@
             <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-4">Desglose por vendedor</p>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               ${vendors.map(v => {
-                const com      = Math.round(v.ventas * pct / 100);
+                const com      = Math.round(v.netProfit * pct / 100);
                 const isActive = comVendedor === v.key;
                 const border   = isActive ? 'border-teal-500 bg-teal-50' : 'border-zinc-200 hover:border-zinc-300 bg-zinc-50 hover:bg-white';
                 const nameClr  = isActive ? 'text-teal-700' : 'text-zinc-900';
@@ -862,7 +882,7 @@
                   <div class="font-bold text-sm ${nameClr}">${esc(v.label)}</div>
                   <div class="text-xs text-zinc-500 mt-0.5">${v.orders.length} pedido${v.orders.length !== 1 ? 's' : ''} entregado${v.orders.length !== 1 ? 's' : ''}</div>
                   <div class="flex items-center justify-between mt-3 gap-2">
-                    <span class="text-sm font-semibold text-zinc-700">L ${v.ventas.toLocaleString('es-HN')}</span>
+                    <span class="text-sm font-semibold text-zinc-700">L ${v.netProfit.toLocaleString('es-HN')} neta</span>
                     <span class="text-xs font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">com. L ${com.toLocaleString('es-HN')}</span>
                   </div>
                 </button>`;
@@ -875,15 +895,17 @@
       }
 
       // ── Filtrar por vendedor seleccionado ────────────────────────────────────
-      const orders   = comVendedor ? allOrders.filter(o => (o.vendedor || '__web__') === comVendedor) : allOrders;
-      const ventas   = orders.reduce((s, o) => s + o.total, 0);
-      const comision = Math.round(ventas * pct / 100);
-      const neto     = ventas - comision;
+      const orders = comVendedor ? allOrders.filter(o => (o.vendedor || '__web__') === comVendedor) : allOrders;
+
+      let totalNetProfit = 0;
+      for (const o of orders) totalNetProfit += orderNetProfit(o);
+      const totalComision = Math.round(totalNetProfit * pct / 100);
+      const totalAlera    = totalNetProfit - totalComision;
 
       document.getElementById('com-count').textContent    = orders.length;
-      document.getElementById('com-ventas').textContent   = 'L ' + ventas.toLocaleString('es-HN');
-      document.getElementById('com-comision').textContent = 'L ' + comision.toLocaleString('es-HN');
-      document.getElementById('com-neto').textContent     = 'L ' + neto.toLocaleString('es-HN');
+      document.getElementById('com-ventas').textContent   = 'L ' + totalNetProfit.toLocaleString('es-HN');
+      document.getElementById('com-comision').textContent = 'L ' + totalComision.toLocaleString('es-HN');
+      document.getElementById('com-neto').textContent     = 'L ' + totalAlera.toLocaleString('es-HN');
 
       const vendLabel = comVendedor ? (vendorMap[comVendedor]?.label || comVendedor) : null;
       document.getElementById('com-table-title').textContent = vendLabel
@@ -897,9 +919,10 @@
       empty.classList.add('hidden');
 
       tbody.innerHTML = orders.map(o => {
-        const oComision    = Math.round(o.total * pct / 100);
+        const netP         = orderNetProfit(o);
+        const oComision    = Math.round(netP * pct / 100);
         const itemsSummary = o.items.map(i => `${i.qty}x ${esc(i.name)}`).join(', ');
-        const vendLabel    = esc(o.vendedor || 'Web');
+        const vLabel       = esc(o.vendedor || 'Web');
         return `
           <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors">
             <td class="px-6 py-3 text-xs font-mono text-zinc-400">#${String(o.orderNum).padStart(3,'0')}</td>
@@ -908,10 +931,11 @@
               <div class="text-xs text-zinc-400">${esc(o.customer.phone)}</div>
             </td>
             <td class="px-4 py-3 text-xs text-zinc-500 whitespace-nowrap">${esc(o.date)}</td>
-            <td class="px-4 py-3"><span class="text-xs font-semibold bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">${vendLabel}</span></td>
+            <td class="px-4 py-3"><span class="text-xs font-semibold bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">${vLabel}</span></td>
             <td class="px-4 py-3 text-xs text-zinc-500 max-w-xs truncate">${itemsSummary}</td>
             <td class="px-4 py-3 text-sm font-bold text-right">L ${o.total}</td>
-            <td class="px-6 py-3 text-sm font-semibold text-mint-600 text-right">L ${oComision}</td>
+            <td class="px-4 py-3 text-sm font-semibold text-zinc-700 text-right">L ${netP.toLocaleString('es-HN')}</td>
+            <td class="px-6 py-3 text-sm font-semibold text-mint-600 text-right">L ${oComision.toLocaleString('es-HN')}</td>
           </tr>`;
       }).join('');
     }
