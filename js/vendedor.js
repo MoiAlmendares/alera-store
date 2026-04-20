@@ -180,11 +180,14 @@ function renderOrders() {
          </button>`
       : '';
 
+    const canDeliver = !!o.vendedor; // requiere que alguien haya tomado el pedido
     const actions = o.status === 'pendiente'
       ? `<div class="space-y-2">
            ${takeBtn}
            <div class="flex gap-2">
-             <button data-order-id="${o.id}" onclick="updateOrderStatus(Number(this.dataset.orderId),'entregado')" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold py-2.5 rounded-xl transition-colors">Marcar entregado</button>
+             <button data-order-id="${o.id}" onclick="updateOrderStatus(Number(this.dataset.orderId),'entregado')"
+               ${canDeliver ? '' : 'disabled title="Tomá el pedido primero"'}
+               class="flex-1 text-xs font-bold py-2.5 rounded-xl transition-colors ${canDeliver ? 'bg-teal-500 hover:bg-teal-600 text-white' : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'}">Marcar entregado</button>
              <button data-order-id="${o.id}" onclick="updateOrderStatus(Number(this.dataset.orderId),'cancelado')" class="px-4 border border-zinc-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 text-zinc-500 text-xs font-semibold py-2.5 rounded-xl transition-colors">Cancelar</button>
            </div>
          </div>`
