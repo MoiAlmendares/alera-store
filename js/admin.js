@@ -112,25 +112,25 @@
     const CATALOG_VERSION = '5';
 
     const DEFAULT_PRODUCTS = [
-      { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'Pokémon',       price:150, emoji:'🔑',  img:'assets/cubone-mochila.png',          badge:'',               dark:false, active:true, stock:true },
-      { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'Pokémon',       price:180, emoji:'🔑',  img:'assets/cubone.jpg',                  badge:'',               dark:true,  active:true, stock:true },
-      { id:3,  name:'Llavero Hornet',              category:'Llavero',   fandom:'Hollow Knight', price:150, emoji:'🔑',  img:'assets/llavero-hornet.jpg',           badge:'',               dark:false, active:true, stock:true },
-      { id:4,  name:'Llavero Esqueleto Minecraft', category:'Llavero',   fandom:'Minecraft',     price:150, emoji:'💀',  img:'assets/llavero-esqueleto-minecraft.jpg',badge:'',             dark:false, active:true, stock:true },
-      { id:5,  name:'Llavero Mandalorian',         category:'Llavero',   fandom:'Star Wars',     price:150, emoji:'⚔️', img:'assets/llavero-mandalorian.jpg',      badge:'',               dark:false, active:true, stock:true },
-      { id:6,  name:'Llaveros Star Wars',          category:'Llavero',   fandom:'Star Wars',     price:150, emoji:'⚔️', img:'assets/llaveros-star-wars.jpg',       badge:'',               dark:false, active:true, stock:true },
-      { id:7,  name:'Llaveros Sharingan',          category:'Llavero',   fandom:'Naruto',        price:150, emoji:'👁️', img:'assets/llaveros-sharingan.jpg',       badge:'',               dark:false, active:true, stock:true },
-      { id:8,  name:'Llavero Pokébola',            category:'Llavero',   fandom:'Pokémon',       price:150, emoji:'⚪🔴',img:'assets/llavero-pokebola.jpg',         badge:'',               dark:false, active:true, stock:true },
-      { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:150, emoji:'🦇',  img:'assets/Batarang.jpg',                badge:'✨ Nuevo',        dark:false, active:true, stock:true },
-      { id:10, name:'Lámpara Minecraft',           category:'Lámpara',   fandom:'Minecraft',     price:350, emoji:'🕯️', img:'assets/lampara-minecraft.jpg',        badge:'🔥 Más vendido', dark:false, active:true, stock:true },
-      { id:11, name:'Lámpara Tanjiro Kamado',      category:'Lámpara',   fandom:'Demon Slayer',  price:350, emoji:'☀️',  img:'assets/lampara-tanjiro.jpg',          badge:'',               dark:false, active:true, stock:true },
-      { id:12, name:'Máscara Darth Vader',         category:'Decoración',fandom:'Star Wars',     price:280, emoji:'🪖',  img:'assets/mascara-darth-vader.jpg',      badge:'',               dark:false, active:true, stock:true },
-      { id:13, name:'Máscara The Mandalorian',     category:'Decoración',fandom:'Star Wars',     price:280, emoji:'⚔️', img:'assets/mandalorian-deco-pared.jpg',   badge:'',               dark:false, active:true, stock:true },
-      { id:14, name:'TIE Fighter (pared)',          category:'Decoración',fandom:'Star Wars',     price:280, emoji:'🚀',  img:'assets/tie-fighter-deco-pared.jpg',   badge:'',               dark:false, active:true, stock:true },
-      { id:15, name:'Perritos Minecraft',          category:'Figura',    fandom:'Minecraft',     price:200, emoji:'🐶',  img:'assets/perritos-minecraft.jpg',        badge:'',               dark:false, active:true, stock:true },
-      { id:16, name:'Máscara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:250, emoji:'👺',  img:'assets/Obito.jpg',                    badge:'',               dark:false, active:true, stock:true },
-      { id:17, name:'TIE Fighter armable',         category:'Figura',    fandom:'Star Wars',     price:320, emoji:'🚀',  img:'assets/tie-fighter-armable.jpg',       badge:'',               dark:false, active:true, stock:true },
-      { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:320, emoji:'🤖',  img:'assets/at-st-star-wars.jpg',           badge:'✨ Nuevo',        dark:false, active:true, stock:true },
-      { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:380, emoji:'🥤',  img:'assets/portavasos-star-wars.jpg',      badge:'',               dark:false, active:true, stock:true },
+      { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'Pokémon',       price:150, g:47,  emoji:'🔑',  img:'assets/cubone-mochila.png',          badge:'',               dark:false, active:true, stock:true },
+      { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'Pokémon',       price:180, g:56,  emoji:'🔑',  img:'assets/cubone.jpg',                  badge:'',               dark:true,  active:true, stock:true },
+      { id:3,  name:'Llavero Hornet',              category:'Llavero',   fandom:'Hollow Knight', price:150, g:47,  emoji:'🔑',  img:'assets/llavero-hornet.jpg',           badge:'',               dark:false, active:true, stock:true },
+      { id:4,  name:'Llavero Esqueleto Minecraft', category:'Llavero',   fandom:'Minecraft',     price:150, g:47,  emoji:'💀',  img:'assets/llavero-esqueleto-minecraft.jpg',badge:'',             dark:false, active:true, stock:true },
+      { id:5,  name:'Llavero Mandalorian',         category:'Llavero',   fandom:'Star Wars',     price:150, g:47,  emoji:'⚔️', img:'assets/llavero-mandalorian.jpg',      badge:'',               dark:false, active:true, stock:true },
+      { id:6,  name:'Llaveros Star Wars',          category:'Llavero',   fandom:'Star Wars',     price:150, g:47,  emoji:'⚔️', img:'assets/llaveros-star-wars.jpg',       badge:'',               dark:false, active:true, stock:true },
+      { id:7,  name:'Llaveros Sharingan',          category:'Llavero',   fandom:'Naruto',        price:150, g:47,  emoji:'👁️', img:'assets/llaveros-sharingan.jpg',       badge:'',               dark:false, active:true, stock:true },
+      { id:8,  name:'Llavero Pokébola',            category:'Llavero',   fandom:'Pokémon',       price:150, g:47,  emoji:'⚪🔴',img:'assets/llavero-pokebola.jpg',         badge:'',               dark:false, active:true, stock:true },
+      { id:9,  name:'Llavero Batarang',            category:'Llavero',   fandom:'DC / Batman',   price:150, g:47,  emoji:'🦇',  img:'assets/Batarang.jpg',                badge:'✨ Nuevo',        dark:false, active:true, stock:true },
+      { id:10, name:'Lámpara Minecraft',           category:'Lámpara',   fandom:'Minecraft',     price:350, g:109, emoji:'🕯️', img:'assets/lampara-minecraft.jpg',        badge:'🔥 Más vendido', dark:false, active:true, stock:true },
+      { id:11, name:'Lámpara Tanjiro Kamado',      category:'Lámpara',   fandom:'Demon Slayer',  price:350, g:109, emoji:'☀️',  img:'assets/lampara-tanjiro.jpg',          badge:'',               dark:false, active:true, stock:true },
+      { id:12, name:'Máscara Darth Vader',         category:'Decoración',fandom:'Star Wars',     price:280, g:88,  emoji:'🪖',  img:'assets/mascara-darth-vader.jpg',      badge:'',               dark:false, active:true, stock:true },
+      { id:13, name:'Máscara The Mandalorian',     category:'Decoración',fandom:'Star Wars',     price:280, g:88,  emoji:'⚔️', img:'assets/mandalorian-deco-pared.jpg',   badge:'',               dark:false, active:true, stock:true },
+      { id:14, name:'TIE Fighter (pared)',          category:'Decoración',fandom:'Star Wars',     price:280, g:88,  emoji:'🚀',  img:'assets/tie-fighter-deco-pared.jpg',   badge:'',               dark:false, active:true, stock:true },
+      { id:15, name:'Perritos Minecraft',          category:'Figura',    fandom:'Minecraft',     price:200, g:63,  emoji:'🐶',  img:'assets/perritos-minecraft.jpg',        badge:'',               dark:false, active:true, stock:true },
+      { id:16, name:'Máscara Obito Uchiha',        category:'Figura',    fandom:'Naruto',        price:250, g:78,  emoji:'👺',  img:'assets/Obito.jpg',                    badge:'',               dark:false, active:true, stock:true },
+      { id:17, name:'TIE Fighter armable',         category:'Figura',    fandom:'Star Wars',     price:320, g:100, emoji:'🚀',  img:'assets/tie-fighter-armable.jpg',       badge:'',               dark:false, active:true, stock:true },
+      { id:18, name:'AT-ST Star Wars',             category:'Figura',    fandom:'Star Wars',     price:320, g:100, emoji:'🤖',  img:'assets/at-st-star-wars.jpg',           badge:'✨ Nuevo',        dark:false, active:true, stock:true },
+      { id:19, name:'Set Portavasos Star Wars',    category:'Set',       fandom:'Star Wars',     price:380, g:119, emoji:'🥤',  img:'assets/portavasos-star-wars.jpg',      badge:'',               dark:false, active:true, stock:true },
     ];
 
     let _products = [];
@@ -144,6 +144,12 @@
         ]);
         _products = pr.length ? pr : DEFAULT_PRODUCTS;
         _orders   = or;
+        // Migración: rellenar g=0 con precio/3.2 (g = precio / (800/1000 × 4))
+        const needsMigration = _products.filter(p => !p.g);
+        if (needsMigration.length) {
+          needsMigration.forEach(p => { p.g = Math.round(p.price / 3.2); });
+          saveProducts(_products);
+        }
       } catch(e) {
         console.error('loadData:', e);
         _products = DEFAULT_PRODUCTS;
