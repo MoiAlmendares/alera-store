@@ -313,11 +313,18 @@
                Restaurar como pendiente
              </button>`;
 
+        const vendorBadge = o.vendedor
+          ? `<span class="text-xs font-semibold bg-teal-100 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full">👤 ${esc(o.vendedor)}</span>`
+          : `<span class="text-xs font-semibold bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded-full">Sin asignar</span>`;
+
         return `
           <div class="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
             <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-xs text-zinc-400 font-mono mb-0.5">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                  <span class="text-xs text-zinc-400 font-mono">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</span>
+                  ${vendorBadge}
+                </div>
                 <div class="font-bold text-base">${esc(o.customer.name)}</div>
                 <div class="text-sm text-zinc-500 mt-0.5">${esc(o.customer.phone)}</div>
                 <div class="text-sm text-zinc-400">${esc(o.customer.address)}</div>
