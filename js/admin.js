@@ -506,6 +506,7 @@
         document.getElementById('f-emoji').value = p.emoji || '';
         document.getElementById('f-badge').value = p.badge || '';
         document.getElementById('f-img-url').value = p.img || '';
+        document.getElementById('f-desc').value    = p.desc || '';
         darkOn  = p.dark || false;
         stockOn = p.stock !== false;
         updateDarkToggle();
@@ -516,6 +517,11 @@
           document.getElementById('img-placeholder-icon').style.display = 'none';
           document.getElementById('img-upload-label').textContent = 'Cambiar imagen';
         }
+        // Cargar fotos adicionales de la galería
+        const extraImgs = Array.isArray(p.imgs) ? p.imgs.slice(1, 5) : [];
+        for (let i = 0; i < 4; i++) {
+          document.getElementById(`f-img-extra-${i + 2}`).value = extraImgs[i] || '';
+        }
       } else {
         document.getElementById('f-name').value = '';
         document.getElementById('f-category').value = 'Llavero';
@@ -524,6 +530,8 @@
         document.getElementById('f-emoji').value = '';
         document.getElementById('f-badge').value = '';
         document.getElementById('f-img-url').value = '';
+        document.getElementById('f-desc').value = '';
+        for (let i = 2; i <= 5; i++) document.getElementById(`f-img-extra-${i}`).value = '';
       }
 
       document.getElementById('modal-overlay').classList.remove('hidden');
@@ -614,7 +622,9 @@
       if (!price || price <= 0) { errEl.textContent = 'El precio debe ser mayor a 0.'; errEl.classList.remove('hidden'); return; }
       errEl.classList.add('hidden');
 
-      const imgVal = uploadedImgData || document.getElementById('f-img-url').value.trim();
+      const imgVal    = uploadedImgData || document.getElementById('f-img-url').value.trim();
+      const extraImgs = [2,3,4,5].map(n => document.getElementById(`f-img-extra-${n}`).value.trim()).filter(Boolean);
+      const imgs      = [imgVal, ...extraImgs].filter(Boolean);
 
       const product = {
         id:       editingId || null,
@@ -625,6 +635,8 @@
         emoji:    document.getElementById('f-emoji').value.trim(),
         badge:    document.getElementById('f-badge').value,
         img:      imgVal,
+        imgs,
+        desc:     document.getElementById('f-desc').value.trim(),
         dark:     darkOn,
         stock:    stockOn,
         active:   true,

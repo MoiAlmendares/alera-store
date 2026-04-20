@@ -470,9 +470,16 @@
           </div>
         </div>
 
-        <!-- Imagen -->
+        <!-- Descripción -->
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Descripción breve</label>
+          <textarea id="f-desc" rows="3" maxlength="300" placeholder="Ej: Llavero en resina con detalle fino. Resistente y liviano, perfecto para mochila o llaves."
+            class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400 resize-none"></textarea>
+        </div>
+
+        <!-- Imagen principal -->
         <div>
-          <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Imagen</label>
+          <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Foto principal (portada)</label>
           <div class="border-2 border-dashed border-zinc-200 rounded-2xl p-4 text-center hover:border-mint-400 transition-colors cursor-pointer" onclick="document.getElementById('f-img-file').click()">
             <div id="img-preview-wrap" class="hidden mb-3">
               <img id="img-preview" class="w-24 h-24 object-cover rounded-xl mx-auto" />
@@ -486,6 +493,18 @@
           <input id="f-img-url" type="text" placeholder="https://... o assets/foto.jpg"
             class="mt-1.5 w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400"
             oninput="handleUrlInput()" />
+        </div>
+
+        <!-- Galería adicional -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Galería adicional <span class="text-zinc-300 font-normal normal-case">(hasta 4 fotos más)</span></label>
+          <div class="space-y-2">
+            <input id="f-img-extra-2" type="url" placeholder="Foto 2 — URL" class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400" />
+            <input id="f-img-extra-3" type="url" placeholder="Foto 3 — URL" class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400" />
+            <input id="f-img-extra-4" type="url" placeholder="Foto 4 — URL" class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400" />
+            <input id="f-img-extra-5" type="url" placeholder="Foto 5 — URL" class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-400" />
+          </div>
+          <p class="text-xs text-zinc-400 mt-1.5">Estas fotos aparecen en la galería de la página del producto.</p>
         </div>
 
         <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl"></div>
