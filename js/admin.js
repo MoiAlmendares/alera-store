@@ -839,14 +839,14 @@
       // ── Ganancia neta de un pedido ───────────────────────────────────────────
       // costo material = Σ(qty × g/1000 × 800 L/kg)
       // ganancia bruta = costo × 4
-      // ganancia neta  = ganancia bruta × 0.85  (descuenta 15% ISV)
+      // ganancia neta  = ganancia bruta × 1.15  (incluye 15% ISV)
       function orderNetProfit(o) {
         let mat = 0;
         for (const item of (o.items || [])) {
           const g = (prodMap[item.id]?.g) || 0;
           mat += (item.qty || 1) * (g / 1000) * 800;
         }
-        return Math.round(mat * 4 * 0.85);
+        return Math.round(mat * 4 * 1.15);
       }
 
       // ── Construir mapa por vendedor ──────────────────────────────────────────
