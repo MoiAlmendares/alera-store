@@ -30,6 +30,15 @@ async function authFetch(url, opts = {}) {
   }
 }
 
+// Decodifica el payload del JWT para leer el username (sin verificar firma — solo UI)
+function getMyUsername() {
+  const token = sessionStorage.getItem('alera_token') || '';
+  try {
+    const part = token.split('.')[0];
+    return JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))).user || '';
+  } catch { return ''; }
+}
+
 function doLogout() {
   sessionStorage.removeItem('alera_admin');
   sessionStorage.removeItem('alera_vendedor');

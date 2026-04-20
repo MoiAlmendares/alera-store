@@ -142,6 +142,7 @@ function setOrdersFilter(filter) {
 }
 
 function renderOrders() {
+  const me       = getMyUsername();
   const all      = getOrders();
   const filtered = ordersFilter === 'all' ? all : all.filter(o => o.status === ordersFilter);
   const list     = document.getElementById('orders-list');
@@ -160,18 +161,43 @@ function renderOrders() {
     const zonaLabel = o.zone === 'tgu' ? 'Dentro de TGU' : 'Fuera de TGU';
     const pagoLabel = o.payment === 'contraentrega' ? 'Contra entrega' : 'Transferencia';
     const approx    = o.zone !== 'tgu' ? ' (aprox.)' : '';
-    const actions   = o.status === 'pendiente'
-      ? `<div class="flex gap-2">
-           <button onclick="updateOrderStatus(${o.id},'entregado')" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold py-2.5 rounded-xl transition-colors">Marcar entregado</button>
-           <button onclick="updateOrderStatus(${o.id},'cancelado')" class="px-4 border border-zinc-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 text-zinc-500 text-xs font-semibold py-2.5 rounded-xl transition-colors">Cancelar</button>
+    const isMine    = o.vendedor && o.vendedor === me;
+    const isOthers  = o.vendedor && o.vendedor !== me;
+
+    // Píldora de asignación
+    const assignBadge = isMine
+      ? `<span class="text-xs font-semibold bg-teal-100 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full">📌 Tuyo</span>`
+      : isOthers
+        ? `<span class="text-xs font-semibold bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full">👤 ${esc(o.vendedor)}</span>`
+        : `<span class="text-xs font-semibold bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded-full">Sin asignar</span>`;
+
+    // Botón "Tomar pedido" solo si no está asignado y está pendiente
+    const takeBtn = (!o.vendedor && o.status === 'pendiente')
+      ? `<button data-order-id="${o.id}" onclick="takeOrder(this.dataset.orderId)"
+           class="w-full bg-zinc-900 hover:bg-zinc-700 text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12"/></svg>
+           Tomar pedido
+         </button>`
+      : '';
+
+    const actions = o.status === 'pendiente'
+      ? `<div class="space-y-2">
+           ${takeBtn}
+           <div class="flex gap-2">
+             <button data-order-id="${o.id}" onclick="updateOrderStatus(Number(this.dataset.orderId),'entregado')" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold py-2.5 rounded-xl transition-colors">Marcar entregado</button>
+             <button data-order-id="${o.id}" onclick="updateOrderStatus(Number(this.dataset.orderId),'cancelado')" class="px-4 border border-zinc-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 text-zinc-500 text-xs font-semibold py-2.5 rounded-xl transition-colors">Cancelar</button>
+           </div>
          </div>`
-      : `<button onclick="updateOrderStatus(${o.id},'pendiente')" class="w-full text-xs text-zinc-400 hover:text-zinc-600 transition-colors py-1 text-center">Restaurar como pendiente</button>`;
+      : `<button data-order-id="${o.id}" onclick="updateOrderStatus(Number(this.dataset.orderId),'pendiente')" class="w-full text-xs text-zinc-400 hover:text-zinc-600 transition-colors py-1 text-center">Restaurar como pendiente</button>`;
 
     return `
-      <div class="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
+      <div class="bg-white rounded-2xl border ${isMine ? 'border-teal-200' : 'border-zinc-200'} p-5 space-y-4">
         <div class="flex items-start justify-between gap-3">
-          <div>
-            <div class="text-xs text-zinc-400 font-mono mb-0.5">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="text-xs text-zinc-400 font-mono">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</span>
+              ${assignBadge}
+            </div>
             <div class="font-bold text-base">${esc(o.customer.name)}</div>
             <div class="text-sm text-zinc-500 mt-0.5">${esc(o.customer.phone)}</div>
             <div class="text-sm text-zinc-400">${esc(o.customer.address)}</div>
@@ -189,6 +215,29 @@ function renderOrders() {
         ${actions}
       </div>`;
   }).join('');
+}
+
+async function takeOrder(idRaw) {
+  const id  = Number(idRaw);
+  const o   = _orders.find(x => x.id === id);
+  if (!o || o.vendedor) return; // ya asignado
+  const me  = getMyUsername();
+  o.vendedor = me; // optimistic
+  renderStats(); renderOrders(); updatePendingBadge();
+  try {
+    const r = await authFetch(API + '/orders/' + id, { method:'PATCH', body:JSON.stringify({ action:'tomar' }) });
+    if (!r || !r.ok) {
+      o.vendedor = undefined; // revertir
+      renderStats(); renderOrders(); updatePendingBadge();
+      showToast('No se pudo tomar el pedido', false);
+    } else {
+      showToast('Pedido asignado a ti ✓');
+    }
+  } catch(e) {
+    o.vendedor = undefined;
+    renderStats(); renderOrders(); updatePendingBadge();
+    showToast('Error de conexión', false);
+  }
 }
 
 function updateOrderStatus(id, status) {

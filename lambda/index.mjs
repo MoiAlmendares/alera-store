@@ -485,17 +485,37 @@ export const handler = async (event) => {
       try { body = JSON.parse(event.body); }
       catch { return resp(400, { error: 'JSON inválido.' }); }
 
-      const validStatuses = ['pendiente', 'entregado', 'cancelado'];
-      if (!validStatuses.includes(body.status))
-        return resp(400, { error: 'Estado inválido.' });
+      const expressions = [];
+      const attrNames   = {};
+      const attrValues  = {};
 
-      await db.send(new UpdateItemCommand({
+      const validStatuses = ['pendiente', 'entregado', 'cancelado'];
+      if (body.status !== undefined) {
+        if (!validStatuses.includes(body.status))
+          return resp(400, { error: 'Estado inválido.' });
+        expressions.push('#s = :s');
+        attrNames['#s']  = 'status';
+        attrValues[':s'] = body.status;
+      }
+
+      // Acción "tomar": asigna el pedido al usuario autenticado
+      if (body.action === 'tomar') {
+        expressions.push('vendedor = :v');
+        attrValues[':v'] = String(claims.user).slice(0, 40);
+      }
+
+      if (!expressions.length)
+        return resp(400, { error: 'Nada que actualizar.' });
+
+      const cmdInput = {
         TableName: 'alera-orders',
         Key: marshall({ id }),
-        UpdateExpression: 'SET #s = :s',
-        ExpressionAttributeNames:  { '#s': 'status' },
-        ExpressionAttributeValues: marshall({ ':s': body.status }),
-      }));
+        UpdateExpression: 'SET ' + expressions.join(', '),
+        ExpressionAttributeValues: marshall(attrValues),
+      };
+      if (Object.keys(attrNames).length) cmdInput.ExpressionAttributeNames = attrNames;
+
+      await db.send(new UpdateItemCommand(cmdInput));
       return resp(200, { ok: true });
     }
 
