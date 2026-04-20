@@ -621,6 +621,22 @@
       document.getElementById('modal-overlay').classList.add('hidden');
     }
 
+    // ── g ↔ precio automático ─────────────────────────────────────────────────
+    // precio = (g / 1000) × 800 × 4  →  precio = g × 3.2  (redondeado a 10)
+    // g      = precio / 3.2           →  g = precio × 1000 / 3200
+    function onGramsInput() {
+      const g = parseFloat(document.getElementById('f-g').value);
+      if (!g || g <= 0) return;
+      const precio = Math.round((g * 3.2) / 10) * 10;
+      document.getElementById('f-price').value = precio;
+    }
+    function onPriceInput() {
+      const precio = parseFloat(document.getElementById('f-price').value);
+      if (!precio || precio <= 0) return;
+      const g = Math.round(precio / 3.2);
+      document.getElementById('f-g').value = g;
+    }
+
     let stockOn = true;
 
     function toggleDark() {
