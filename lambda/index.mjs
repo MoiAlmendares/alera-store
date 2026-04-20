@@ -504,6 +504,18 @@ export const handler = async (event) => {
         attrValues[':v'] = String(claims.user).slice(0, 40);
       }
 
+      // Acción "liberar": quita la asignación — solo admin
+      if (body.action === 'liberar') {
+        if (claims.role !== 'admin') return unauth();
+        const removeCmd = {
+          TableName: 'alera-orders',
+          Key: marshall({ id }),
+          UpdateExpression: 'REMOVE vendedor',
+        };
+        await db.send(new UpdateItemCommand(removeCmd));
+        return resp(200, { ok: true });
+      }
+
       if (!expressions.length)
         return resp(400, { error: 'Nada que actualizar.' });
 

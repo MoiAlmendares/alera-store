@@ -316,6 +316,12 @@
         const vendorBadge = o.vendedor
           ? `<span class="text-xs font-semibold bg-teal-100 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full">👤 ${esc(o.vendedor)}</span>`
           : `<span class="text-xs font-semibold bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded-full">Sin asignar</span>`;
+        const releaseBtn = o.vendedor
+          ? `<button data-oid="${o.id}" onclick="releaseOrder(this.dataset.oid)"
+               class="text-xs text-zinc-400 hover:text-red-500 transition-colors">
+               Quitar asignación
+             </button>`
+          : '';
 
         return `
           <div class="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
@@ -367,8 +373,32 @@
             </div>` : ''}
 
             ${actions}
+            ${releaseBtn ? `<div class="border-t border-zinc-100 pt-3 text-center">${releaseBtn}</div>` : ''}
           </div>`;
       }).join('');
+    }
+
+    async function releaseOrder(idRaw) {
+      const id = Number(idRaw);
+      const o  = _orders.find(x => x.id === id);
+      if (!o || !o.vendedor) return;
+      const prev = o.vendedor;
+      o.vendedor = undefined; // optimistic
+      renderStats(); renderOrders(); updatePendingBadge();
+      try {
+        const r = await authFetch(API + '/orders/' + id, { method:'PATCH', body:JSON.stringify({ action:'liberar' }) });
+        if (!r || !r.ok) {
+          o.vendedor = prev;
+          renderStats(); renderOrders(); updatePendingBadge();
+          showToast('No se pudo liberar el pedido', false);
+        } else {
+          showToast('Pedido liberado — sin asignar ✓');
+        }
+      } catch(e) {
+        o.vendedor = prev;
+        renderStats(); renderOrders(); updatePendingBadge();
+        showToast('Error de conexión', false);
+      }
     }
 
     function updateOrderStatus(id, status) {
