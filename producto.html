@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Producto — Alera</title>
+  <meta name="description" id="page-desc" content="Coleccionables pop culture hechos en Honduras.">
+  <meta property="og:title" id="og-title" content="Producto — Alera">
+  <meta property="og:description" id="og-desc" content="Coleccionables pop culture hechos en Honduras.">
+  <meta property="og:type" content="product">
+  <meta name="theme-color" content="#14b8a6">
+  <link rel="icon" type="image/svg+xml" href="assets/logo-symbol.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #14b8a6;
+      --accent-dark: #0d9488;
+      --accent-darker: #0f766e;
+      --accent-light: #ccfbef;
+      --accent-lighter: #f0fdf8;
+    }
+    body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .serif { font-family: 'Bricolage Grotesque', 'Geist', sans-serif; font-weight: 600; letter-spacing: -0.03em; }
+    .btn-accent { background: #14b8a6; color: white; transition: background 0.2s ease, transform 0.1s ease; }
+    .btn-accent:hover { background: #0d9488; }
+    .btn-accent:active { transform: scale(0.97); }
+    .btn-accent:disabled { background: #e4e4e7; color: #a1a1aa; cursor: not-allowed; transform: none; }
+    .thumb { cursor: pointer; transition: opacity 0.15s, ring 0.15s; }
+    .thumb.active { outline: 2px solid #14b8a6; outline-offset: 2px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .skeleton { background: #e4e4e7; border-radius: 8px; animation: pulse 1.5s ease infinite; }
+  </style>
+</head>
+<body class="bg-white text-zinc-900 antialiased min-h-screen">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-zinc-100">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 h-14 flex items-center justify-between gap-4">
+      <a href="index.html" class="font-black text-lg tracking-tight hover:opacity-80 transition-opacity">alera</a>
+      <a href="index.html" class="flex items-center gap-1.5 text-sm font-semibold text-zinc-500 hover:text-zinc-900 transition-colors">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Volver a la tienda
+      </a>
+    </div>
+  </header>
+
+  <!-- SKELETON (visible mientras carga) -->
+  <div id="skeleton-wrap" class="max-w-6xl mx-auto px-5 sm:px-6 py-10">
+    <div class="grid lg:grid-cols-[55%_45%] gap-8 lg:gap-12">
+      <div class="skeleton aspect-square rounded-3xl"></div>
+      <div class="flex flex-col gap-4 pt-2">
+        <div class="skeleton h-4 w-24 rounded-full"></div>
+        <div class="skeleton h-8 w-3/4 rounded-xl"></div>
+        <div class="skeleton h-6 w-1/3 rounded-xl"></div>
+        <div class="skeleton h-20 w-full rounded-xl mt-2"></div>
+        <div class="skeleton h-14 w-full rounded-2xl mt-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT CONTENT (hidden until loaded) -->
+  <div id="product-wrap" class="hidden max-w-6xl mx-auto px-5 sm:px-6 py-10">
+    <div class="grid lg:grid-cols-[55%_45%] gap-8 lg:gap-12 items-start">
+
+      <!-- Gallery -->
+      <div>
+        <div class="relative rounded-3xl overflow-hidden bg-zinc-50 aspect-square">
+          <img id="main-img" src="" alt="" class="w-full h-full object-cover" />
+        </div>
+        <div id="thumbs-row" class="hidden mt-3 flex gap-2 overflow-x-auto"></div>
+      </div>
+
+      <!-- Info -->
+      <div class="flex flex-col gap-5">
+        <div>
+          <span id="badge-el" class="hidden inline-block bg-zinc-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide mb-3"></span>
+          <p id="fandom-el" class="text-[11px] font-bold uppercase tracking-widest mb-1" style="color:#14b8a6"></p>
+          <h1 id="name-el" class="font-black text-2xl sm:text-3xl tracking-tight leading-tight"></h1>
+          <p id="price-el" class="font-black text-3xl mt-2" style="color:#0d9488"></p>
+        </div>
+        <p id="desc-el" class="text-zinc-500 leading-relaxed text-sm sm:text-base"></p>
+        <button id="add-btn" class="btn-accent w-full font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 mt-auto">
+          Agregar al carrito
+        </button>
+        <p class="text-xs text-zinc-400 text-center -mt-2">Envíos a todo Honduras · Pago contra entrega disponible</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div id="error-wrap" class="hidden max-w-md mx-auto px-5 py-20 text-center">
+    <div class="text-5xl mb-4">🔍</div>
+    <h2 class="font-black text-xl mb-2">Producto no encontrado</h2>
+    <p class="text-zinc-500 text-sm mb-6">No pudimos cargar este producto. Puede que ya no esté disponible.</p>
+    <a href="index.html" class="inline-flex items-center gap-2 btn-accent font-semibold px-6 py-3 rounded-2xl text-sm">
+      ← Ver todos los productos
+    </a>
+  </div>
+
+  <script>
+    const API = 'https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws';
+
+    function plusIcon() {
+      return `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>`;
+    }
+
+    function showError() {
+      document.getElementById('skeleton-wrap').classList.add('hidden');
+      document.getElementById('error-wrap').classList.remove('hidden');
+    }
+
+    function setMainImg(src, alt) {
+      const img = document.getElementById('main-img');
+      img.src = src;
+      img.alt = alt;
+    }
+
+    function renderThumbs(imgs, name) {
+      if (imgs.length <= 1) return;
+      const row = document.getElementById('thumbs-row');
+      row.classList.remove('hidden');
+      row.innerHTML = imgs.map((src, i) => `
+        <button class="thumb${i === 0 ? ' active' : ''} w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-zinc-100"
+          onclick="selectThumb(this, '${src}')">
+          <img src="${src}" alt="${name}" class="w-full h-full object-cover" onerror="this.parentElement.style.display='none'" />
+        </button>
+      `).join('');
+    }
+
+    function selectThumb(btn, src) {
+      document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      setMainImg(src, document.getElementById('name-el').textContent);
+    }
+
+    function addToCartAndFeedback(p) {
+      const btn = document.getElementById('add-btn');
+      const raw = localStorage.getItem('alera_cart');
+      const cart = raw ? JSON.parse(raw) : {};
+      cart[p.id] = (cart[p.id] || 0) + 1;
+      localStorage.setItem('alera_cart', JSON.stringify(cart));
+
+      btn.innerHTML = `✓ Agregado — <a href="index.html" style="text-decoration:underline">Ir a tienda →</a>`;
+      btn.disabled = true;
+      btn.classList.add('opacity-80');
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.classList.remove('opacity-80');
+        btn.innerHTML = `${plusIcon()} Agregar al carrito — L ${p.price}`;
+      }, 2000);
+    }
+
+    async function loadProduct() {
+      const params = new URLSearchParams(location.search);
+      const idParam = params.get('id');
+      if (!idParam) { showError(); return; }
+      const targetId = Number(idParam);
+
+      let product = null;
+      try {
+        const r = await fetch(API + '/products');
+        if (!r.ok) throw new Error('fetch failed');
+        const data = await r.json();
+        product = data.find(p => p.id === targetId);
+      } catch (e) {
+        showError();
+        return;
+      }
+
+      if (!product) { showError(); return; }
+
+      const p = product;
+
+      // Update meta
+      document.getElementById('page-title').textContent = p.name + ' — Alera';
+      document.getElementById('page-desc').content = (p.desc || '') + ' | Alera Store Honduras.';
+      document.getElementById('og-title').content = p.name + ' — Alera';
+      document.getElementById('og-desc').content = p.desc || '';
+
+      // Gallery
+      const imgs = Array.isArray(p.imgs) && p.imgs.length > 0 ? p.imgs : (p.img ? [p.img] : []);
+      if (imgs.length > 0) {
+        setMainImg(imgs[0], p.name);
+        renderThumbs(imgs, p.name);
+      } else {
+        document.getElementById('main-img').parentElement.innerHTML = `
+          <div class="w-full h-full flex items-center justify-center text-zinc-300 text-xs font-mono uppercase tracking-widest">// sin foto</div>`;
+      }
+
+      // Badge
+      if (p.badge) {
+        const badgeEl = document.getElementById('badge-el');
+        badgeEl.textContent = p.badge;
+        badgeEl.classList.remove('hidden');
+      }
+
+      // Texts
+      document.getElementById('fandom-el').textContent = p.fandom || '';
+      document.getElementById('name-el').textContent = p.name;
+      document.getElementById('price-el').textContent = 'L ' + p.price;
+      document.getElementById('desc-el').textContent = p.desc || '';
+
+      // Add button
+      const btn = document.getElementById('add-btn');
+      if (p.stock === false) {
+        btn.textContent = 'Agotado';
+        btn.disabled = true;
+      } else {
+        btn.innerHTML = `${plusIcon()} Agregar al carrito — L ${p.price}`;
+        btn.onclick = () => addToCartAndFeedback(p);
+      }
+
+      // Show content
+      document.getElementById('skeleton-wrap').classList.add('hidden');
+      document.getElementById('product-wrap').classList.remove('hidden');
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>

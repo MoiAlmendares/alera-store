@@ -417,5 +417,16 @@ async function submitAddProduct() {
   }
 }
 
+async function refreshOrders() {
+  try {
+    const r = await authFetch(API + '/orders');
+    _orders = await r?.json() || _orders;
+    renderStats(); renderOrders(); updatePendingBadge();
+    showToast('Pedidos actualizados ✓');
+  } catch(e) {
+    showToast('Error al actualizar pedidos', false);
+  }
+}
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 loadData().then(renderAll);
