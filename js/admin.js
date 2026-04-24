@@ -109,8 +109,6 @@
     }
 
     // ─── Products ────────────────────────────────────────────────────────────
-    const CATALOG_VERSION = '5';
-
     const DEFAULT_PRODUCTS = [
       { id:1,  name:'Llavero Cubone',             category:'Llavero',   fandom:'Pokémon',       price:150, g:0, emoji:'🔑',  img:'assets/cubone-mochila.png',          badge:'',               dark:false, active:true, stock:true },
       { id:2,  name:'Llavero Cubone Glow',         category:'Llavero',   fandom:'Pokémon',       price:180, g:0, emoji:'🔑',  img:'assets/cubone.jpg',                  badge:'',               dark:true,  active:true, stock:true },

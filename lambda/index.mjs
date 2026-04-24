@@ -503,10 +503,23 @@ export const handler = async (event) => {
         attrValues[':s'] = body.status;
       }
 
-      // Acción "tomar": asigna el pedido al usuario autenticado
+      // Acción "tomar": asigna el pedido al usuario autenticado — atómico
       if (body.action === 'tomar') {
-        expressions.push('vendedor = :v');
-        attrValues[':v'] = String(claims.user).slice(0, 40);
+        const tomarCmd = {
+          TableName: 'alera-orders',
+          Key: marshall({ id }),
+          UpdateExpression: 'SET vendedor = :v',
+          ConditionExpression: 'attribute_not_exists(vendedor)',
+          ExpressionAttributeValues: marshall({ ':v': String(claims.user).slice(0, 40) }),
+        };
+        try {
+          await db.send(new UpdateItemCommand(tomarCmd));
+          return resp(200, { ok: true });
+        } catch (e) {
+          if (e.name === 'ConditionalCheckFailedException')
+            return resp(409, { error: 'Este pedido ya fue tomado por otro vendedor.' });
+          throw e;
+        }
       }
 
       // Acción "liberar": quita la asignación — solo admin

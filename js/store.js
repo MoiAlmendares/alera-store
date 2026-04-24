@@ -26,6 +26,11 @@ const DEFAULT_PRODUCTS_LIST = [
 
 const API = 'https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws';
 
+function esc(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // Fandom → visual theme
 const FANDOM_META = {
   'Star Wars':     { color: '#111111',  grad: 'linear-gradient(135deg,#1e293b 0%,#0f172a 100%)' },
@@ -85,7 +90,7 @@ async function rebuildProductMap() {
 
 function productImgOrPlaceholder(p, dark) {
   if (p.img) {
-    return `<img src="${p.img}" alt="${p.name}" class="card-img w-full h-full object-cover${dark?' opacity-90':''}" onerror="this.parentElement.innerHTML=productPlaceholder(${JSON.stringify(p.fandom||'')}, ${dark})" />`;
+    return `<img src="${esc(p.img)}" alt="${esc(p.name)}" class="card-img w-full h-full object-cover${dark?' opacity-90':''}" onerror="this.parentElement.innerHTML=productPlaceholder(${JSON.stringify(p.fandom||'')}, ${dark})" />`;
   }
   return productPlaceholder(p.fandom || '', dark);
 }
@@ -94,7 +99,7 @@ function productPlaceholder(fandom, dark) {
   const cls = dark ? 'placeholder-stripes-dark text-zinc-500' : 'placeholder-stripes text-zinc-500';
   return `<div class="w-full h-full ${cls} flex items-end justify-start p-3">
     <div class="mono text-[10px] uppercase tracking-widest leading-tight">
-      <div>// ${fandom || 'producto'}</div>
+      <div>// ${esc(fandom || 'producto')}</div>
       <div class="opacity-60">· foto pendiente</div>
     </div>
   </div>`;
@@ -114,7 +119,7 @@ function renderProductCard(p, compact) {
   const badgeHtml = agotado
     ? `<span class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Agotado</span>`
     : p.badge
-      ? `<span class="absolute top-3 left-3 z-10 bg-zinc-900/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide">${p.badge}</span>`
+      ? `<span class="absolute top-3 left-3 z-10 bg-zinc-900/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide">${esc(p.badge)}</span>`
       : '';
 
   const addBtnCompact = agotado
@@ -133,8 +138,8 @@ function renderProductCard(p, compact) {
           ${productImgOrPlaceholder(p, dark)}
         </div>
         <div class="p-3">
-          <p class="text-[10px] font-semibold uppercase tracking-wider ${sub} truncate">${p.fandom||''}</p>
-          <h3 class="font-bold text-sm ${txt} leading-tight mt-0.5 truncate">${p.name}</h3>
+          <p class="text-[10px] font-semibold uppercase tracking-wider ${sub} truncate">${esc(p.fandom||'')}</p>
+          <h3 class="font-bold text-sm ${txt} leading-tight mt-0.5 truncate">${esc(p.name)}</h3>
           <div class="mt-2.5 flex items-center justify-between">
             <span class="font-black text-sm ${txt}">L ${p.price}</span>
             ${addBtnCompact}
@@ -150,8 +155,8 @@ function renderProductCard(p, compact) {
         ${productImgOrPlaceholder(p, dark)}
       </div>
       <div class="p-4 sm:p-5">
-        <p class="text-[10px] font-semibold uppercase tracking-wider ${sub}">${p.fandom||''}</p>
-        <h3 class="font-bold text-base ${txt} leading-tight mt-0.5">${p.name}</h3>
+        <p class="text-[10px] font-semibold uppercase tracking-wider ${sub}">${esc(p.fandom||'')}</p>
+        <h3 class="font-bold text-base ${txt} leading-tight mt-0.5">${esc(p.name)}</h3>
         <div class="mt-3 flex items-center justify-between">
           <span class="font-black text-lg ${txt}">L ${p.price}</span>
           ${addBtnFull}
@@ -183,9 +188,9 @@ async function renderFandomFilters() {
   const fandoms = [...new Set(all.map(p => p.fandom))];
   const counts = Object.fromEntries(fandoms.map(f => [f, all.filter(p => p.fandom === f).length]));
   root.innerHTML = [
-    `<button data-f="*" class="filter-btn active shrink-0 border border-zinc-200 text-sm font-semibold px-4 py-2 rounded-full whitespace-nowrap" onclick="setFilter('*')">Todos <span class="fandom-count">${all.length}</span></button>`,
+    `<button data-f="*" class="filter-btn active shrink-0 border border-zinc-200 text-sm font-semibold px-4 py-2 rounded-full whitespace-nowrap" onclick="setFilter(this.dataset.f)">Todos <span class="fandom-count">${all.length}</span></button>`,
     ...fandoms.map(f =>
-      `<button data-f="${f}" class="filter-btn shrink-0 border border-zinc-200 text-zinc-700 text-sm font-semibold px-4 py-2 rounded-full whitespace-nowrap" onclick="setFilter('${f}')">${f} <span class="fandom-count">${counts[f]}</span></button>`
+      `<button data-f="${esc(f)}" class="filter-btn shrink-0 border border-zinc-200 text-zinc-700 text-sm font-semibold px-4 py-2 rounded-full whitespace-nowrap" onclick="setFilter(this.dataset.f)">${esc(f)} <span class="fandom-count">${counts[f]}</span></button>`
     )
   ].join('');
 }
@@ -203,12 +208,12 @@ async function renderFandomTiles() {
     const meta = FANDOM_META[f] || { grad: 'linear-gradient(135deg,#52525b,#27272a)' };
     const img = previewImg(f);
     return `
-      <button onclick="setFilter('${f}')" class="group relative overflow-hidden rounded-2xl aspect-[4/5] sm:aspect-square text-left transition-transform hover:-translate-y-1" style="background:${meta.grad}">
+      <button data-f="${esc(f)}" onclick="setFilter(this.dataset.f)" class="group relative overflow-hidden rounded-2xl aspect-[4/5] sm:aspect-square text-left transition-transform hover:-translate-y-1" style="background:${meta.grad}">
         ${img ? `<img src="${img}" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500" onerror="this.style.display='none'" />` : ''}
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
         <div class="absolute bottom-0 left-0 right-0 p-4">
           <div class="text-white/70 text-[10px] font-semibold uppercase tracking-widest">${counts[f]} producto${counts[f]>1?'s':''}</div>
-          <div class="text-white font-black text-lg sm:text-xl leading-tight mt-0.5">${f}</div>
+          <div class="text-white font-black text-lg sm:text-xl leading-tight mt-0.5">${esc(f)}</div>
         </div>
         <div class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
@@ -287,8 +292,8 @@ function heroCardHTML(star) {
         <div class="absolute bottom-4 left-4 right-4">
           <div class="bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg flex items-center justify-between gap-3">
             <div class="min-w-0">
-              <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 truncate">${star.fandom||''}</div>
-              <div class="font-bold text-sm text-zinc-900 leading-tight truncate">${star.name}</div>
+              <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 truncate">${esc(star.fandom||'')}</div>
+              <div class="font-bold text-sm text-zinc-900 leading-tight truncate">${esc(star.name)}</div>
             </div>
             <button onclick="addToCart(${star.id})" class="btn-accent text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 shrink-0">
               L ${star.price} ${plusIcon(3)}
@@ -322,11 +327,23 @@ async function renderHero() {
 }
 
 // ─── Cart state ────────────────────────────────────────────────────────
-let cart = JSON.parse(localStorage.getItem('alera_cart') || '{}');
+const CART_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
+function loadCart() {
+  try {
+    const raw = localStorage.getItem('alera_cart');
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.ts && parsed.items) {
+      return Date.now() - parsed.ts < CART_TTL ? parsed.items : {};
+    }
+    return parsed || {}; // formato viejo: migrar al guardar
+  } catch { return {}; }
+}
+let cart = loadCart();
 let deliveryZone = 'tgu';
 let deliveryPayment = 'contraentrega';
 
-function saveCart() { localStorage.setItem('alera_cart', JSON.stringify(cart)); }
+function saveCart() { localStorage.setItem('alera_cart', JSON.stringify({ items: cart, ts: Date.now() })); }
 
 function openCart() {
   document.getElementById('cart-drawer').classList.add('open');
@@ -455,8 +472,8 @@ function renderCart() {
     div.innerHTML = `
       ${imgHtml}
       <div class="flex-1 min-w-0">
-        <div class="font-semibold text-sm truncate">${p.name}</div>
-        <div class="text-zinc-400 text-xs mt-0.5">${p.fandom} · L ${p.price}</div>
+        <div class="font-semibold text-sm truncate">${esc(p.name)}</div>
+        <div class="text-zinc-400 text-xs mt-0.5">${esc(p.fandom)} · L ${p.price}</div>
         <div class="flex items-center gap-2 mt-2">
           <button onclick="changeQty(${id},-1)" class="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm font-bold transition-colors">−</button>
           <span class="text-sm font-semibold w-5 text-center">${qty}</span>
@@ -692,14 +709,6 @@ function renderFAQ() {
   `).join('');
 }
 
-// ─── Tweaks (color palette) ────────────────────────────────────────────
-const TWEAK_PALETTES_LIST = [
-  { key:'mint',    swatch:'#14b8a6', label:'Mint (actual)' },
-  { key:'indigo',  swatch:'#6366f1', label:'Indigo' },
-  { key:'coral',   swatch:'#f35d14', label:'Coral' },
-  { key:'magenta', swatch:'#ec4899', label:'Magenta' },
-  { key:'lime',    swatch:'#84cc16', label:'Lima' },
-];
 
 // ─── Product detail navigation ────────────────────────────────────────────
 function openProductDetail(id) {

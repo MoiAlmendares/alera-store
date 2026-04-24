@@ -232,7 +232,10 @@ async function takeOrder(idRaw) {
     if (!r || !r.ok) {
       o.vendedor = undefined; // revertir
       renderStats(); renderOrders(); updatePendingBadge();
-      showToast('No se pudo tomar el pedido', false);
+      const msg = r?.status === 409
+        ? 'Otro vendedor tomó este pedido primero'
+        : 'No se pudo tomar el pedido';
+      showToast(msg, false);
     } else {
       showToast('Pedido asignado a ti ✓');
     }
