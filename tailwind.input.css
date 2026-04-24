@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mint-50:  #f0fdf8;
+  --color-mint-100: #ccfbef;
+  --color-mint-200: #99f6e0;
+  --color-mint-500: #14b8a6;
+  --color-mint-600: #0d9488;
+  --color-mint-700: #0f766e;
+
+  /* accent = mint (default palette) */
+  --color-accent-50:  #f0fdf8;
+  --color-accent-100: #ccfbef;
+  --color-accent-200: #99f6e0;
+  --color-accent-300: #5eead4;
+  --color-accent-400: #2dd4bf;
+  --color-accent-500: #14b8a6;
+  --color-accent-600: #0d9488;
+  --color-accent-700: #0f766e;
+}
