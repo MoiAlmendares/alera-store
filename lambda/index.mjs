@@ -30,6 +30,7 @@ function responseHeaders() {
     'X-Frame-Options':           'DENY',
     'Referrer-Policy':           'strict-origin-when-cross-origin',
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+    'Content-Security-Policy':   "default-src 'none'; script-src 'self' https://cdn.tailwindcss.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://alera-media.s3.us-east-2.amazonaws.com; connect-src 'self' https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws; frame-ancestors 'none'",
   };
 }
 
@@ -99,7 +100,7 @@ function verifyToken(authHeader) {
   } catch { return null; }
 
   const payload = JSON.parse(Buffer.from(data, 'base64url').toString());
-  if (payload.exp < Date.now()) return null;
+  if (payload.exp < Date.now() - 30_000) return null; // 30s clock skew grace
   return payload;
 }
 
@@ -282,25 +283,35 @@ export const handler = async (event) => {
 
       let role = null;
 
+      const migrateHash = async (field, value) => {
+        try { await saveStoredCreds({ ...(stored || {}), [field]: hashCred(value) }); } catch {}
+      };
+
       if (adminUser && safeEq(user, adminUser)) {
-        const passOk = stored?.adminPassHash
-          ? safeHashEq(password, stored.adminPassHash)
-          : (adminPassE && safeEq(password, adminPassE));
-        if (passOk) role = 'admin';
+        if (stored?.adminPassHash) {
+          if (safeHashEq(password, stored.adminPassHash)) role = 'admin';
+        } else if (adminPassE && safeEq(password, adminPassE)) {
+          role = 'admin';
+          migrateHash('adminPassHash', password); // migrar a hash
+        }
       }
 
       if (!role && admin2User && safeEq(user, admin2User)) {
-        const passOk = stored?.admin2PassHash
-          ? safeHashEq(password, stored.admin2PassHash)
-          : (admin2PassE && safeEq(password, admin2PassE));
-        if (passOk) role = 'admin';
+        if (stored?.admin2PassHash) {
+          if (safeHashEq(password, stored.admin2PassHash)) role = 'admin';
+        } else if (admin2PassE && safeEq(password, admin2PassE)) {
+          role = 'admin';
+          migrateHash('admin2PassHash', password);
+        }
       }
 
       if (!role && vendUser && safeEq(user, vendUser)) {
-        const passOk = stored?.vendPassHash
-          ? safeHashEq(password, stored.vendPassHash)
-          : (vendPassE && safeEq(password, vendPassE));
-        if (passOk) role = 'vendedor';
+        if (stored?.vendPassHash) {
+          if (safeHashEq(password, stored.vendPassHash)) role = 'vendedor';
+        } else if (vendPassE && safeEq(password, vendPassE)) {
+          role = 'vendedor';
+          migrateHash('vendPassHash', password);
+        }
       }
 
       if (!role) {
@@ -367,7 +378,7 @@ export const handler = async (event) => {
 
     // ── GET /products  (público) ────────────────────────────────────────────
     if (method === 'GET' && path.startsWith('/products')) {
-      const r = await db.send(new ScanCommand({ TableName: 'alera-products' }));
+      const r = await db.send(new ScanCommand({ TableName: 'alera-products', Limit: 500 }));
       const items = (r.Items || []).map(i => unmarshall(i)).filter(i => i.id !== SETTINGS_ID);
       return resp(200, items);
     }
@@ -376,6 +387,7 @@ export const handler = async (event) => {
     if (method === 'POST' && path.startsWith('/products')) {
       const claims = verifyToken(auth);
       if (!claims || !['admin', 'vendedor'].includes(claims.role)) return unauth();
+      if (await checkRateLimit('prod:' + claims.user)) return resp(429, { error: 'Demasiadas solicitudes. Intentá más tarde.' });
 
       let product;
       try { product = JSON.parse(event.body); }
@@ -464,7 +476,7 @@ export const handler = async (event) => {
       if (orderClaims?.user) order.vendedor = String(orderClaims.user).slice(0, 40);
 
       await db.send(new PutItemCommand({ TableName: 'alera-orders', Item: marshall(order, { removeUndefinedValues: true }) }));
-      try { await sendOrderEmail(order); } catch(e) { console.error('SES:', e); }
+      sendOrderEmail(order).catch(e => console.error('SES:', e)); // fire-and-forget
       return resp(200, { ok: true });
     }
 
@@ -473,7 +485,7 @@ export const handler = async (event) => {
       const claims = verifyToken(auth);
       if (!claims) return unauth();
 
-      const r     = await db.send(new ScanCommand({ TableName: 'alera-orders' }));
+      const r     = await db.send(new ScanCommand({ TableName: 'alera-orders', Limit: 1000 }));
       const items = (r.Items || []).map(i => unmarshall(i)).sort((a, b) => b.id - a.id);
       return resp(200, items);
     }

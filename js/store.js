@@ -90,7 +90,7 @@ async function rebuildProductMap() {
 
 function productImgOrPlaceholder(p, dark) {
   if (p.img) {
-    return `<img src="${esc(p.img)}" alt="${esc(p.name)}" class="card-img w-full h-full object-cover${dark?' opacity-90':''}" onerror="this.parentElement.innerHTML=productPlaceholder(${JSON.stringify(p.fandom||'')}, ${dark})" />`;
+    return `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" class="card-img w-full h-full object-cover${dark?' opacity-90':''}" onerror="this.parentElement.innerHTML=productPlaceholder(${JSON.stringify(p.fandom||'')}, ${dark})" />`;
   }
   return productPlaceholder(p.fandom || '', dark);
 }
@@ -209,7 +209,7 @@ async function renderFandomTiles() {
     const img = previewImg(f);
     return `
       <button data-f="${esc(f)}" onclick="setFilter(this.dataset.f)" class="group relative overflow-hidden rounded-2xl aspect-[4/5] sm:aspect-square text-left transition-transform hover:-translate-y-1" style="background:${meta.grad}">
-        ${img ? `<img src="${img}" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500" onerror="this.style.display='none'" />` : ''}
+        ${img ? `<img src="${esc(img)}" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500" onerror="this.style.display='none'" />` : ''}
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
         <div class="absolute bottom-0 left-0 right-0 p-4">
           <div class="text-white/70 text-[10px] font-semibold uppercase tracking-widest">${counts[f]} producto${counts[f]>1?'s':''}</div>
@@ -229,7 +229,9 @@ async function renderCatalog() {
   if (activeFilter !== '*') products = products.filter(p => p.fandom === activeFilter);
   if (activeSearch) products = products.filter(p =>
     p.name.toLowerCase().includes(activeSearch) ||
-    (p.fandom||'').toLowerCase().includes(activeSearch)
+    (p.fandom||'').toLowerCase().includes(activeSearch) ||
+    (p.category||'').toLowerCase().includes(activeSearch) ||
+    (p.desc||'').toLowerCase().includes(activeSearch)
   );
   const cats = Object.keys(CAT_META).filter(c => products.some(p => p.category === c));
 
@@ -283,7 +285,7 @@ function initFadeUp() {
 // ─── Hero card ─────────────────────────────────────────────────────────
 function heroCardHTML(star) {
   const imgHtml = star.img
-    ? `<img src="${star.img}" alt="${star.name}" loading="lazy" class="w-full h-full object-cover" />`
+    ? `<img src="${esc(star.img)}" alt="${esc(star.name)}" loading="lazy" class="w-full h-full object-cover" />`
     : productPlaceholder(star.fandom||'', false);
   return `
     <div class="relative cursor-pointer" onclick="location.href='producto.html?id=${star.id}'">

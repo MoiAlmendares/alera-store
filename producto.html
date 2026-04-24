@@ -8,6 +8,10 @@
   <meta property="og:title" id="og-title" content="Producto — Alera">
   <meta property="og:description" id="og-desc" content="Coleccionables pop culture hechos en Honduras.">
   <meta property="og:type" content="product">
+  <meta property="og:image" id="og-image" content="https://alera-store.github.io/assets/logo-symbol.svg">
+  <meta property="og:url" id="og-url" content="https://moimoialmendares.github.io/alera-store/producto.html">
+  <link rel="canonical" id="canonical-url" href="https://moimoialmendares.github.io/alera-store/producto.html">
+  <script type="application/ld+json" id="json-ld">{"@context":"https://schema.org","@type":"Product","name":"Alera"}</script>
   <meta name="theme-color" content="#14b8a6">
   <link rel="icon" type="image/svg+xml" href="assets/logo-symbol.svg">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -179,10 +183,31 @@
       const p = product;
 
       // Update meta
-      document.getElementById('page-title').textContent = p.name + ' — Alera';
-      document.getElementById('page-desc').content = (p.desc || '') + ' | Alera Store Honduras.';
-      document.getElementById('og-title').content = p.name + ' — Alera';
-      document.getElementById('og-desc').content = p.desc || '';
+      const pageUrl = location.origin + location.pathname + '?id=' + id;
+      document.getElementById('page-title').textContent    = p.name + ' — Alera';
+      document.getElementById('page-desc').content         = (p.desc || '') + ' | Alera Store Honduras.';
+      document.getElementById('og-title').content          = p.name + ' — Alera';
+      document.getElementById('og-desc').content           = p.desc || '';
+      document.getElementById('og-url').content            = pageUrl;
+      document.getElementById('canonical-url').href        = pageUrl;
+      if (p.img) document.getElementById('og-image').content = p.img;
+      // JSON-LD structured data
+      document.getElementById('json-ld').textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: p.name,
+        description: p.desc || '',
+        image: p.img || '',
+        url: pageUrl,
+        offers: {
+          '@type': 'Offer',
+          priceCurrency: 'HNL',
+          price: p.price,
+          availability: p.stock === false
+            ? 'https://schema.org/OutOfStock'
+            : 'https://schema.org/InStock',
+        },
+      });
 
       // Gallery
       const imgs = Array.isArray(p.imgs) && p.imgs.length > 0 ? p.imgs : (p.img ? [p.img] : []);

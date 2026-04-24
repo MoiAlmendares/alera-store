@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /vendedor.html
+Disallow: /login.html
+
+Sitemap: https://moimoialmendares.github.io/alera-store/sitemap.xml
