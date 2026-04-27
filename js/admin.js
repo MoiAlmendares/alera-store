@@ -172,6 +172,43 @@
     let editingId      = null;
     let darkOn         = false;
     let uploadedImgData = '';
+    let costsList      = [];
+
+    // ─── Costos por producto (list of {label, amount}) ────────────────────────
+    function renderCostsList() {
+      const container = document.getElementById('f-costs-list');
+      const totalEl   = document.getElementById('f-costs-total');
+      if (!container || !totalEl) return;
+      if (!costsList.length) {
+        container.innerHTML = '<p class="text-xs text-zinc-400 italic">Sin costos agregados</p>';
+      } else {
+        container.innerHTML = costsList.map((c, i) => `
+          <div class="flex items-center gap-2 bg-white border border-zinc-200 rounded-lg px-3 py-2">
+            <span class="flex-1 text-sm text-zinc-700">${esc(c.label)}</span>
+            <span class="text-sm font-semibold text-zinc-900">L ${Number(c.amount).toFixed(2)}</span>
+            <button type="button" onclick="removeCostItem(${i})"
+              class="text-zinc-400 hover:text-red-500 transition-colors text-lg leading-none">&times;</button>
+          </div>`).join('');
+      }
+      const total = costsList.reduce((s, c) => s + Number(c.amount || 0), 0);
+      totalEl.textContent = 'L ' + total.toFixed(2);
+    }
+    function addCostItem() {
+      const labelEl  = document.getElementById('f-cost-label');
+      const amountEl = document.getElementById('f-cost-amount');
+      const label    = labelEl.value.trim();
+      const amount   = parseFloat(amountEl.value);
+      if (!label || isNaN(amount) || amount < 0) return;
+      costsList.push({ label, amount });
+      labelEl.value = '';
+      amountEl.value = '';
+      labelEl.focus();
+      renderCostsList();
+    }
+    function removeCostItem(idx) {
+      costsList.splice(idx, 1);
+      renderCostsList();
+    }
 
     // ─── Orders data ─────────────────────────────────────────────────────────
     function getOrders() { return _orders; }
@@ -585,6 +622,7 @@
         document.getElementById('f-img-url').value = p.img || '';
         document.getElementById('f-desc').value    = p.desc || '';
         document.getElementById('f-g').value       = p.g    || '';
+        costsList = Array.isArray(p.costs) ? p.costs.map(c => ({ label: String(c.label || ''), amount: Number(c.amount || 0) })) : [];
         darkOn  = p.dark || false;
         stockOn = p.stock !== false;
         updateDarkToggle();
@@ -608,8 +646,13 @@
         document.getElementById('f-img-url').value = '';
         document.getElementById('f-desc').value = '';
         document.getElementById('f-g').value    = '';
+        costsList = [];
         gallerySlots = ['', '', '', ''];
       }
+      // Clear cost input fields
+      const cl = document.getElementById('f-cost-label'); if (cl) cl.value = '';
+      const ca = document.getElementById('f-cost-amount'); if (ca) ca.value = '';
+      renderCostsList();
       renderGallerySlots();
 
       document.getElementById('modal-overlay').classList.remove('hidden');
@@ -735,6 +778,7 @@
         fandom:   document.getElementById('f-fandom').value.trim(),
         price,
         g:        parseFloat(document.getElementById('f-g').value) || 0,
+        costs:    costsList.map(c => ({ label: String(c.label || ''), amount: Number(c.amount || 0) })),
         emoji:    document.getElementById('f-emoji').value.trim(),
         badge:    document.getElementById('f-badge').value,
         img:      imgVal,
@@ -835,16 +879,22 @@
       for (const p of getProducts()) prodMap[p.id] = p;
 
       // ── Ganancia de un pedido ────────────────────────────────────────────────
-      // costo material   = Σ(qty × g/1000 × 800 L/kg)
-      // ganancia bruta   = costo × 4               ← base para la comisión
-      // ganancia con ISV = ganancia bruta × 1.15   ← lo que se muestra en pantalla
+      // costo unitario   = Σ(costs[].amount) si existe, o (g/1000)×800 fallback
+      // ganancia bruta   = (precio - costo) × qty
+      // ganancia con ISV = bruta × 1.15
       function orderProfit(o) {
-        let mat = 0;
+        let bruta = 0;
         for (const item of (o.items || [])) {
-          const g = (prodMap[item.id]?.g) || 0;
-          mat += (item.qty || 1) * (g / 1000) * 800;
+          const p = prodMap[item.id];
+          let unitCost = 0;
+          if (p && Array.isArray(p.costs) && p.costs.length) {
+            unitCost = p.costs.reduce((s, c) => s + Number(c.amount || 0), 0);
+          } else if (p && p.g) {
+            unitCost = (p.g / 1000) * 800;
+          }
+          const unitPrice = Number(item.price || p?.price || 0);
+          bruta += (unitPrice - unitCost) * (item.qty || 1);
         }
-        const bruta = mat * 4;
         return { bruta: Math.round(bruta), conISV: Math.round(bruta * 1.15) };
       }
 
