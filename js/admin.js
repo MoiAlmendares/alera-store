@@ -297,7 +297,7 @@
         cancelado: { label:'Cancelado',  cls:'bg-red-100 text-red-600'       },
       };
 
-      list.innerHTML = filtered.map(o => {
+      list.innerHTML = filtered.filter(o => o.customer && o.items).map(o => {
         const sc        = statusMap[o.status] || statusMap.pendiente;
         const zonaLabel = o.zone === 'tgu' ? 'Dentro de TGU' : 'Fuera de TGU';
         const pagoLabel = o.payment === 'contraentrega' ? 'Contra entrega' : 'Transferencia';
