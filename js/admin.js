@@ -344,7 +344,7 @@
             </div>
 
             <div class="border-t border-zinc-50 pt-3 space-y-1.5">
-              ${o.items.map(item => `
+              ${(o.items || []).map(item => `
                 <div class="flex justify-between text-sm">
                   <span class="text-zinc-600">${esc(String(item.qty))}x ${esc(item.name)}</span>
                   <span class="font-medium">L ${Number(item.price) * Number(item.qty)}</span>
@@ -939,7 +939,7 @@
         const { bruta, conISV } = orderProfit(o);
         const netP         = conISV;
         const oComision    = Math.round(bruta * pct / 100);
-        const itemsSummary = o.items.map(i => `${i.qty}x ${esc(i.name)}`).join(', ');
+        const itemsSummary = (o.items || []).map(i => `${i.qty}x ${esc(i.name)}`).join(', ');
         const vLabel       = esc(o.vendedor || 'Web');
         return `
           <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors">
