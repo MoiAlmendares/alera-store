@@ -336,9 +336,9 @@
                   <span class="text-xs text-zinc-400 font-mono">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</span>
                   ${vendorBadge}
                 </div>
-                <div class="font-bold text-base">${esc(o.customer.name)}</div>
-                <div class="text-sm text-zinc-500 mt-0.5">${esc(o.customer.phone)}</div>
-                <div class="text-sm text-zinc-400">${esc(o.customer.address)}</div>
+                <div class="font-bold text-base">${esc(o.customer?.name || 'Unknown')}</div>
+                <div class="text-sm text-zinc-500 mt-0.5">${esc(o.customer?.phone || '—')}</div>
+                <div class="text-sm text-zinc-400">${esc(o.customer?.address || '—')}</div>
               </div>
               <span class="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${sc.cls}">${sc.label}</span>
             </div>
@@ -945,8 +945,8 @@
           <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors">
             <td class="px-6 py-3 text-xs font-mono text-zinc-400">#${String(o.orderNum).padStart(3,'0')}</td>
             <td class="px-4 py-3">
-              <div class="font-semibold text-sm">${esc(o.customer.name)}</div>
-              <div class="text-xs text-zinc-400">${esc(o.customer.phone)}</div>
+              <div class="font-semibold text-sm">${esc(o.customer?.name || 'Unknown')}</div>
+              <div class="text-xs text-zinc-400">${esc(o.customer?.phone || '—')}</div>
             </td>
             <td class="px-4 py-3 text-xs text-zinc-500 whitespace-nowrap">${esc(o.date)}</td>
             <td class="px-4 py-3"><span class="text-xs font-semibold bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">${vLabel}</span></td>
@@ -1233,8 +1233,10 @@
 
     // ─── Boot ─────────────────────────────────────────────────────────────────
     if (sessionStorage.getItem('alera_admin')) {
-      loadData().then(renderAll);
-      setInterval(pollOrders, 20000); // auto-refresh cada 20s
+      loadData().then(() => {
+        renderAll();
+        setInterval(pollOrders, 20000); // auto-refresh cada 20s
+      });
     } else {
       location.href = 'login.html';
     }
