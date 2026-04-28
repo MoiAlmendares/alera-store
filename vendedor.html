@@ -205,33 +205,25 @@
   </div>
 
   <!-- MODAL AGREGAR PRODUCTO -->
-  <div id="ap-modal-overlay" class="hidden fixed inset-0 bg-black/40 modal-backdrop z-50 flex items-center justify-center p-4"
-       onclick="if(event.target===this) closeAddProductModal()">
-    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[92vh]">
+  <div id="ap-modal-overlay" class="hidden fixed inset-0 bg-black/40 modal-backdrop z-50 flex items-center justify-center p-4" onclick="if(event.target===this) closeAddProductModal()">
+    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
       <div class="flex items-center justify-between px-6 py-5 border-b border-zinc-100 shrink-0">
         <h3 class="font-bold text-lg">Agregar producto</h3>
         <button onclick="closeAddProductModal()" class="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-6 space-y-4">
+      <div class="p-6 space-y-4 overflow-y-auto flex-1">
 
-        <!-- Nombre -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Nombre del producto *</label>
-          <input id="ap-name" type="text" placeholder="Ej. Llavero Cubone" maxlength="80"
-            class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400" />
-        </div>
-
-        <!-- Precio + Categoría -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="space-y-1.5">
-            <label class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Precio (L) *</label>
-            <input id="ap-price" type="number" placeholder="0" min="1" step="1"
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Nombre del producto *</label>
+            <input id="ap-name" type="text" placeholder="Ej: Llavero Cubone"
               class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400" />
           </div>
-          <div class="space-y-1.5">
-            <label class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Categoría</label>
+
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Categoría *</label>
             <select id="ap-category"
               class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400 bg-white">
               <option value="Llavero">🔑 Llavero</option>
@@ -239,41 +231,99 @@
               <option value="Decoración">🖼️ Decoración</option>
               <option value="Figura">🎭 Figura</option>
               <option value="Set">📦 Set</option>
-              <option value="Otro" selected>Otro</option>
             </select>
           </div>
-        </div>
 
-        <!-- Fandom + Emoji -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="space-y-1.5">
-            <label class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Fandom / universo</label>
-            <input id="ap-fandom" type="text" placeholder="Ej. Pokémon" maxlength="40"
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Fandom / Universo</label>
+            <input id="ap-fandom" type="text" placeholder="Ej: Pokémon, Star Wars"
               class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400" />
           </div>
-          <div class="space-y-1.5">
-            <label class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Emoji del producto</label>
-            <input id="ap-emoji" type="text" placeholder="📦" maxlength="4"
+
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Precio (L) *</label>
+            <input id="ap-price" type="number" placeholder="150"
               class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Filamento (g)</label>
+            <input id="ap-g" type="number" placeholder="0" min="0" step="1"
+              class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Emoji (ícono)</label>
+            <input id="ap-emoji" type="text" placeholder="🔑"
+              class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Badge</label>
+            <select id="ap-badge"
+              class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400 bg-white">
+              <option value="">Sin badge</option>
+              <option value="🔥 Más vendido">🔥 Más vendido</option>
+              <option value="✨ Nuevo">✨ Nuevo</option>
+              <option value="⚡ Oferta">⚡ Oferta</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Card oscura</label>
+            <div class="flex items-center gap-3 mt-1">
+              <button type="button" onclick="apToggleDark()" id="ap-dark-toggle"
+                class="relative w-10 h-6 rounded-full bg-zinc-200 transition-colors duration-200">
+                <span id="ap-dark-thumb" class="absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200"></span>
+              </button>
+              <span id="ap-dark-label" class="text-sm text-zinc-500">No</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Disponibilidad</label>
+            <div class="flex items-center gap-3 mt-1">
+              <button type="button" onclick="apToggleStock()" id="ap-stock-toggle"
+                class="relative w-10 h-6 rounded-full bg-teal-500 transition-colors duration-200">
+                <span id="ap-stock-thumb" class="absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 translate-x-4"></span>
+              </button>
+              <span id="ap-stock-label" class="text-sm text-zinc-500">Disponible</span>
+            </div>
           </div>
         </div>
 
-        <!-- Descripción -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Descripción corta</label>
-          <textarea id="ap-desc" rows="2" placeholder="Ej. Llavero impreso en 3D, pintado a mano..." maxlength="300"
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Descripción breve</label>
+          <textarea id="ap-desc" rows="3" maxlength="300" placeholder="Ej: Llavero en resina con detalle fino. Resistente y liviano, perfecto para mochila o llaves."
             class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400 resize-none"></textarea>
         </div>
 
-        <!-- URL imagen -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">URL de imagen (opcional)</label>
-          <input id="ap-img" type="url" placeholder="https://…"
-            class="w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400" />
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Foto principal (portada)</label>
+          <div class="border-2 border-dashed border-zinc-200 rounded-2xl p-4 text-center hover:border-teal-400 transition-colors cursor-pointer" onclick="document.getElementById('ap-img-file').click()">
+            <div id="ap-img-preview-wrap" class="hidden mb-3">
+              <img id="ap-img-preview" class="w-24 h-24 object-cover rounded-xl mx-auto" />
+            </div>
+            <svg class="w-8 h-8 text-zinc-300 mx-auto mb-2" id="ap-img-placeholder-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+            <p class="text-sm text-zinc-400" id="ap-img-upload-label">Clic para subir imagen</p>
+            <p class="text-xs text-zinc-300 mt-1">JPG, PNG — se sube a S3</p>
+            <input id="ap-img-file" type="file" accept="image/*" class="hidden" onchange="apHandleImageUpload(event)" />
+          </div>
+          <p class="text-xs text-zinc-400 mt-2">O ingresá una URL:</p>
+          <input id="ap-img-url" type="text" placeholder="https://... o assets/foto.jpg"
+            class="mt-1.5 w-full border border-zinc-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400"
+            oninput="apHandleUrlInput()" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Galería adicional <span class="text-zinc-300 font-normal normal-case">(hasta 4 fotos más)</span></label>
+          <div class="grid grid-cols-4 gap-2" id="ap-gallery-slots"></div>
+          <p class="text-xs text-zinc-400 mt-1.5">Estas fotos aparecen en la galería de la página del producto.</p>
         </div>
 
         <div id="ap-error" class="hidden bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl"></div>
       </div>
+
       <div class="px-6 py-4 border-t border-zinc-100 flex gap-3 justify-end shrink-0">
         <button onclick="closeAddProductModal()" class="text-sm font-semibold px-5 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 transition-colors">Cancelar</button>
         <button id="ap-submit-btn" onclick="submitAddProduct()" class="text-sm font-semibold bg-teal-500 hover:bg-teal-600 text-white px-6 py-2.5 rounded-xl transition-colors">Guardar producto</button>

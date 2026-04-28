@@ -364,17 +364,156 @@ function saveManualOrder() {
 }
 
 // ─── Add Product Modal ────────────────────────────────────────────────────────
-const AP_CATEGORIES = ['Llavero','Lámpara','Decoración','Figura','Set','Otro'];
+let apDarkOn = false;
+let apStockOn = true;
+let apUploadedImgData = '';
+let apGallerySlots = ['', '', '', ''];
+
+function apFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = e => resolve(e.target.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function apToggleDark() { apDarkOn = !apDarkOn; apUpdateDarkToggle(); }
+function apUpdateDarkToggle() {
+  const btn = document.getElementById('ap-dark-toggle');
+  const thumb = document.getElementById('ap-dark-thumb');
+  const label = document.getElementById('ap-dark-label');
+  if (apDarkOn) {
+    btn.classList.replace('bg-zinc-200','bg-zinc-900');
+    thumb.classList.add('translate-x-4');
+    label.textContent = 'Sí';
+  } else {
+    btn.classList.replace('bg-zinc-900','bg-zinc-200');
+    thumb.classList.remove('translate-x-4');
+    label.textContent = 'No';
+  }
+}
+
+function apToggleStock() { apStockOn = !apStockOn; apUpdateStockToggle(); }
+function apUpdateStockToggle() {
+  const btn = document.getElementById('ap-stock-toggle');
+  const thumb = document.getElementById('ap-stock-thumb');
+  const label = document.getElementById('ap-stock-label');
+  if (apStockOn) {
+    btn.classList.replace('bg-zinc-200','bg-teal-500');
+    thumb.classList.add('translate-x-4');
+    label.textContent = 'Disponible';
+  } else {
+    btn.classList.replace('bg-teal-500','bg-zinc-200');
+    thumb.classList.remove('translate-x-4');
+    label.textContent = 'Agotado';
+  }
+}
+
+function apRenderGallerySlots() {
+  const container = document.getElementById('ap-gallery-slots');
+  if (!container) return;
+  container.innerHTML = apGallerySlots.map((url, i) => `
+    <div class="relative group">
+      <div class="aspect-square rounded-xl border-2 border-dashed border-zinc-200 overflow-hidden bg-zinc-50 flex items-center justify-center cursor-pointer hover:border-teal-400 transition-colors"
+           onclick="document.getElementById('ap-gallery-file-${i}').click()">
+        ${url
+          ? `<img src="${url}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\\'text-zinc-300 text-2xl\\'>📷</span>'" />`
+          : `<span class="text-zinc-300 text-2xl">+</span>`}
+        <input id="ap-gallery-file-${i}" type="file" accept="image/*" class="hidden"
+          data-slot="${i}" onchange="apHandleGalleryUpload(event)" />
+      </div>
+      ${url ? `<button onclick="apClearGallerySlot(${i})" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none">&times;</button>` : ''}
+      <p class="text-[10px] text-zinc-400 text-center mt-1">Foto ${i + 2}</p>
+    </div>`).join('');
+}
+
+async function apHandleGalleryUpload(event) {
+  const file = event.target.files[0];
+  const slot = Number(event.target.dataset.slot);
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { apGallerySlots[slot] = e.target.result; apRenderGallerySlots(); };
+  reader.readAsDataURL(file);
+  try {
+    const base64 = await apFileToBase64(file);
+    const r = await authFetch(API + '/upload', { method: 'POST', body: JSON.stringify({ data: base64, mime: file.type }) });
+    const data = await r?.json();
+    if (r?.ok && data?.url) { apGallerySlots[slot] = data.url; apRenderGallerySlots(); }
+    else { showToast('Error al subir la foto ' + (slot + 2), false); apGallerySlots[slot] = ''; apRenderGallerySlots(); }
+  } catch(e) {
+    console.error('ap gallery upload:', e);
+    showToast('Error de conexión al subir foto', false);
+    apGallerySlots[slot] = '';
+    apRenderGallerySlots();
+  }
+}
+
+function apClearGallerySlot(slot) { apGallerySlots[slot] = ''; apRenderGallerySlots(); }
+
+async function apHandleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('ap-img-preview').src = e.target.result;
+    document.getElementById('ap-img-preview-wrap').classList.remove('hidden');
+    document.getElementById('ap-img-placeholder-icon').style.display = 'none';
+    document.getElementById('ap-img-upload-label').textContent = 'Subiendo…';
+    document.getElementById('ap-img-url').value = '';
+    apUploadedImgData = '';
+  };
+  reader.readAsDataURL(file);
+  try {
+    const base64 = await apFileToBase64(file);
+    const r = await authFetch(API + '/upload', { method: 'POST', body: JSON.stringify({ data: base64, mime: file.type }) });
+    const data = await r?.json();
+    if (r?.ok && data?.url) {
+      apUploadedImgData = '';
+      document.getElementById('ap-img-url').value = data.url;
+      document.getElementById('ap-img-preview').src = data.url;
+      document.getElementById('ap-img-upload-label').textContent = '✓ Subida correctamente';
+    } else {
+      showToast('Error al subir la imagen', false);
+      document.getElementById('ap-img-upload-label').textContent = 'Error — intentá de nuevo';
+    }
+  } catch(e) {
+    console.error('ap img upload:', e);
+    showToast('Error de conexión al subir imagen', false);
+  }
+}
+
+function apHandleUrlInput() {
+  const url = document.getElementById('ap-img-url').value.trim();
+  apUploadedImgData = '';
+  if (url) {
+    document.getElementById('ap-img-preview').src = url;
+    document.getElementById('ap-img-preview-wrap').classList.remove('hidden');
+    document.getElementById('ap-img-placeholder-icon').style.display = 'none';
+  } else {
+    document.getElementById('ap-img-preview-wrap').classList.add('hidden');
+    document.getElementById('ap-img-placeholder-icon').style.display = '';
+  }
+}
 
 function openAddProductModal() {
-  document.getElementById('ap-name').value     = '';
-  document.getElementById('ap-price').value    = '';
-  document.getElementById('ap-fandom').value   = '';
-  document.getElementById('ap-emoji').value    = '';
-  document.getElementById('ap-desc').value     = '';
-  document.getElementById('ap-img').value      = '';
-  document.getElementById('ap-category').value = 'Otro';
+  apDarkOn = false; apStockOn = true; apUploadedImgData = ''; apGallerySlots = ['', '', '', ''];
+  document.getElementById('ap-name').value      = '';
+  document.getElementById('ap-category').value  = 'Llavero';
+  document.getElementById('ap-fandom').value    = '';
+  document.getElementById('ap-price').value     = '';
+  document.getElementById('ap-g').value         = '';
+  document.getElementById('ap-emoji').value     = '';
+  document.getElementById('ap-badge').value     = '';
+  document.getElementById('ap-desc').value      = '';
+  document.getElementById('ap-img-url').value   = '';
+  document.getElementById('ap-img-preview-wrap').classList.add('hidden');
+  document.getElementById('ap-img-placeholder-icon').style.display = '';
+  document.getElementById('ap-img-upload-label').textContent = 'Clic para subir imagen';
   document.getElementById('ap-error').classList.add('hidden');
+  apUpdateDarkToggle();
+  apUpdateStockToggle();
+  apRenderGallerySlots();
   document.getElementById('ap-modal-overlay').classList.remove('hidden');
   document.getElementById('ap-name').focus();
 }
@@ -388,14 +527,18 @@ async function submitAddProduct() {
   const price    = parseFloat(document.getElementById('ap-price').value);
   const category = document.getElementById('ap-category').value;
   const fandom   = document.getElementById('ap-fandom').value.trim();
+  const g        = parseFloat(document.getElementById('ap-g').value) || 0;
   const emoji    = document.getElementById('ap-emoji').value.trim() || '📦';
+  const badge    = document.getElementById('ap-badge').value;
   const desc     = document.getElementById('ap-desc').value.trim();
-  const img      = document.getElementById('ap-img').value.trim();
+  const imgVal   = apUploadedImgData || document.getElementById('ap-img-url').value.trim();
+  const extraImgs = apGallerySlots.filter(Boolean);
+  const imgs     = [imgVal, ...extraImgs].filter(Boolean);
   const errEl    = document.getElementById('ap-error');
   const btn      = document.getElementById('ap-submit-btn');
 
-  if (!name)            { errEl.textContent = 'El nombre es obligatorio.';         errEl.classList.remove('hidden'); return; }
-  if (!price || price <= 0) { errEl.textContent = 'El precio debe ser mayor a 0.'; errEl.classList.remove('hidden'); return; }
+  if (!name)                { errEl.textContent = 'El nombre es obligatorio.';         errEl.classList.remove('hidden'); return; }
+  if (!price || price <= 0) { errEl.textContent = 'El precio debe ser mayor a 0.';    errEl.classList.remove('hidden'); return; }
   errEl.classList.add('hidden');
 
   btn.disabled = true;
@@ -404,7 +547,7 @@ async function submitAddProduct() {
   try {
     const r = await authFetch(API + '/products', {
       method: 'POST',
-      body: JSON.stringify({ name, price, category, fandom, emoji, desc, img }),
+      body: JSON.stringify({ name, price, category, fandom, g, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn }),
     });
     const data = await r?.json();
     if (!r || !r.ok) {

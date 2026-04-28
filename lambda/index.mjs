@@ -405,6 +405,9 @@ export const handler = async (event) => {
       const existingItems = (existing.Items || []).map(i => unmarshall(i)).filter(i => i.id !== SETTINGS_ID);
       const maxId       = existingItems.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0);
 
+      const safeImgs = Array.isArray(product.imgs)
+        ? product.imgs.filter(u => typeof u === 'string').slice(0, 5).map(u => u.slice(0, 500))
+        : [];
       const newProduct = {
         id:       maxId + 1,
         name:     stripHtml(product.name.trim()).slice(0, 80),
@@ -412,10 +415,18 @@ export const handler = async (event) => {
         category: stripHtml(String(product.category || 'Otro')).slice(0, 40),
         fandom:   stripHtml(String(product.fandom || '')).slice(0, 40),
         emoji:    stripHtml(String(product.emoji || '📦')).slice(0, 4),
+        badge:    stripHtml(String(product.badge || '')).slice(0, 40),
         desc:     stripHtml(String(product.desc || '')).slice(0, 300),
         img:      typeof product.img === 'string' ? product.img.slice(0, 500) : '',
+        imgs:     safeImgs,
+        g:        Math.max(0, Number(product.g) || 0),
+        costs:    Array.isArray(product.costs) ? product.costs.slice(0, 20).map(c => ({
+                    label: stripHtml(String(c?.label || '')).slice(0, 80),
+                    amount: Math.max(0, Number(c?.amount) || 0),
+                  })) : [],
+        dark:     product.dark === true,
         active:   true,
-        stock:    true,
+        stock:    product.stock !== false,
       };
 
       await db.send(new PutItemCommand({
