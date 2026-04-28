@@ -14,8 +14,8 @@ async function loadData() {
       authFetch(API + '/products').then(r => r?.json()),
       authFetch(API + '/orders').then(r => r?.json())
     ]);
-    _products = pr;
-    _orders   = or;
+    _products = Array.isArray(pr) ? pr : [];
+    _orders   = Array.isArray(or) ? or : [];
   } catch(e) { console.error('loadData:', e); }
 }
 
@@ -256,14 +256,20 @@ function updateOrderStatus(id, status) {
 // ─── Manual Order Modal ───────────────────────────────────────────────────────
 let omItems = [], omZone = 'tgu', omPayment = 'contraentrega';
 
-function openOrderModal() {
+async function openOrderModal() {
   omItems = []; omZone = 'tgu'; omPayment = 'contraentrega';
   document.getElementById('om-name').value = '';
   document.getElementById('om-phone').value = '';
   document.getElementById('om-address').value = '';
   document.getElementById('om-qty').value = '1';
   document.getElementById('om-error').classList.add('hidden');
-  const products = getProducts().filter(p => p.active && p.stock !== false);
+  // Refetch productos para obtener precios/stock más recientes
+  try {
+    const r = await authFetch(API + '/products');
+    const pr = await r?.json();
+    if (Array.isArray(pr)) _products = pr;
+  } catch(e) { console.error('refresh products:', e); }
+  const products = (getProducts() || []).filter(p => p.active && p.stock !== false);
   document.getElementById('om-product-select').innerHTML = products.map(p =>
     `<option value="${p.id}">L ${p.price} — ${p.name}</option>`).join('');
   setOmZone('tgu'); setOmPayment('contraentrega'); renderOmItems();
