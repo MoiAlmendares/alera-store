@@ -150,18 +150,25 @@ function validateOrder(order) {
   if (!order || typeof order !== 'object')               return 'Pedido inválido.';
   if (!order.customer || typeof order.customer !== 'object') return 'Datos de cliente faltantes.';
 
+  const isPers = order.type === 'personalizado';
   const { name, phone, address } = order.customer;
   if (!name    || name.trim().length < 2)                return 'Nombre inválido.';
   if (!phone   || !/^\d{6,15}$/.test(phone.trim()))     return 'Teléfono inválido.';
-  if (!address || address.trim().length < 3)             return 'Dirección inválida.';
+  if (!isPers && (!address || address.trim().length < 3)) return 'Dirección inválida.';
   if (name.length    > LIMITS.name)                      return 'Nombre demasiado largo.';
   if (phone.length   > LIMITS.phone)                     return 'Teléfono demasiado largo.';
-  if (address.length > LIMITS.address)                   return 'Dirección demasiado larga.';
+  if (address && address.length > LIMITS.address)        return 'Dirección demasiado larga.';
 
-  if (!Array.isArray(order.items) || order.items.length === 0) return 'El pedido no tiene productos.';
-  if (order.items.length > 50)                           return 'Demasiados productos.';
+  if (isPers) {
+    if (!order.description || String(order.description).trim().length < 3) return 'La descripción es obligatoria.';
+    if (String(order.description).length > 500)          return 'Descripción demasiado larga.';
+    if (!order.total || Number(order.total) <= 0)        return 'El total debe ser mayor a 0.';
+  } else {
+    if (!Array.isArray(order.items) || order.items.length === 0) return 'El pedido no tiene productos.';
+    if (order.items.length > 50)                         return 'Demasiados productos.';
+    if (!['tgu','fuera'].includes(order.zone))           return 'Zona inválida.';
+  }
   if (!['contraentrega','transferencia'].includes(order.payment)) return 'Método de pago inválido.';
-  if (!['tgu','fuera'].includes(order.zone))             return 'Zona inválida.';
   if (order.transferImg?.length > 1_400_000)             return 'Imagen demasiado grande (máx 1 MB).';
 
   return null;
@@ -170,13 +177,17 @@ function validateOrder(order) {
 function sanitizeOrder(order) {
   order.customer.name    = stripHtml(order.customer.name);
   order.customer.phone   = order.customer.phone.replace(/\D/g, '').slice(0, 15);
-  order.customer.address = stripHtml(order.customer.address);
-  order.items = order.items.map(item => ({
+  order.customer.address = stripHtml(order.customer.address || '');
+  order.items = Array.isArray(order.items) ? order.items.map(item => ({
     id:    Number(item.id),
     name:  stripHtml(String(item.name)).slice(0, 100),
     qty:   Math.min(Math.max(1, Number(item.qty)), 99),
     price: Math.max(0, Number(item.price)),
-  }));
+  })) : [];
+  if (order.type === 'personalizado') {
+    order.description = stripHtml(String(order.description || '')).slice(0, 500);
+    order.matCost     = Math.max(0, Number(order.matCost) || 0);
+  }
   order.subtotal = Math.max(0, Number(order.subtotal));
   order.shipping = Math.max(0, Number(order.shipping));
   order.total    = Math.max(0, Number(order.total));

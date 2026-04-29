@@ -158,9 +158,10 @@ function renderOrders() {
 
   list.innerHTML = filtered.filter(o => o.customer && o.items).map(o => {
     const sc        = statusMap[o.status] || statusMap.pendiente;
+    const isPers    = o.type === 'personalizado' || o.zone === 'personalizado';
     const zonaLabel = o.zone === 'tgu' ? 'Dentro de TGU' : 'Fuera de TGU';
     const pagoLabel = o.payment === 'contraentrega' ? 'Contra entrega' : 'Transferencia';
-    const approx    = o.zone !== 'tgu' ? ' (aprox.)' : '';
+    const approx    = !isPers && o.zone !== 'tgu' ? ' (aprox.)' : '';
     const isMine    = o.vendedor && o.vendedor === me;
     const isOthers  = o.vendedor && o.vendedor !== me;
 
@@ -193,6 +194,30 @@ function renderOrders() {
          </div>`
       : `<button data-order-id="${o.id}" onclick="updateOrderStatus(Number(this.dataset.orderId),'pendiente')" class="w-full text-xs text-zinc-400 hover:text-zinc-600 transition-colors py-1 text-center">Restaurar como pendiente</button>`;
 
+    const persBadge = isPers
+      ? `<span class="text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full">✨ Personalizado</span>`
+      : '';
+    const addressLine = isPers && !o.customer?.address
+      ? ''
+      : `<div class="text-sm text-zinc-400">${esc(o.customer?.address || '—')}</div>`;
+    const itemsBlock = isPers
+      ? `<div class="border-t border-zinc-50 pt-3">
+           <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Descripción</p>
+           <p class="text-sm text-zinc-700 whitespace-pre-wrap">${esc(o.description || '—')}</p>
+         </div>`
+      : `<div class="border-t border-zinc-50 pt-3 space-y-1.5">
+           ${(o.items || []).map(i => `<div class="flex justify-between text-sm"><span class="text-zinc-600">${esc(String(i.qty))}x ${esc(i.name)}</span><span class="font-medium">L ${Number(i.price) * Number(i.qty)}</span></div>`).join('')}
+         </div>`;
+    const totalsBlock = isPers
+      ? `<div class="border-t border-zinc-100 pt-3 space-y-1 text-sm">
+           <div class="flex justify-between font-bold"><span>Total</span><span>L ${o.total}</span></div>
+           <div class="text-xs text-zinc-400 pt-0.5">Pago: ${pagoLabel}</div>
+         </div>`
+      : `<div class="border-t border-zinc-100 pt-3 space-y-1 text-sm">
+           <div class="flex justify-between text-zinc-400"><span>Envío (${zonaLabel})</span><span>L ${o.shipping}</span></div>
+           <div class="flex justify-between font-bold"><span>Total</span><span>L ${o.total}${approx}</span></div>
+           <div class="text-xs text-zinc-400 pt-0.5">Pago: ${pagoLabel}</div>
+         </div>`;
     return `
       <div class="bg-white rounded-2xl border ${isMine ? 'border-teal-200' : 'border-zinc-200'} p-5 space-y-4">
         <div class="flex items-start justify-between gap-3">
@@ -200,21 +225,16 @@ function renderOrders() {
             <div class="flex items-center gap-2 flex-wrap mb-1">
               <span class="text-xs text-zinc-400 font-mono">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</span>
               ${assignBadge}
+              ${persBadge}
             </div>
             <div class="font-bold text-base">${esc(o.customer?.name || 'Unknown')}</div>
             <div class="text-sm text-zinc-500 mt-0.5">${esc(o.customer?.phone || '—')}</div>
-            <div class="text-sm text-zinc-400">${esc(o.customer?.address || '—')}</div>
+            ${addressLine}
           </div>
           <span class="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${sc.cls}">${sc.label}</span>
         </div>
-        <div class="border-t border-zinc-50 pt-3 space-y-1.5">
-          ${(o.items || []).map(i => `<div class="flex justify-between text-sm"><span class="text-zinc-600">${esc(String(i.qty))}x ${esc(i.name)}</span><span class="font-medium">L ${Number(i.price) * Number(i.qty)}</span></div>`).join('')}
-        </div>
-        <div class="border-t border-zinc-100 pt-3 space-y-1 text-sm">
-          <div class="flex justify-between text-zinc-400"><span>Envío (${zonaLabel})</span><span>L ${o.shipping}</span></div>
-          <div class="flex justify-between font-bold"><span>Total</span><span>L ${o.total}${approx}</span></div>
-          <div class="text-xs text-zinc-400 pt-0.5">Pago: ${pagoLabel}</div>
-        </div>
+        ${itemsBlock}
+        ${totalsBlock}
         ${actions}
       </div>`;
   }).join('');
@@ -254,14 +274,17 @@ function updateOrderStatus(id, status) {
 }
 
 // ─── Manual Order Modal ───────────────────────────────────────────────────────
-let omItems = [], omZone = 'tgu', omPayment = 'contraentrega';
+let omItems = [], omZone = 'tgu', omPayment = 'contraentrega', omType = null;
 
 async function openOrderModal() {
-  omItems = []; omZone = 'tgu'; omPayment = 'contraentrega';
+  omItems = []; omZone = 'tgu'; omPayment = 'contraentrega'; omType = null;
   document.getElementById('om-name').value = '';
   document.getElementById('om-phone').value = '';
   document.getElementById('om-address').value = '';
   document.getElementById('om-qty').value = '1';
+  const desc = document.getElementById('om-description');  if (desc) desc.value = '';
+  const tot  = document.getElementById('om-total-input');  if (tot)  tot.value  = '';
+  const cst  = document.getElementById('om-cost-input');   if (cst)  cst.value  = '';
   document.getElementById('om-error').classList.add('hidden');
   // Refetch productos para obtener precios/stock más recientes
   try {
@@ -273,7 +296,39 @@ async function openOrderModal() {
   document.getElementById('om-product-select').innerHTML = products.map(p =>
     `<option value="${p.id}">L ${p.price} — ${p.name}</option>`).join('');
   setOmZone('tgu'); setOmPayment('contraentrega'); renderOmItems();
+  // Show picker, hide form
+  document.getElementById('om-type-picker').classList.remove('hidden');
+  document.getElementById('om-form').classList.add('hidden');
+  document.getElementById('om-footer').classList.add('hidden');
+  document.getElementById('om-back-btn').classList.add('hidden');
+  document.getElementById('om-title').textContent = 'Nuevo pedido';
   document.getElementById('order-modal-overlay').classList.remove('hidden');
+}
+
+function setOmType(type) {
+  omType = type;
+  document.getElementById('om-type-picker').classList.add('hidden');
+  document.getElementById('om-form').classList.remove('hidden');
+  document.getElementById('om-footer').classList.remove('hidden');
+  document.getElementById('om-footer').classList.add('flex');
+  document.getElementById('om-back-btn').classList.remove('hidden');
+  document.getElementById('om-title').textContent = type === 'personalizado' ? 'Pedido personalizado' : 'Pedido de catálogo';
+  const isPers = type === 'personalizado';
+  document.getElementById('om-section-products').classList.toggle('hidden', isPers);
+  document.getElementById('om-section-zone').classList.toggle('hidden', isPers);
+  document.getElementById('om-section-description').classList.toggle('hidden', !isPers);
+  document.getElementById('om-summary').classList.toggle('hidden', isPers || !omItems.length);
+  document.getElementById('om-address').placeholder = isPers ? 'Dirección (opcional)' : 'Dirección de entrega *';
+}
+
+function omBackToPicker() {
+  omType = null;
+  document.getElementById('om-type-picker').classList.remove('hidden');
+  document.getElementById('om-form').classList.add('hidden');
+  document.getElementById('om-footer').classList.add('hidden');
+  document.getElementById('om-back-btn').classList.add('hidden');
+  document.getElementById('om-title').textContent = 'Nuevo pedido';
+  document.getElementById('om-error').classList.add('hidden');
 }
 
 function closeOrderModal() { document.getElementById('order-modal-overlay').classList.add('hidden'); }
@@ -344,20 +399,50 @@ function saveManualOrder() {
   const phone   = document.getElementById('om-phone').value.trim();
   const address = document.getElementById('om-address').value.trim();
   const errEl   = document.getElementById('om-error');
-  if (!name)          { errEl.textContent = 'El nombre es obligatorio.';    errEl.classList.remove('hidden'); return; }
-  if (!phone)         { errEl.textContent = 'El teléfono es obligatorio.';  errEl.classList.remove('hidden'); return; }
-  if (!address)       { errEl.textContent = 'La dirección es obligatoria.'; errEl.classList.remove('hidden'); return; }
-  if (!omItems.length){ errEl.textContent = 'Agregá al menos un producto.'; errEl.classList.remove('hidden'); return; }
-  errEl.classList.add('hidden');
-  const subtotal = omItems.reduce((s, x) => s + x.price * x.qty, 0);
-  const shipping = omZone === 'tgu' ? 70 : 90;
-  const order = {
-    id: Date.now(), orderNum: _orders.length + 1,
-    date: new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
-    customer: { name, phone, address },
-    items: omItems.map(x => ({ id: x.id, name: x.name, qty: x.qty, price: x.price })),
-    subtotal, shipping, total: subtotal + shipping, zone: omZone, payment: omPayment, status: 'pendiente',
-  };
+  if (!name)  { errEl.textContent = 'El nombre es obligatorio.';   errEl.classList.remove('hidden'); return; }
+  if (!phone) { errEl.textContent = 'El teléfono es obligatorio.'; errEl.classList.remove('hidden'); return; }
+
+  let order;
+  if (omType === 'personalizado') {
+    const description = document.getElementById('om-description').value.trim();
+    const total       = parseFloat(document.getElementById('om-total-input').value) || 0;
+    const matCost     = parseFloat(document.getElementById('om-cost-input').value) || 0;
+    if (!description) { errEl.textContent = 'La descripción es obligatoria.'; errEl.classList.remove('hidden'); return; }
+    if (!total || total <= 0) { errEl.textContent = 'El total debe ser mayor a 0.'; errEl.classList.remove('hidden'); return; }
+    errEl.classList.add('hidden');
+    order = {
+      id: Date.now() * 1000 + Math.floor(Math.random() * 1000),
+      orderNum: _orders.length + 1,
+      date: new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+      customer: { name, phone, address },
+      type: 'personalizado',
+      description,
+      items: [],
+      subtotal: total,
+      shipping: 0,
+      total,
+      matCost,
+      zone: 'personalizado',
+      payment: omPayment,
+      status: 'pendiente',
+    };
+  } else {
+    if (!address)       { errEl.textContent = 'La dirección es obligatoria.';  errEl.classList.remove('hidden'); return; }
+    if (!omItems.length){ errEl.textContent = 'Agregá al menos un producto.';  errEl.classList.remove('hidden'); return; }
+    errEl.classList.add('hidden');
+    const subtotal = omItems.reduce((s, x) => s + x.price * x.qty, 0);
+    const shipping = omZone === 'tgu' ? 70 : 90;
+    order = {
+      id: Date.now() * 1000 + Math.floor(Math.random() * 1000),
+      orderNum: _orders.length + 1,
+      date: new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+      customer: { name, phone, address },
+      type: 'catalogo',
+      items: omItems.map(x => ({ id: x.id, name: x.name, qty: x.qty, price: x.price })),
+      subtotal, shipping, total: subtotal + shipping,
+      zone: omZone, payment: omPayment, status: 'pendiente',
+    };
+  }
   _orders.unshift(order);
   authFetch(API + '/orders', { method:'POST', body:JSON.stringify(order) }).catch(console.error);
   closeOrderModal(); renderStats(); renderOrders(); updatePendingBadge();
