@@ -75,8 +75,8 @@
     }
 
     /* Drawer */
-    #cart-drawer { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
-    #cart-drawer.open { transform: translateX(0); }
+    #cart-drawer { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); transform: translateX(100%); }
+    #cart-drawer.open { transform: translateX(0) !important; }
     #cart-backdrop { transition: opacity 0.3s ease; }
     #cart-success { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 60; }
 
