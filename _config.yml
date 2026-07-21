@@ -1,0 +1,11 @@
+exclude:
+  - lambda/
+  - deploy-lambda.ps1
+  - simulate.js
+  - plan-ventas-abril-2026.md
+  - package.json
+  - package-lock.json
+  - tailwind.config.js
+  - tailwind.input.css
+  - node_modules/
+  - README.md

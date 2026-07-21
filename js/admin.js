@@ -3,7 +3,8 @@
     async function refreshOrders() {
       try {
         const r = await authFetch(API + '/orders');
-        _orders = await r?.json() || _orders;
+        const fresh = await r?.json();
+        _orders = Array.isArray(fresh) ? fresh : _orders;
         renderStats();
         renderOrders();
         updatePendingBadge();
@@ -140,8 +141,8 @@
           authFetch(API + '/products').then(r => r?.json()),
           authFetch(API + '/orders').then(r => r?.json())
         ]);
-        _products = pr.length ? pr : DEFAULT_PRODUCTS;
-        _orders   = or;
+        _products = Array.isArray(pr) && pr.length ? pr : DEFAULT_PRODUCTS;
+        _orders   = Array.isArray(or) ? or : [];
       } catch(e) {
         console.error('loadData:', e);
         _products = DEFAULT_PRODUCTS;
@@ -408,7 +409,7 @@
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap mb-1">
-                  <span class="text-xs text-zinc-400 font-mono">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</span>
+                  <span class="text-xs text-zinc-400 font-mono">#${esc(String(o.orderNum).padStart(3,'0'))} &middot; ${esc(o.date)}</span>
                   ${vendorBadge}
                   ${persBadge}
                 </div>
@@ -467,13 +468,26 @@
       }
     }
 
-    function updateOrderStatus(id, status) {
+    async function updateOrderStatus(id, status) {
       const o = _orders.find(x => x.id === id);
-      if (o) o.status = status;
-      authFetch(API + '/orders/' + id, { method:'PATCH', body:JSON.stringify({ status }) }).catch(console.error);
+      if (!o) return;
+      const prev = o.status;
+      o.status = status; // optimistic
       renderStats();
       renderOrders();
       updatePendingBadge();
+      try {
+        const r = await authFetch(API + '/orders/' + id, { method:'PATCH', body:JSON.stringify({ status }) });
+        if (!r || !r.ok) {
+          o.status = prev;
+          renderStats(); renderOrders(); updatePendingBadge();
+          showToast('No se pudo actualizar el pedido', false);
+        }
+      } catch(e) {
+        o.status = prev;
+        renderStats(); renderOrders(); updatePendingBadge();
+        showToast('Error de conexión', false);
+      }
     }
 
     function renderTable() {
@@ -494,20 +508,20 @@
           <td class="px-6 py-4">
             <div class="flex items-center gap-3">
               ${p.img
-                ? `<img src="${p.img}" class="w-10 h-10 rounded-xl object-cover border border-zinc-100 shrink-0" onerror="this.style.display='none';this.nextSibling.style.display='flex'" /><div style="display:none" class="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg shrink-0">${p.emoji||'📦'}</div>`
-                : `<div class="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg shrink-0">${p.emoji||'📦'}</div>`
+                ? `<img src="${esc(p.img)}" class="w-10 h-10 rounded-xl object-cover border border-zinc-100 shrink-0" onerror="this.style.display='none';this.nextSibling.style.display='flex'" /><div style="display:none" class="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg shrink-0">${esc(p.emoji)||'📦'}</div>`
+                : `<div class="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg shrink-0">${esc(p.emoji)||'📦'}</div>`
               }
               <div>
-                <div class="font-semibold text-sm">${p.name}</div>
+                <div class="font-semibold text-sm">${esc(p.name)}</div>
                 ${p.dark ? '<div class="text-xs text-zinc-400">Card oscura</div>' : ''}
               </div>
             </div>
           </td>
-          <td class="px-4 py-4 text-sm text-zinc-600">${p.category}</td>
-          <td class="px-4 py-4 text-sm text-zinc-500">${p.fandom||'—'}</td>
+          <td class="px-4 py-4 text-sm text-zinc-600">${esc(p.category)}</td>
+          <td class="px-4 py-4 text-sm text-zinc-500">${esc(p.fandom)||'—'}</td>
           <td class="px-4 py-4 text-sm font-bold">L ${p.price}</td>
           <td class="px-4 py-4">
-            ${p.badge ? `<span class="text-xs bg-zinc-900 text-white px-2 py-1 rounded-full">${p.badge}</span>` : '<span class="text-zinc-300 text-xs">—</span>'}
+            ${p.badge ? `<span class="text-xs bg-zinc-900 text-white px-2 py-1 rounded-full">${esc(p.badge)}</span>` : '<span class="text-zinc-300 text-xs">—</span>'}
           </td>
           <td class="px-4 py-4">
             <button onclick="toggleActive(${p.id})"
@@ -585,17 +599,23 @@
 
       // Subir a S3 vía Lambda
       try {
-        const base64 = await fileToBase64(file);
+        const compressed = await compressImageUpload(file);
+        if (!compressed) {
+          showToast('No se pudo procesar la foto ' + (slot + 2), false);
+          gallerySlots[slot] = '';
+          renderGallerySlots();
+          return;
+        }
         const r = await authFetch(API + '/upload', {
           method: 'POST',
-          body: JSON.stringify({ data: base64, mime: file.type }),
+          body: JSON.stringify(compressed),
         });
         const data = await r?.json();
         if (r?.ok && data?.url) {
           gallerySlots[slot] = data.url; // reemplazar con URL de S3
           renderGallerySlots();
         } else {
-          showToast('Error al subir la foto ' + (slot + 2), false);
+          showToast(data?.error || ('Error al subir la foto ' + (slot + 2)), false);
           gallerySlots[slot] = '';
           renderGallerySlots();
         }
@@ -617,6 +637,31 @@
         const reader = new FileReader();
         reader.onload  = e => resolve(e.target.result.split(',')[1]);
         reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Redimensiona a máx ~1600px y comprime a JPEG para no exceder el límite de body del lambda.
+    // Devuelve { data, mime } con base64 sin prefijo, o null si falla.
+    function compressImageUpload(file, maxSize = 1600, quality = 0.8) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            if (w > h && w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
+            else if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve({ data: dataUrl.split(',')[1], mime: 'image/jpeg' });
+          };
+          img.onerror = () => resolve(null);
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(null);
         reader.readAsDataURL(file);
       });
     }
@@ -748,10 +793,15 @@
 
       // Subir a S3
       try {
-        const base64 = await fileToBase64(file);
+        const compressed = await compressImageUpload(file);
+        if (!compressed) {
+          showToast('No se pudo procesar la imagen', false);
+          document.getElementById('img-upload-label').textContent = 'Error — intentá de nuevo';
+          return;
+        }
         const r = await authFetch(API + '/upload', {
           method: 'POST',
-          body: JSON.stringify({ data: base64, mime: file.type }),
+          body: JSON.stringify(compressed),
         });
         const data = await r?.json();
         if (r?.ok && data?.url) {
@@ -760,7 +810,7 @@
           document.getElementById('img-preview').src = data.url;
           document.getElementById('img-upload-label').textContent = '✓ Subida correctamente';
         } else {
-          showToast('Error al subir la imagen', false);
+          showToast(data?.error || 'Error al subir la imagen', false);
           document.getElementById('img-upload-label').textContent = 'Error — intentá de nuevo';
         }
       } catch(e) {
@@ -848,10 +898,18 @@
       pendingDeleteId = null;
       document.getElementById('confirm-overlay').classList.add('hidden');
     }
-    document.getElementById('confirm-delete-btn').onclick = () => {
+    document.getElementById('confirm-delete-btn').onclick = async () => {
       if (!pendingDeleteId) return;
-      const products = getProducts().filter(p => p.id !== pendingDeleteId);
-      saveProducts(products);
+      const id = pendingDeleteId;
+      try {
+        const r = await authFetch(API + '/products/' + id, { method:'DELETE' });
+        if (!r || !r.ok) { showToast('No se pudo eliminar el producto', false); return; }
+      } catch(e) {
+        console.error('deleteProduct:', e);
+        showToast('Error de conexión al eliminar', false);
+        return;
+      }
+      _products = getProducts().filter(p => p.id !== id);
       closeConfirm();
       renderAll();
     };
@@ -907,6 +965,10 @@
       // ganancia bruta   = (precio - costo) × qty
       // ganancia con ISV = bruta × 1.15
       function orderProfit(o) {
+        if (o.type === 'personalizado' || o.zone === 'personalizado') {
+          const bruta = Math.round(Number(o.total || 0) - Number(o.matCost || 0));
+          return { bruta, conISV: bruta };
+        }
         let bruta = 0;
         for (const item of (o.items || [])) {
           const p = prodMap[item.id];
@@ -1001,7 +1063,7 @@
         const vLabel       = esc(o.vendedor || 'Web');
         return `
           <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors">
-            <td class="px-6 py-3 text-xs font-mono text-zinc-400">#${String(o.orderNum).padStart(3,'0')}</td>
+            <td class="px-6 py-3 text-xs font-mono text-zinc-400">#${esc(String(o.orderNum).padStart(3,'0'))}</td>
             <td class="px-4 py-3">
               <div class="font-semibold text-sm">${esc(o.customer?.name || 'Unknown')}</div>
               <div class="text-xs text-zinc-400">${esc(o.customer?.phone || '—')}</div>
@@ -1158,13 +1220,14 @@
       document.getElementById('om-summary').classList.remove('hidden');
     }
 
-    function saveManualOrder() {
+    async function saveManualOrder() {
       const name    = document.getElementById('om-name').value.trim();
-      const phone   = document.getElementById('om-phone').value.trim();
+      const phone   = document.getElementById('om-phone').value.replace(/\D/g, '');
       const address = document.getElementById('om-address').value.trim();
       const errEl   = document.getElementById('om-error');
       if (!name)  { errEl.textContent = 'El nombre es obligatorio.';   errEl.classList.remove('hidden'); return; }
       if (!phone) { errEl.textContent = 'El teléfono es obligatorio.'; errEl.classList.remove('hidden'); return; }
+      if (phone.length < 6 || phone.length > 15) { errEl.textContent = 'El teléfono debe tener entre 6 y 15 dígitos.'; errEl.classList.remove('hidden'); return; }
 
       let order;
       if (omType === 'personalizado') {
@@ -1211,8 +1274,22 @@
           status:   'pendiente',
         };
       }
+      try {
+        const r = await authFetch(API + '/orders', { method:'POST', body:JSON.stringify(order) });
+        if (!r) return;
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          errEl.textContent = data.error || 'No se pudo guardar el pedido.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+      } catch(e) {
+        console.error('saveManualOrder:', e);
+        errEl.textContent = 'Error de conexión al guardar el pedido.';
+        errEl.classList.remove('hidden');
+        return;
+      }
       _orders.unshift(order);
-      authFetch(API + '/orders', { method:'POST', body:JSON.stringify(order) }).catch(console.error);
       closeOrderModal();
       renderStats();
       renderOrders();
@@ -1254,8 +1331,8 @@
       const msLastStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
       const msLastEnd   = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).getTime();
 
-      const thisMo   = delivered.filter(o => o.id >= msThisStart);
-      const lastMo   = delivered.filter(o => o.id >= msLastStart && o.id <= msLastEnd);
+      const thisMo   = delivered.filter(o => { const ts = Math.floor(o.id / 1000); return ts >= msThisStart; });
+      const lastMo   = delivered.filter(o => { const ts = Math.floor(o.id / 1000); return ts >= msLastStart && ts <= msLastEnd; });
       const totalRev = delivered.reduce((s, o) => s + (o.total || 0), 0);
       const thisRev  = thisMo.reduce((s, o) => s + (o.total || 0), 0);
       const lastRev  = lastMo.reduce((s, o) => s + (o.total || 0), 0);
@@ -1310,7 +1387,7 @@
         const d     = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
         const start = d.getTime();
         const end   = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
-        const mos   = delivered.filter(o => o.id >= start && o.id <= end);
+        const mos   = delivered.filter(o => { const ts = Math.floor(o.id / 1000); return ts >= start && ts <= end; });
         return { label: d.toLocaleDateString('es-HN', { month: 'short' }), count: mos.length, rev: mos.reduce((s, o) => s + (o.total || 0), 0) };
       });
       const maxC = Math.max(...months.map(m => m.count), 1);

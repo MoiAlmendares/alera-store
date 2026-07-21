@@ -39,6 +39,7 @@ function resp(status, body) {
 }
 
 function unauth() { return resp(401, { error: 'No autorizado.' }); }
+function forbidden() { return resp(403, { error: 'Permiso insuficiente.' }); }
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
 async function checkRateLimit(ip) {
@@ -73,7 +74,9 @@ async function clearRateLimit(ip) {
 
 // ── Helpers de token ──────────────────────────────────────────────────────────
 function secret() {
-  return process.env.JWT_SECRET || 'alera-cambia-esto-en-produccion';
+  const s = process.env.JWT_SECRET;
+  if (!s) throw new Error('JWT_SECRET no configurado');
+  return s;
 }
 
 function createToken(payload) {
@@ -146,6 +149,49 @@ function stripHtml(str) {
   return str.replace(/<[^>]*>/g, '').trim();
 }
 
+// Solo se aceptan URLs http(s) (idealmente del bucket S3); se rechazan
+// esquemas peligrosos (javascript:, data:) y valores con comillas.
+function cleanImgUrl(u) {
+  if (typeof u !== 'string') return '';
+  const s = u.trim().slice(0, 500);
+  if (!s) return '';
+  if (/["'<>]/.test(s)) return '';
+  if (!/^https?:\/\//i.test(s)) return '';
+  return s;
+}
+
+function sanitizeProduct(product, id) {
+  const safeImgs = Array.isArray(product.imgs)
+    ? product.imgs.map(cleanImgUrl).filter(Boolean).slice(0, 5)
+    : [];
+  return {
+    id,
+    name:     stripHtml(String(product.name || '')).slice(0, 80),
+    price:    Math.max(0, Number(product.price) || 0),
+    category: stripHtml(String(product.category || 'Otro')).slice(0, 40),
+    fandom:   stripHtml(String(product.fandom || '')).slice(0, 40),
+    emoji:    stripHtml(String(product.emoji || '📦')).slice(0, 4),
+    badge:    stripHtml(String(product.badge || '')).slice(0, 40),
+    desc:     stripHtml(String(product.desc || '')).slice(0, 300),
+    img:      cleanImgUrl(product.img),
+    imgs:     safeImgs,
+    g:        Math.max(0, Number(product.g) || 0),
+    costs:    Array.isArray(product.costs) ? product.costs.slice(0, 20).map(c => ({
+                label: stripHtml(String(c?.label || '')).slice(0, 80),
+                amount: Math.max(0, Number(c?.amount) || 0),
+              })) : [],
+    dark:     product.dark === true,
+    active:   product.active !== false,
+    stock:    product.stock !== false,
+  };
+}
+
+// Campos internos (márgenes/costos) visibles solo para admin/vendedor.
+function publicProduct(p) {
+  const { id, name, price, category, fandom, emoji, badge, desc, img, imgs, dark, active, stock } = p;
+  return { id, name, price, category, fandom, emoji, badge, desc, img, imgs, dark, active, stock };
+}
+
 function validateOrder(order) {
   if (!order || typeof order !== 'object')               return 'Pedido inválido.';
   if (!order.customer || typeof order.customer !== 'object') return 'Datos de cliente faltantes.';
@@ -188,9 +234,20 @@ function sanitizeOrder(order) {
     order.description = stripHtml(String(order.description || '')).slice(0, 500);
     order.matCost     = Math.max(0, Number(order.matCost) || 0);
   }
-  order.subtotal = Math.max(0, Number(order.subtotal));
-  order.shipping = Math.max(0, Number(order.shipping));
-  order.total    = Math.max(0, Number(order.total));
+  // Recalcular subtotal server-side desde items (no confiar en el cliente)
+  const calcSubtotal = order.items.reduce((s, i) => s + i.price * i.qty, 0);
+  order.subtotal = order.type === 'personalizado'
+    ? Math.max(0, Number(order.subtotal) || 0)
+    : calcSubtotal;
+  order.shipping = Math.max(0, Number(order.shipping) || 0);
+  order.total    = order.type === 'personalizado'
+    ? Math.max(0, Number(order.total) || 0)
+    : order.subtotal + order.shipping;
+  // orderNum y date siempre server-side (evita XSS por valores del cliente)
+  order.orderNum = Math.abs(Number(order.orderNum)) || 0;
+  order.date = new Date().toLocaleString('es-HN', {
+    timeZone: 'America/Tegucigalpa', dateStyle: 'short', timeStyle: 'short',
+  });
   return order;
 }
 
@@ -199,16 +256,27 @@ async function sendOrderEmail(order) {
   const from = process.env.NOTIFY_EMAIL;
   if (!to) return;
 
+  const isPers    = order.type === 'personalizado';
   const zonaLabel = order.zone === 'tgu' ? 'Dentro de TGU — L 70' : 'Fuera de TGU — L 90-120';
   const pagoLabel = order.payment === 'contraentrega' ? 'Contra entrega' : 'Transferencia';
   const num       = String(order.orderNum).padStart(3, '0');
 
-  const itemsHtml = order.items.map(i =>
+  const itemsHtml = isPers
+    ? `<tr>
+        <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0" colspan="2">${order.description || ''}</td>
+      </tr>`
+    : order.items.map(i =>
     `<tr>
       <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0">${i.qty}x ${i.name}</td>
       <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600">L ${i.price * i.qty}</td>
     </tr>`
   ).join('');
+
+  const shippingRow = isPers ? '' :
+    `<tr>
+          <td style="padding:6px 12px;color:#71717a">Envio (${zonaLabel})</td>
+          <td style="padding:6px 12px;text-align:right;color:#71717a">L ${order.shipping}</td>
+        </tr>`;
 
   const html = `
   <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7">
@@ -220,14 +288,11 @@ async function sendOrderEmail(order) {
       <h3 style="margin:0 0 12px;font-size:14px;color:#71717a;text-transform:uppercase;letter-spacing:.05em">Cliente</h3>
       <p style="margin:0;font-size:15px;font-weight:700">${order.customer.name}</p>
       <p style="margin:2px 0;font-size:14px;color:#52525b">Tel: ${order.customer.phone}</p>
-      <p style="margin:2px 0;font-size:14px;color:#52525b">Dir: ${order.customer.address}</p>
-      <h3 style="margin:20px 0 12px;font-size:14px;color:#71717a;text-transform:uppercase;letter-spacing:.05em">Productos</h3>
+      <p style="margin:2px 0;font-size:14px;color:#52525b">Dir: ${isPers ? '(pedido personalizado)' : order.customer.address}</p>
+      <h3 style="margin:20px 0 12px;font-size:14px;color:#71717a;text-transform:uppercase;letter-spacing:.05em">${isPers ? 'Descripción' : 'Productos'}</h3>
       <table style="width:100%;border-collapse:collapse;font-size:14px">
         ${itemsHtml}
-        <tr>
-          <td style="padding:6px 12px;color:#71717a">Envio (${zonaLabel})</td>
-          <td style="padding:6px 12px;text-align:right;color:#71717a">L ${order.shipping}</td>
-        </tr>
+        ${shippingRow}
         <tr style="background:#f4fdfb">
           <td style="padding:10px 12px;font-weight:800;font-size:15px">Total</td>
           <td style="padding:10px 12px;text-align:right;font-weight:800;font-size:15px;color:#14b8a6">L ${order.total}</td>
@@ -340,7 +405,8 @@ export const handler = async (event) => {
     // ── GET /settings  (admin) ──────────────────────────────────────────────
     if (method === 'GET' && path.startsWith('/settings')) {
       const claims = verifyToken(auth);
-      if (!claims || claims.role !== 'admin') return unauth();
+      if (!claims) return unauth();
+      if (claims.role !== 'admin') return forbidden();
 
       const stored = await getStoredCreds();
       return resp(200, {
@@ -353,7 +419,8 @@ export const handler = async (event) => {
     // ── PUT /settings  (admin) ──────────────────────────────────────────────
     if (method === 'PUT' && path.startsWith('/settings')) {
       const claims = verifyToken(auth);
-      if (!claims || claims.role !== 'admin') return unauth();
+      if (!claims) return unauth();
+      if (claims.role !== 'admin') return forbidden();
 
       let body;
       try { body = JSON.parse(event.body); }
@@ -389,15 +456,18 @@ export const handler = async (event) => {
 
     // ── GET /products  (público) ────────────────────────────────────────────
     if (method === 'GET' && path.startsWith('/products')) {
+      const claims = verifyToken(auth);
+      const internal = claims && ['admin', 'vendedor'].includes(claims.role);
       const r = await db.send(new ScanCommand({ TableName: 'alera-products', Limit: 500 }));
       const items = (r.Items || []).map(i => unmarshall(i)).filter(i => i.id !== SETTINGS_ID);
-      return resp(200, items);
+      return resp(200, internal ? items : items.map(publicProduct));
     }
 
     // ── POST /products  (agregar producto — admin o vendedor) ──────────────
     if (method === 'POST' && path.startsWith('/products')) {
       const claims = verifyToken(auth);
-      if (!claims || !['admin', 'vendedor'].includes(claims.role)) return unauth();
+      if (!claims) return unauth();
+      if (!['admin', 'vendedor'].includes(claims.role)) return forbidden();
       if (await checkRateLimit('prod:' + claims.user)) return resp(429, { error: 'Demasiadas solicitudes. Intentá más tarde.' });
 
       let product;
@@ -416,29 +486,7 @@ export const handler = async (event) => {
       const existingItems = (existing.Items || []).map(i => unmarshall(i)).filter(i => i.id !== SETTINGS_ID);
       const maxId       = existingItems.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0);
 
-      const safeImgs = Array.isArray(product.imgs)
-        ? product.imgs.filter(u => typeof u === 'string').slice(0, 5).map(u => u.slice(0, 500))
-        : [];
-      const newProduct = {
-        id:       maxId + 1,
-        name:     stripHtml(product.name.trim()).slice(0, 80),
-        price:    Math.max(0, Number(product.price)),
-        category: stripHtml(String(product.category || 'Otro')).slice(0, 40),
-        fandom:   stripHtml(String(product.fandom || '')).slice(0, 40),
-        emoji:    stripHtml(String(product.emoji || '📦')).slice(0, 4),
-        badge:    stripHtml(String(product.badge || '')).slice(0, 40),
-        desc:     stripHtml(String(product.desc || '')).slice(0, 300),
-        img:      typeof product.img === 'string' ? product.img.slice(0, 500) : '',
-        imgs:     safeImgs,
-        g:        Math.max(0, Number(product.g) || 0),
-        costs:    Array.isArray(product.costs) ? product.costs.slice(0, 20).map(c => ({
-                    label: stripHtml(String(c?.label || '')).slice(0, 80),
-                    amount: Math.max(0, Number(c?.amount) || 0),
-                  })) : [],
-        dark:     product.dark === true,
-        active:   true,
-        stock:    product.stock !== false,
-      };
+      const newProduct = sanitizeProduct(product, maxId + 1);
 
       await db.send(new PutItemCommand({
         TableName: 'alera-products',
@@ -451,15 +499,74 @@ export const handler = async (event) => {
     // ── PUT /products  (solo admin) ─────────────────────────────────────────
     if (method === 'PUT' && path.startsWith('/products')) {
       const claims = verifyToken(auth);
-      if (!claims || claims.role !== 'admin') return unauth();
+      if (!claims) return unauth();
+      if (claims.role !== 'admin') return forbidden();
 
       const products = JSON.parse(event.body);
       if (!Array.isArray(products))
         return resp(400, { error: 'Se esperaba un array.' });
 
-      for (const p of products.filter(p => p.id !== SETTINGS_ID).slice(0, 200))
-        await db.send(new PutItemCommand({ TableName: 'alera-products', Item: marshall(p, { removeUndefinedValues: true }) }));
+      for (const p of products.filter(p => p.id !== SETTINGS_ID).slice(0, 200)) {
+        const clean = sanitizeProduct(p, Number(p.id));
+        await db.send(new PutItemCommand({ TableName: 'alera-products', Item: marshall(clean, { removeUndefinedValues: true }) }));
+      }
 
+      return resp(200, { ok: true });
+    }
+
+    // ── PATCH /products/:id  (stock/active — admin o vendedor) ──────────────
+    if (method === 'PATCH' && path.includes('/products/')) {
+      const claims = verifyToken(auth);
+      if (!claims) return unauth();
+      if (!['admin', 'vendedor'].includes(claims.role)) return forbidden();
+
+      const id = Number(path.split('/products/')[1]);
+      if (!id || id === SETTINGS_ID) return resp(400, { error: 'ID inválido.' });
+
+      let body;
+      try { body = JSON.parse(event.body); }
+      catch { return resp(400, { error: 'JSON inválido.' }); }
+
+      const expressions = [];
+      const attrNames   = {};
+      const attrValues  = {};
+
+      if (body.stock !== undefined) {
+        if (typeof body.stock !== 'boolean') return resp(400, { error: 'stock debe ser boolean.' });
+        expressions.push('stock = :st');
+        attrValues[':st'] = body.stock;
+      }
+      if (body.active !== undefined) {
+        if (typeof body.active !== 'boolean') return resp(400, { error: 'active debe ser boolean.' });
+        expressions.push('#a = :ac');
+        attrNames['#a']   = 'active';
+        attrValues[':ac'] = body.active;
+      }
+
+      if (!expressions.length) return resp(400, { error: 'Nada que actualizar.' });
+
+      const cmdInput = {
+        TableName: 'alera-products',
+        Key: marshall({ id }),
+        UpdateExpression: 'SET ' + expressions.join(', '),
+        ExpressionAttributeValues: marshall(attrValues),
+      };
+      if (Object.keys(attrNames).length) cmdInput.ExpressionAttributeNames = attrNames;
+
+      await db.send(new UpdateItemCommand(cmdInput));
+      return resp(200, { ok: true });
+    }
+
+    // ── DELETE /products/:id  (solo admin) ──────────────────────────────────
+    if (method === 'DELETE' && path.includes('/products/')) {
+      const claims = verifyToken(auth);
+      if (!claims) return unauth();
+      if (claims.role !== 'admin') return forbidden();
+
+      const id = Number(path.split('/products/')[1]);
+      if (!id || id === SETTINGS_ID) return resp(400, { error: 'ID inválido.' });
+
+      await db.send(new DeleteItemCommand({ TableName: 'alera-products', Key: marshall({ id }) }));
       return resp(200, { ok: true });
     }
 
@@ -558,7 +665,7 @@ export const handler = async (event) => {
 
       // Acción "liberar": quita la asignación — solo admin
       if (body.action === 'liberar') {
-        if (claims.role !== 'admin') return unauth();
+        if (claims.role !== 'admin') return forbidden();
         const removeCmd = {
           TableName: 'alera-orders',
           Key: marshall({ id }),
@@ -586,7 +693,8 @@ export const handler = async (event) => {
     // ── POST /upload  (subir imagen — solo admin) ───────────────────────────
     if (method === 'POST' && path.startsWith('/upload')) {
       const claims = verifyToken(auth);
-      if (!claims || claims.role !== 'admin') return unauth();
+      if (!claims) return unauth();
+      if (claims.role !== 'admin') return forbidden();
 
       let body;
       try { body = JSON.parse(event.body); } catch { return resp(400, { error: 'JSON inválido.' }); }
