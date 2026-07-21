@@ -18,7 +18,7 @@ function authHeaders(extra = {}) {
 async function authFetch(url, opts = {}) {
   opts.headers = authHeaders(opts.headers || {});
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10_000);
+  const timer = setTimeout(() => ctrl.abort(), opts.timeout || 10_000);
   try {
     const r = await fetch(url, { ...opts, signal: ctrl.signal });
     clearTimeout(timer);

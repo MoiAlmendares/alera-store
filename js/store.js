@@ -65,7 +65,7 @@ let _productsCache = null;
 async function getAllProducts() {
   if (_productsCache) return _productsCache;
   try {
-    const r = await fetch(API + '/products');
+    const r = await fetch(API + '/products', { signal: AbortSignal.timeout(4000) });
     const data = await r.json();
     if (data.length) {
       const mapped = data.map(p => ({ ...p, img: p.img || '' }));
@@ -90,7 +90,7 @@ async function rebuildProductMap() {
 
 function productImgOrPlaceholder(p, dark) {
   if (p.img) {
-    return `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" class="card-img w-full h-full object-cover${dark?' opacity-90':''}" onerror="this.parentElement.innerHTML=productPlaceholder(${JSON.stringify(p.fandom||'')}, ${dark})" />`;
+    return `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" class="card-img w-full h-full object-cover${dark?' opacity-90':''}" onerror="this.parentElement.innerHTML=productPlaceholder(${esc(JSON.stringify(p.fandom||''))}, ${dark})" />`;
   }
   return productPlaceholder(p.fandom || '', dark);
 }
@@ -297,7 +297,7 @@ function heroCardHTML(star) {
               <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 truncate">${esc(star.fandom||'')}</div>
               <div class="font-bold text-sm text-zinc-900 leading-tight truncate">${esc(star.name)}</div>
             </div>
-            <button onclick="addToCart(${star.id})" class="btn-accent text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 shrink-0">
+            <button onclick="event.stopPropagation();addToCart(${star.id})" class="btn-accent text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 shrink-0">
               L ${star.price} ${plusIcon(3)}
             </button>
           </div>
@@ -307,6 +307,7 @@ function heroCardHTML(star) {
     </div>`;
 }
 
+let _heroInterval = null;
 async function renderHero() {
   const wrap = document.getElementById('hero-product-wrap');
   if (!wrap) return;
@@ -314,10 +315,11 @@ async function renderHero() {
   const stars = all.filter(p => p.active && p.badge && p.badge.includes('Más vendido'));
   const pool = stars.length ? stars : all.filter(p => p.active);
   if (!pool.length) return;
+  if (_heroInterval) { clearInterval(_heroInterval); _heroInterval = null; }
   let idx = 0;
   wrap.innerHTML = heroCardHTML(pool[idx]);
   if (pool.length === 1) return;
-  setInterval(() => {
+  _heroInterval = setInterval(() => {
     wrap.style.transition = 'opacity 0.4s ease';
     wrap.style.opacity = '0';
     setTimeout(() => {
@@ -455,10 +457,11 @@ function renderCart() {
   if (bundle) bundle.classList.toggle('hidden', !(hasLlavero && llaveroCount < 2 && ids.length > 0));
 
   // Subtotal/total
-  const envio = deliveryZone === 'tgu' ? 70 : 90;
   document.getElementById('cart-subtotal').textContent = 'L ' + subtotal;
   document.getElementById('cart-envio').textContent = deliveryZone === 'tgu' ? 'L 70' : 'L 90–120';
-  document.getElementById('cart-total').textContent = 'L ' + (subtotal + envio);
+  document.getElementById('cart-total').textContent = deliveryZone === 'tgu'
+    ? 'L ' + (subtotal + 70)
+    : 'L ' + (subtotal + 90) + '–' + (subtotal + 120);
 
   // Items
   const container = document.getElementById('cart-items');
@@ -469,7 +472,7 @@ function renderCart() {
     const div = document.createElement('div');
     div.className = 'cart-item flex gap-3 items-center';
     const imgHtml = p.img
-      ? `<img src="${p.img}" class="w-16 h-16 rounded-2xl object-cover shrink-0 border border-zinc-100" onerror="this.outerHTML='<div class=\\'w-16 h-16 rounded-2xl shrink-0 placeholder-stripes\\'></div>'" />`
+      ? `<img src="${esc(p.img)}" class="w-16 h-16 rounded-2xl object-cover shrink-0 border border-zinc-100" onerror="this.outerHTML=&quot;<div class='w-16 h-16 rounded-2xl shrink-0 placeholder-stripes'></div>&quot;" />`
       : `<div class="w-16 h-16 rounded-2xl shrink-0 placeholder-stripes"></div>`;
     div.innerHTML = `
       ${imgHtml}
@@ -498,13 +501,16 @@ function updateCheckoutSummary() {
   const ids = Object.keys(cart).map(Number).filter(id => PRODUCTS[id]);
   const count = ids.reduce((s,id) => s + cart[id], 0);
   const subtotal = ids.reduce((s,id) => s + PRODUCTS[id].price * cart[id], 0);
-  const envio = deliveryZone === 'tgu' ? 70 : 90;
   const totalEl = document.getElementById('checkout-total');
   if (!totalEl) return;
   document.getElementById('checkout-items-label').textContent = count + (count===1?' artículo':' artículos');
   document.getElementById('checkout-subtotal').textContent = 'L ' + subtotal;
   document.getElementById('checkout-envio').textContent = deliveryZone === 'tgu' ? 'L 70' : 'L 90–120';
-  totalEl.textContent = 'L ' + (subtotal + envio);
+  totalEl.textContent = deliveryZone === 'tgu'
+    ? 'L ' + (subtotal + 70)
+    : 'L ' + (subtotal + 90) + '–' + (subtotal + 120);
+  const totalLabel = document.getElementById('checkout-total-label');
+  if (totalLabel) totalLabel.textContent = deliveryZone === 'tgu' ? 'Total' : 'Total estimado';
 }
 
 function setZone(zone) {
@@ -524,7 +530,7 @@ function setZone(zone) {
   renderCart();
 }
 
-function filterName(el) { el.value = el.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ ]/g, ''); checkDeliveryForm(); }
+function filterName(el) { el.value = el.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ '’\-]/g, ''); checkDeliveryForm(); }
 function filterPhone(el) { el.value = el.value.replace(/[^0-9]/g, ''); checkDeliveryForm(); }
 
 function checkDeliveryForm() {
@@ -538,6 +544,24 @@ function checkDeliveryForm() {
   btn.className = 'w-full flex items-center justify-center gap-2.5 font-bold py-3.5 rounded-2xl transition-all text-sm ' +
     (ready ? 'btn-accent cursor-pointer' : 'bg-zinc-200 text-zinc-400 cursor-not-allowed');
   if (!btn.textContent.includes('Enviando')) btn.textContent = 'Hacer pedido';
+
+  const hint = document.getElementById('checkout-hint');
+  if (hint) {
+    const missing = [];
+    if (name.length < 2) missing.push('nombre');
+    if (phone.length < 6) missing.push('teléfono');
+    if (address.length < 3) missing.push('dirección');
+    if (deliveryPayment === 'transferencia' && !document.getElementById('transfer-file').files[0]) missing.push('el comprobante');
+    if (!missing.length) {
+      hint.textContent = '';
+    } else if (missing.length === 1 && missing[0] === 'el comprobante') {
+      hint.textContent = 'Falta subir el comprobante';
+    } else {
+      const txt = missing.length === 1 ? missing[0]
+        : missing.slice(0,-1).join(', ') + ' y ' + missing[missing.length-1];
+      hint.textContent = 'Falta: ' + txt;
+    }
+  }
 }
 
 function setPayment(method) {
@@ -588,8 +612,10 @@ function compressImage(file, maxSize, quality) {
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         resolve(canvas.toDataURL('image/jpeg', quality));
       };
+      img.onerror = () => resolve(null);
       img.src = e.target.result;
     };
+    reader.onerror = () => resolve(null);
     reader.readAsDataURL(file);
   });
 }
@@ -613,7 +639,16 @@ async function submitOrder() {
   let transferImg = null;
   if (deliveryPayment === 'transferencia') {
     const file = document.getElementById('transfer-file').files[0];
-    if (file) transferImg = await compressImage(file, 900, 0.75);
+    if (file) {
+      transferImg = await compressImage(file, 900, 0.75);
+      if (transferImg === null) {
+        alert('No pudimos procesar la imagen, probá otra.');
+        btn.disabled = false;
+        btn.textContent = 'Hacer pedido';
+        checkDeliveryForm();
+        return;
+      }
+    }
   }
 
   const envio = deliveryZone === 'tgu' ? 70 : 90;
@@ -631,7 +666,7 @@ async function submitOrder() {
 
   const order = {
     id: orderId,
-    orderNum: (orderId % 9000) + 1,
+    orderNum: Number(String(orderId).slice(-6)),
     date: new Date().toLocaleString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
     customer: { name, phone, address },
     items: ids.map(id => ({ id: Number(id), name: PRODUCTS[id].name, qty: cart[id], price: PRODUCTS[id].price })),
@@ -655,14 +690,25 @@ async function submitOrder() {
       currency: 'HNL', value: totalFinal,
     });
 
+    const orderLabel = '#' + String(order.orderNum).padStart(3,'0');
+
+    const waEl = document.getElementById('success-whatsapp');
+    if (waEl) {
+      const waMsg = `Hola! Confirmo mi pedido ${orderLabel}:\n`
+        + order.items.map(it => `${it.qty}x ${it.name}`).join('\n')
+        + `\nTotal: L ${totalFinal}`;
+      waEl.href = 'https://wa.me/50495902564?text=' + encodeURIComponent(waMsg);
+    }
+
     cart = {}; saveCart(); renderCart();
     btn.textContent = 'Hacer pedido'; btn.disabled = false;
-    document.getElementById('success-order-num').textContent = '#' + String(order.orderNum).padStart(3,'0');
+    document.getElementById('success-order-num').textContent = orderLabel;
     const sc = document.getElementById('cart-success');
     sc.style.display = 'flex';
     requestAnimationFrame(() => requestAnimationFrame(() => { sc.style.transform = 'translateX(0)'; }));
   } catch(e) {
     btn.disabled = false;
+    btn.textContent = 'Hacer pedido';
     checkDeliveryForm();
     console.error('submitOrder error:', e);
     alert('No se pudo enviar el pedido: ' + (e.message || 'Revisá tu conexión.'));
@@ -712,19 +758,32 @@ function renderFAQ() {
 }
 
 
-// ─── Product detail navigation ────────────────────────────────────────────
-function openProductDetail(id) {
-  location.href = 'producto.html?id=' + id;
-}
-
 // ─── Init ──────────────────────────────────────────────────────────────
-(async function init() {
+async function renderAll() {
   await rebuildProductMap();
   renderHero();
   await renderFandomFilters();
   await renderFandomTiles();
   await renderCatalog();
   renderCart();
+}
+
+(async function init() {
+  // Pintar de inmediato con defaults para evitar hero/catálogo en blanco durante el cold start del Lambda.
+  _productsCache = DEFAULT_PRODUCTS_LIST;
+  await renderAll();
   renderFAQ();
   window.addEventListener('resize', () => renderCart());
+
+  if (new URLSearchParams(location.search).get('cart') === '1') openCart();
+
+  // Refrescar con datos reales de la API cuando respondan (o mantener defaults si falla/timeout).
+  _productsCache = null;
+  const fresh = await getAllProducts();
+  if (fresh !== DEFAULT_PRODUCTS_LIST) {
+    _productsCache = fresh;
+    await renderAll();
+  } else {
+    _productsCache = DEFAULT_PRODUCTS_LIST;
+  }
 })();

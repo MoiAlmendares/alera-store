@@ -116,10 +116,22 @@ function filterCat(cat) {
   renderTable();
 }
 
-function toggleStock(id) {
+async function toggleStock(id) {
   const products = getProducts();
   const p = products.find(x => x.id === id);
-  if (p) { p.stock = p.stock === false ? true : false; saveProducts(products); renderAll(); }
+  if (!p) return;
+  const prev = p.stock;
+  p.stock = p.stock === false ? true : false;
+  renderAll();
+  try {
+    const r = await authFetch(API + '/products/' + id, { method:'PATCH', body:JSON.stringify({ stock: p.stock }) });
+    if (!r || !r.ok) throw new Error('respuesta no ok');
+  } catch(e) {
+    console.error('toggleStock:', e);
+    p.stock = prev;
+    renderAll();
+    showToast('No se pudo actualizar el stock', false);
+  }
 }
 
 // ─── Orders UI ───────────────────────────────────────────────────────────────
@@ -210,12 +222,12 @@ function renderOrders() {
          </div>`;
     const totalsBlock = isPers
       ? `<div class="border-t border-zinc-100 pt-3 space-y-1 text-sm">
-           <div class="flex justify-between font-bold"><span>Total</span><span>L ${o.total}</span></div>
+           <div class="flex justify-between font-bold"><span>Total</span><span>L ${esc(String(o.total))}</span></div>
            <div class="text-xs text-zinc-400 pt-0.5">Pago: ${pagoLabel}</div>
          </div>`
       : `<div class="border-t border-zinc-100 pt-3 space-y-1 text-sm">
-           <div class="flex justify-between text-zinc-400"><span>Envío (${zonaLabel})</span><span>L ${o.shipping}</span></div>
-           <div class="flex justify-between font-bold"><span>Total</span><span>L ${o.total}${approx}</span></div>
+           <div class="flex justify-between text-zinc-400"><span>Envío (${zonaLabel})</span><span>L ${esc(String(o.shipping))}</span></div>
+           <div class="flex justify-between font-bold"><span>Total</span><span>L ${esc(String(o.total))}${approx}</span></div>
            <div class="text-xs text-zinc-400 pt-0.5">Pago: ${pagoLabel}</div>
          </div>`;
     return `
@@ -223,7 +235,7 @@ function renderOrders() {
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap mb-1">
-              <span class="text-xs text-zinc-400 font-mono">#${String(o.orderNum).padStart(3,'0')} &middot; ${esc(o.date)}</span>
+              <span class="text-xs text-zinc-400 font-mono">#${esc(String(o.orderNum).padStart(3,'0'))} &middot; ${esc(o.date)}</span>
               ${assignBadge}
               ${persBadge}
             </div>
@@ -266,11 +278,21 @@ async function takeOrder(idRaw) {
   }
 }
 
-function updateOrderStatus(id, status) {
+async function updateOrderStatus(id, status) {
   const o = _orders.find(x => x.id === id);
-  if (o) o.status = status;
-  authFetch(API + '/orders/' + id, { method:'PATCH', body:JSON.stringify({ status }) }).catch(console.error);
+  if (!o) return;
+  const prev = o.status;
+  o.status = status;
   renderStats(); renderOrders(); updatePendingBadge();
+  try {
+    const r = await authFetch(API + '/orders/' + id, { method:'PATCH', body:JSON.stringify({ status }) });
+    if (!r || !r.ok) throw new Error('respuesta no ok');
+  } catch(e) {
+    console.error('updateOrderStatus:', e);
+    o.status = prev;
+    renderStats(); renderOrders(); updatePendingBadge();
+    showToast('No se pudo actualizar el pedido', false);
+  }
 }
 
 // ─── Manual Order Modal ───────────────────────────────────────────────────────
@@ -394,13 +416,14 @@ function renderOmSummary() {
   document.getElementById('om-summary').classList.remove('hidden');
 }
 
-function saveManualOrder() {
+async function saveManualOrder() {
   const name    = document.getElementById('om-name').value.trim();
-  const phone   = document.getElementById('om-phone').value.trim();
+  const phone   = document.getElementById('om-phone').value.replace(/\D/g,'');
   const address = document.getElementById('om-address').value.trim();
   const errEl   = document.getElementById('om-error');
   if (!name)  { errEl.textContent = 'El nombre es obligatorio.';   errEl.classList.remove('hidden'); return; }
   if (!phone) { errEl.textContent = 'El teléfono es obligatorio.'; errEl.classList.remove('hidden'); return; }
+  if (phone.length < 6 || phone.length > 15) { errEl.textContent = 'El teléfono debe tener entre 6 y 15 dígitos.'; errEl.classList.remove('hidden'); return; }
 
   let order;
   if (omType === 'personalizado') {
@@ -443,9 +466,21 @@ function saveManualOrder() {
       zone: omZone, payment: omPayment, status: 'pendiente',
     };
   }
-  _orders.unshift(order);
-  authFetch(API + '/orders', { method:'POST', body:JSON.stringify(order) }).catch(console.error);
-  closeOrderModal(); renderStats(); renderOrders(); updatePendingBadge();
+  try {
+    const r = await authFetch(API + '/orders', { method:'POST', body:JSON.stringify(order) });
+    const data = await r?.json();
+    if (!r || !r.ok) {
+      errEl.textContent = data?.error || 'No se pudo guardar el pedido.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    _orders.unshift(data?.order || order);
+    closeOrderModal(); renderStats(); renderOrders(); updatePendingBadge();
+  } catch(e) {
+    console.error('saveManualOrder:', e);
+    errEl.textContent = 'Error de conexión. Intentá de nuevo.';
+    errEl.classList.remove('hidden');
+  }
 }
 
 // ─── Add Product Modal ────────────────────────────────────────────────────────
@@ -522,7 +557,7 @@ async function apHandleGalleryUpload(event) {
   reader.readAsDataURL(file);
   try {
     const base64 = await apFileToBase64(file);
-    const r = await authFetch(API + '/upload', { method: 'POST', body: JSON.stringify({ data: base64, mime: file.type }) });
+    const r = await authFetch(API + '/upload', { method: 'POST', timeout: 30_000, body: JSON.stringify({ data: base64, mime: file.type }) });
     const data = await r?.json();
     if (r?.ok && data?.url) { apGallerySlots[slot] = data.url; apRenderGallerySlots(); }
     else { showToast('Error al subir la foto ' + (slot + 2), false); apGallerySlots[slot] = ''; apRenderGallerySlots(); }
@@ -551,7 +586,7 @@ async function apHandleImageUpload(event) {
   reader.readAsDataURL(file);
   try {
     const base64 = await apFileToBase64(file);
-    const r = await authFetch(API + '/upload', { method: 'POST', body: JSON.stringify({ data: base64, mime: file.type }) });
+    const r = await authFetch(API + '/upload', { method: 'POST', timeout: 30_000, body: JSON.stringify({ data: base64, mime: file.type }) });
     const data = await r?.json();
     if (r?.ok && data?.url) {
       apUploadedImgData = '';
