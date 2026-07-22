@@ -42,6 +42,7 @@ let ordersFilter  = 'pendiente';
 const COMMISSION_PCT = 20;
 
 // Ganancia de un pedido (precio − costo). Personalizado: total − material.
+// El costo unitario (filamento + extras) viene de productUnitCost() en shared.js.
 function orderProfit(o) {
   if (o.type === 'personalizado' || o.zone === 'personalizado')
     return Math.round((Number(o.total) || 0) - (Number(o.matCost) || 0));
@@ -50,9 +51,7 @@ function orderProfit(o) {
   let bruta = 0;
   for (const item of (o.items || [])) {
     const p = prodMap[item.id];
-    let unitCost = 0;
-    if (p && Array.isArray(p.costs) && p.costs.length) unitCost = p.costs.reduce((s, c) => s + Number(c.amount || 0), 0);
-    else if (p && p.g) unitCost = (p.g / 1000) * 800;
+    const unitCost = p ? productUnitCost(p) : 0;
     bruta += (Number(item.price || p?.price || 0) - unitCost) * (item.qty || 1);
   }
   return Math.round(bruta);

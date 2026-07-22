@@ -2,6 +2,18 @@
 
 const API = 'https://aq2rjel5xpc6kxux6u3lgg7p5q0fenmn.lambda-url.us-east-2.on.aws';
 
+// ─── Costos ──────────────────────────────────────────────────────────────────
+// Precio del filamento por kilo. El costo de plástico de un producto se calcula
+// automáticamente desde sus gramos: (gramos / 1000) × precio por kilo.
+const FILAMENT_PER_KG = 880;
+function plasticCost(grams) { return (Number(grams) || 0) / 1000 * FILAMENT_PER_KG; }
+
+// Costo unitario total de un producto = filamento (desde gramos) + costos extra.
+function productUnitCost(p) {
+  const extras = Array.isArray(p && p.costs) ? p.costs.reduce((s, c) => s + Number(c.amount || 0), 0) : 0;
+  return plasticCost(p && p.g) + extras;
+}
+
 function showToast(msg, ok = true) {
   const t = document.createElement('div');
   t.className = `fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-lg text-white ${ok ? 'bg-teal-600' : 'bg-red-500'}`;
