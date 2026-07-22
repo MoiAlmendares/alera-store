@@ -39,6 +39,16 @@ function getMyUsername() {
   } catch { return ''; }
 }
 
+// Muestra el usuario logueado en el badge #current-user del header
+function showCurrentUser() {
+  const el = document.getElementById('current-user');
+  if (!el) return;
+  const user = getMyUsername();
+  if (!user) return;
+  el.textContent = '👤 ' + user;
+  el.classList.remove('hidden');
+}
+
 function doLogout() {
   sessionStorage.removeItem('alera_admin');
   sessionStorage.removeItem('alera_vendedor');

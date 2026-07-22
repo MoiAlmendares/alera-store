@@ -1497,6 +1497,7 @@
 
     // ─── Boot ─────────────────────────────────────────────────────────────────
     if (sessionStorage.getItem('alera_admin')) {
+      showCurrentUser();
       loadData().then(() => {
         renderAll();
         setInterval(pollOrders, 20000); // auto-refresh cada 20s
