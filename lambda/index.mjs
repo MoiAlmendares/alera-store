@@ -572,6 +572,61 @@ export const handler = async (event) => {
       return resp(200, { ok: true });
     }
 
+    // ── POST /orders/import  (importar pedidos históricos — solo admin) ─────
+    // Inserta pedidos tal cual (conserva fecha, id, vendedor, estado). Sin rate
+    // limit ni validación de cliente. Los items pueden traer gramos (g) por línea.
+    if (method === 'POST' && path === '/orders/import') {
+      const claims = verifyToken(auth);
+      if (!claims) return unauth();
+      if (claims.role !== 'admin') return forbidden();
+
+      let body;
+      try { body = JSON.parse(event.body); }
+      catch { return resp(400, { error: 'JSON inválido.' }); }
+
+      const list = Array.isArray(body?.orders) ? body.orders : null;
+      if (!list) return resp(400, { error: 'Se esperaba { orders: [...] }.' });
+      if (list.length > 300) return resp(400, { error: 'Máximo 300 pedidos por importación.' });
+
+      let imported = 0;
+      for (let i = 0; i < list.length; i++) {
+        const o = list[i] || {};
+        const cust = o.customer || {};
+        const order = {
+          id:       Number(o.id) || (Date.now() * 1000 + i),
+          orderNum: Math.abs(Number(o.orderNum)) || (i + 1),
+          date:     String(o.date || '').slice(0, 40),
+          customer: {
+            name:    stripHtml(String(cust.name || '')).slice(0, 80),
+            phone:   String(cust.phone || '').replace(/\D/g, '').slice(0, 15),
+            address: stripHtml(String(cust.address || '')).slice(0, 150),
+          },
+          items: (Array.isArray(o.items) ? o.items : []).slice(0, 50).map(it => ({
+            id:    Number(it.id) || 0,
+            name:  stripHtml(String(it.name || '')).slice(0, 100),
+            qty:   Math.min(Math.max(1, Number(it.qty) || 1), 999),
+            price: Math.max(0, Number(it.price) || 0),
+            g:     Math.max(0, Number(it.g) || 0),
+          })),
+          subtotal: Math.max(0, Number(o.subtotal) || 0),
+          shipping: Math.max(0, Number(o.shipping) || 0),
+          total:    Math.max(0, Number(o.total) || 0),
+          zone:     ['tgu', 'fuera'].includes(o.zone) ? o.zone : 'fuera',
+          shippingMethod: stripHtml(String(o.shippingMethod || '')).slice(0, 40),
+          guia:     stripHtml(String(o.guia || '')).slice(0, 60),
+          payment:  ['contraentrega', 'transferencia'].includes(o.payment) ? o.payment : 'contraentrega',
+          status:   ['pendiente', 'entregado', 'cancelado'].includes(o.status) ? o.status : 'pendiente',
+          imported: true,
+        };
+        if (o.vendedor) order.vendedor = String(o.vendedor).slice(0, 40);
+        try {
+          await db.send(new PutItemCommand({ TableName: 'alera-orders', Item: marshall(order, { removeUndefinedValues: true }) }));
+          imported++;
+        } catch (e) { console.error('import order:', e); }
+      }
+      return resp(200, { ok: true, imported });
+    }
+
     // ── POST /orders  (público — clientes) ─────────────────────────────────
     if (method === 'POST' && path.startsWith('/orders')) {
       // Rate limit: máx 10 pedidos por IP en 10 minutos

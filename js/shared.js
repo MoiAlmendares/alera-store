@@ -14,6 +14,14 @@ function productUnitCost(p) {
   return plasticCost(p && p.g) + extras;
 }
 
+// Costo de una línea de pedido. Si el producto está en el catálogo usa su costo;
+// si no (pedido importado o manual), usa los gramos guardados en la línea.
+function itemUnitCost(item, prodMap) {
+  const p = prodMap && prodMap[item && item.id];
+  if (p) return productUnitCost(p);
+  return plasticCost(item && item.g);
+}
+
 function showToast(msg, ok = true) {
   const t = document.createElement('div');
   t.className = `fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-lg text-white ${ok ? 'bg-teal-600' : 'bg-red-500'}`;
