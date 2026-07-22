@@ -134,6 +134,7 @@
 
     let _products = [];
     let _orders   = [];
+    let _knownVendors = []; // usuarios configurados (admin, admin2, vendedor) para (re)asignar pedidos
 
     async function loadData() {
       try {
@@ -148,6 +149,18 @@
         _products = DEFAULT_PRODUCTS;
         showToast('No se pudo conectar a la base de datos', false);
       }
+      // Cargar usuarios configurados para el selector de asignación (no bloquea si falla)
+      try {
+        const s = await authFetch(API + '/settings').then(r => r?.json());
+        if (s) _knownVendors = [s.adminUser, s.admin2User, s.vendUser].filter(Boolean);
+      } catch(e) { console.error('loadVendors:', e); }
+    }
+
+    // Lista de nombres asignables: usuarios configurados + los que ya aparecen en pedidos
+    function assignableVendors() {
+      const set = new Set(_knownVendors);
+      for (const o of _orders) if (o.vendedor) set.add(o.vendedor);
+      return [...set];
     }
 
     function getProducts() { return _products; }
@@ -360,12 +373,19 @@
         const vendorBadge = o.vendedor
           ? `<span class="text-xs font-semibold bg-teal-100 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full">👤 ${esc(o.vendedor)}</span>`
           : `<span class="text-xs font-semibold bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded-full">Sin asignar</span>`;
-        const releaseBtn = o.vendedor
-          ? `<button data-oid="${o.id}" onclick="releaseOrder(this.dataset.oid)"
-               class="text-xs text-zinc-400 hover:text-red-500 transition-colors">
-               Quitar asignación
-             </button>`
-          : '';
+
+        // Selector para (re)asignar el pedido a un vendedor — admin
+        const opciones = assignableVendors();
+        if (o.vendedor && !opciones.includes(o.vendedor)) opciones.push(o.vendedor);
+        const assignSelect = `
+          <label class="flex items-center gap-2 text-xs text-zinc-500">
+            <span>Asignar a:</span>
+            <select data-oid="${o.id}" onchange="assignOrder(Number(this.dataset.oid), this.value)"
+              class="border border-zinc-200 rounded-lg px-2 py-1 text-xs font-semibold text-zinc-700 outline-none focus:ring-2 focus:ring-mint-400 bg-white">
+              <option value=""${!o.vendedor ? ' selected' : ''}>Sin asignar</option>
+              ${opciones.map(v => `<option value="${esc(v)}"${o.vendedor === v ? ' selected' : ''}>${esc(v)}</option>`).join('')}
+            </select>
+          </label>`;
 
         const persBadge = isPers
           ? `<span class="text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full">✨ Personalizado</span>`
@@ -440,26 +460,36 @@
             </div>` : ''}
 
             ${actions}
-            ${releaseBtn ? `<div class="border-t border-zinc-100 pt-3 text-center">${releaseBtn}</div>` : ''}
+            <div class="border-t border-zinc-100 pt-3 flex items-center justify-between gap-3 flex-wrap">
+              ${assignSelect}
+              <button data-oid="${o.id}" onclick="deleteOrder(Number(this.dataset.oid))"
+                class="text-xs text-zinc-300 hover:text-red-500 transition-colors">
+                Eliminar pedido
+              </button>
+            </div>
           </div>`;
       }).join('');
     }
 
-    async function releaseOrder(idRaw) {
-      const id = Number(idRaw);
-      const o  = _orders.find(x => x.id === id);
-      if (!o || !o.vendedor) return;
-      const prev = o.vendedor;
-      o.vendedor = undefined; // optimistic
+    // (Re)asigna un pedido a un vendedor. nombre vacío = quitar asignación.
+    async function assignOrder(id, nombre) {
+      const o = _orders.find(x => x.id === id);
+      if (!o) return;
+      const nuevo = (nombre || '').trim();
+      const prev  = o.vendedor;
+      if ((prev || '') === nuevo) return; // sin cambios
+      o.vendedor = nuevo || undefined; // optimistic
       renderStats(); renderOrders(); updatePendingBadge();
       try {
-        const r = await authFetch(API + '/orders/' + id, { method:'PATCH', body:JSON.stringify({ action:'liberar' }) });
+        const r = await authFetch(API + '/orders/' + id, {
+          method:'PATCH', body:JSON.stringify({ action:'asignar', vendedor: nuevo })
+        });
         if (!r || !r.ok) {
           o.vendedor = prev;
           renderStats(); renderOrders(); updatePendingBadge();
-          showToast('No se pudo liberar el pedido', false);
+          showToast('No se pudo cambiar la asignación', false);
         } else {
-          showToast('Pedido liberado — sin asignar ✓');
+          showToast(nuevo ? `Pedido asignado a ${nuevo} ✓` : 'Asignación quitada ✓');
         }
       } catch(e) {
         o.vendedor = prev;
@@ -488,6 +518,29 @@
         renderStats(); renderOrders(); updatePendingBadge();
         showToast('Error de conexión', false);
       }
+    }
+
+    async function deleteOrder(id) {
+      const o = _orders.find(x => x.id === id);
+      const quien = o?.customer?.name ? ` de ${o.customer.name}` : '';
+      if (!confirm(`¿Eliminar el pedido${quien}? Esta acción no se puede deshacer.`)) return;
+      try {
+        const r = await authFetch(API + '/orders/' + id, { method:'DELETE' });
+        if (!r || !r.ok) {
+          const data = await r?.json().catch(() => ({}));
+          showToast(data?.error || 'No se pudo eliminar el pedido', false);
+          return;
+        }
+      } catch(e) {
+        console.error('deleteOrder:', e);
+        showToast('Error de conexión al eliminar', false);
+        return;
+      }
+      _orders = _orders.filter(x => x.id !== id);
+      renderStats();
+      renderOrders();
+      updatePendingBadge();
+      showToast('Pedido eliminado');
     }
 
     function renderTable() {
