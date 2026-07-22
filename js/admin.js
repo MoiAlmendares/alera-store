@@ -1145,6 +1145,113 @@
             <td class="px-6 py-3 text-sm font-semibold text-mint-600 text-right">L ${oComision.toLocaleString('es-HN')}</td>
           </tr>`;
       }).join('');
+
+      renderPagos();
+    }
+
+    // ─── Pagos a vendedores ────────────────────────────────────────────────────
+    // Comisión de un pedido (misma fórmula que renderComisiones: productUnitCost + %)
+    function comProfit(o) {
+      if (o.type === 'personalizado' || o.zone === 'personalizado')
+        return Math.round(Number(o.total || 0) - Number(o.matCost || 0));
+      const prodMap = {};
+      for (const p of getProducts()) prodMap[p.id] = p;
+      let bruta = 0;
+      for (const item of (o.items || [])) {
+        const p = prodMap[item.id];
+        const unitCost = p ? productUnitCost(p) : 0;
+        bruta += (Number(item.price || p?.price || 0) - unitCost) * (item.qty || 1);
+      }
+      return Math.round(bruta);
+    }
+    function comPct() { return Math.max(0, Math.min(100, parseFloat(document.getElementById('com-pct')?.value) || 0)); }
+    function comCommission(o) { return Math.round(comProfit(o) * comPct() / 100); }
+
+    function fmtDateTime(ts) {
+      if (!ts) return '—';
+      return new Date(Number(ts)).toLocaleString('es-HN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderPagos() {
+      const container = document.getElementById('com-pagos');
+      if (!container) return;
+      // Pagos son de TODAS las ventas entregadas (no filtra por período)
+      const delivered = getOrders().filter(o => o.status === 'entregado' && o.vendedor);
+      const byVendor = {};
+      for (const o of delivered) {
+        const k = o.vendedor;
+        if (!byVendor[k]) byVendor[k] = { vendedor: k, pendiente: 0, orders: [] };
+        byVendor[k].orders.push(o);
+        if (!o.paid) byVendor[k].pendiente += comCommission(o);
+      }
+      const vendors = Object.values(byVendor).sort((a, b) => b.pendiente - a.pendiente);
+      if (!vendors.length) { container.classList.add('hidden'); container.innerHTML = ''; return; }
+      container.classList.remove('hidden');
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-zinc-200 p-5">
+          <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-4">Pagos a vendedores</p>
+          <div class="space-y-4">
+            ${vendors.map(v => {
+              const paidOrders = v.orders.filter(o => o.paid && o.paidAt);
+              const batches = {};
+              for (const o of paidOrders) {
+                const key = String(o.paidAt);
+                if (!batches[key]) batches[key] = { to: Number(o.paidAt), from: Number(o.paidFrom) || 0, amount: 0 };
+                batches[key].amount += Number(o.commissionPaid || 0);
+              }
+              const historial = Object.values(batches).sort((a, b) => b.to - a.to);
+              const histHtml = historial.length
+                ? historial.map(b => `
+                    <div class="text-xs text-zinc-500 flex justify-between gap-3 border-t border-zinc-50 pt-1.5">
+                      <span>💵 Pagado ${fmtDateTime(b.to)} · cubre del ${b.from ? fmtDateTime(b.from) : 'inicio'} al ${fmtDateTime(b.to)}</span>
+                      <span class="font-semibold text-zinc-700 whitespace-nowrap">L ${b.amount.toLocaleString('es-HN')}</span>
+                    </div>`).join('')
+                : '<div class="text-xs text-zinc-400 italic">Sin pagos registrados todavía.</div>';
+              const canPay = v.pendiente > 0;
+              return `
+                <div class="border border-zinc-200 rounded-xl p-4">
+                  <div class="flex items-center justify-between gap-3 mb-2">
+                    <div>
+                      <div class="font-bold text-sm">${esc(v.vendedor)}</div>
+                      <div class="text-xs text-zinc-500">Pendiente de pagar: <span class="font-semibold ${canPay ? 'text-mint-600' : 'text-zinc-400'}">L ${v.pendiente.toLocaleString('es-HN')}</span></div>
+                    </div>
+                    <button data-vk="${esc(v.vendedor)}" onclick="payVendor(this.dataset.vk)" ${canPay ? '' : 'disabled'}
+                      class="text-sm font-bold px-4 py-2 rounded-xl transition-colors ${canPay ? 'bg-mint-500 hover:bg-mint-600 text-white' : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'}">
+                      Pagar${canPay ? ` L ${v.pendiente.toLocaleString('es-HN')}` : ''}
+                    </button>
+                  </div>
+                  <div class="space-y-1">${histHtml}</div>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
+    async function payVendor(vendedor) {
+      const unpaid = getOrders().filter(o => o.status === 'entregado' && o.vendedor === vendedor && !o.paid);
+      if (!unpaid.length) { showToast('No hay comisiones pendientes.', false); return; }
+      const total = unpaid.reduce((s, o) => s + comCommission(o), 0);
+      if (!confirm(`¿Registrar el pago de L ${total.toLocaleString('es-HN')} a ${vendedor}?\nMarca ${unpaid.length} venta(s) como pagadas.`)) return;
+
+      const to   = Date.now();
+      const prev = getOrders().filter(o => o.vendedor === vendedor && o.paid && o.paidAt).map(o => Number(o.paidAt));
+      const from = prev.length ? Math.max(...prev) : Math.min(...unpaid.map(o => Math.floor(o.id / 1000)));
+
+      let ok = 0;
+      for (const o of unpaid) {
+        const amount = comCommission(o);
+        try {
+          const r = await authFetch(API + '/orders/' + o.id, {
+            method: 'PATCH',
+            body: JSON.stringify({ paid: true, paidAt: to, paidFrom: from, commissionPaid: amount }),
+          });
+          if (r && r.ok) { o.paid = true; o.paidAt = to; o.paidFrom = from; o.commissionPaid = amount; ok++; }
+        } catch (e) { console.error('payVendor:', e); }
+      }
+      if (ok === unpaid.length) showToast(`Pago registrado: L ${total.toLocaleString('es-HN')} a ${vendedor} ✓`);
+      else showToast(`Se registraron ${ok}/${unpaid.length} ventas. Reintentá para completar.`, false);
+      renderComisiones();
     }
 
     // ─── Manual Order Modal ───────────────────────────────────────────────────

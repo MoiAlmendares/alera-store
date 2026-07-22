@@ -648,6 +648,17 @@ export const handler = async (event) => {
         attrValues[':s'] = body.status;
       }
 
+      // Registro de pago de comisión al vendedor — solo admin
+      if (body.paid !== undefined) {
+        if (claims.role !== 'admin') return forbidden();
+        if (typeof body.paid !== 'boolean') return resp(400, { error: 'paid debe ser boolean.' });
+        expressions.push('paid = :pd');
+        attrValues[':pd'] = body.paid;
+        if (body.paidAt         !== undefined) { expressions.push('paidAt = :pat');          attrValues[':pat'] = Number(body.paidAt) || 0; }
+        if (body.paidFrom       !== undefined) { expressions.push('paidFrom = :pfr');        attrValues[':pfr'] = Number(body.paidFrom) || 0; }
+        if (body.commissionPaid !== undefined) { expressions.push('commissionPaid = :cpd');  attrValues[':cpd'] = Number(body.commissionPaid) || 0; }
+      }
+
       // Acción "tomar": asigna el pedido al usuario autenticado — atómico
       if (body.action === 'tomar') {
         const tomarCmd = {
