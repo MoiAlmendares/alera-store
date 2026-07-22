@@ -961,13 +961,12 @@
       for (const p of getProducts()) prodMap[p.id] = p;
 
       // ── Ganancia de un pedido ────────────────────────────────────────────────
-      // costo unitario   = Σ(costs[].amount) si existe, o (g/1000)×800 fallback
-      // ganancia bruta   = (precio - costo) × qty
-      // ganancia con ISV = bruta × 1.15
+      // costo unitario = Σ(costs[].amount) si existe, o (g/1000)×800 fallback
+      // ganancia       = (precio - costo) × qty
+      // comisión       = ganancia × pct (sin ISV)
       function orderProfit(o) {
         if (o.type === 'personalizado' || o.zone === 'personalizado') {
-          const bruta = Math.round(Number(o.total || 0) - Number(o.matCost || 0));
-          return { bruta, conISV: bruta };
+          return { bruta: Math.round(Number(o.total || 0) - Number(o.matCost || 0)) };
         }
         let bruta = 0;
         for (const item of (o.items || [])) {
@@ -981,7 +980,7 @@
           const unitPrice = Number(item.price || p?.price || 0);
           bruta += (unitPrice - unitCost) * (item.qty || 1);
         }
-        return { bruta: Math.round(bruta), conISV: Math.round(bruta * 1.15) };
+        return { bruta: Math.round(bruta) };
       }
 
       // ── Construir mapa por vendedor ──────────────────────────────────────────
@@ -989,13 +988,11 @@
       for (const o of allOrders) {
         const key   = o.vendedor || '__web__';
         const label = o.vendedor || 'Tienda web';
-        if (!vendorMap[key]) vendorMap[key] = { key, label, orders: [], bruta: 0, conISV: 0 };
+        if (!vendorMap[key]) vendorMap[key] = { key, label, orders: [], bruta: 0 };
         vendorMap[key].orders.push(o);
-        const p = orderProfit(o);
-        vendorMap[key].bruta  += p.bruta;
-        vendorMap[key].conISV += p.conISV;
+        vendorMap[key].bruta += orderProfit(o).bruta;
       }
-      const vendors = Object.values(vendorMap).sort((a, b) => b.conISV - a.conISV);
+      const vendors = Object.values(vendorMap).sort((a, b) => b.bruta - a.bruta);
 
       // ── Cards por vendedor ───────────────────────────────────────────────────
       const vendorDiv = document.getElementById('com-by-vendor');
@@ -1019,7 +1016,7 @@
                   <div class="font-bold text-sm ${nameClr}">${esc(v.label)}</div>
                   <div class="text-xs text-zinc-500 mt-0.5">${v.orders.length} pedido${v.orders.length !== 1 ? 's' : ''} entregado${v.orders.length !== 1 ? 's' : ''}</div>
                   <div class="flex items-center justify-between mt-3 gap-2">
-                    <span class="text-sm font-semibold text-zinc-700">L ${v.conISV.toLocaleString('es-HN')} c/ISV</span>
+                    <span class="text-sm font-semibold text-zinc-700">L ${v.bruta.toLocaleString('es-HN')} gan.</span>
                     <span class="text-xs font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">com. L ${com.toLocaleString('es-HN')}</span>
                   </div>
                 </button>`;
@@ -1034,13 +1031,13 @@
       // ── Filtrar por vendedor seleccionado ────────────────────────────────────
       const orders = comVendedor ? allOrders.filter(o => (o.vendedor || '__web__') === comVendedor) : allOrders;
 
-      let totalBruta = 0, totalConISV = 0;
-      for (const o of orders) { const p = orderProfit(o); totalBruta += p.bruta; totalConISV += p.conISV; }
+      let totalBruta = 0;
+      for (const o of orders) totalBruta += orderProfit(o).bruta;
       const totalComision = Math.round(totalBruta * pct / 100);
-      const totalAlera    = totalConISV - totalComision;
+      const totalAlera    = totalBruta - totalComision;
 
       document.getElementById('com-count').textContent    = orders.length;
-      document.getElementById('com-ventas').textContent   = 'L ' + totalConISV.toLocaleString('es-HN');
+      document.getElementById('com-ventas').textContent   = 'L ' + totalBruta.toLocaleString('es-HN');
       document.getElementById('com-comision').textContent = 'L ' + totalComision.toLocaleString('es-HN');
       document.getElementById('com-neto').textContent     = 'L ' + totalAlera.toLocaleString('es-HN');
 
@@ -1056,8 +1053,8 @@
       empty.classList.add('hidden');
 
       tbody.innerHTML = orders.map(o => {
-        const { bruta, conISV } = orderProfit(o);
-        const netP         = conISV;
+        const { bruta } = orderProfit(o);
+        const netP         = bruta;
         const oComision    = Math.round(bruta * pct / 100);
         const itemsSummary = (o.items || []).map(i => `${i.qty}x ${esc(i.name)}`).join(', ');
         const vLabel       = esc(o.vendedor || 'Web');
