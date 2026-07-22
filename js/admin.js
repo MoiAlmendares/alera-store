@@ -1490,6 +1490,7 @@
           status:   'pendiente',
         };
       }
+      let saved = order;
       try {
         const r = await authFetch(API + '/orders', { method:'POST', body:JSON.stringify(order) });
         if (!r) return;
@@ -1499,13 +1500,14 @@
           errEl.classList.remove('hidden');
           return;
         }
+        if (data.order) saved = data.order; // usar el pedido del servidor (id real)
       } catch(e) {
         console.error('saveManualOrder:', e);
         errEl.textContent = 'Error de conexión al guardar el pedido.';
         errEl.classList.remove('hidden');
         return;
       }
-      _orders.unshift(order);
+      _orders.unshift(saved);
       closeOrderModal();
       renderStats();
       renderOrders();

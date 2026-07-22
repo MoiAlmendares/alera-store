@@ -610,7 +610,7 @@ export const handler = async (event) => {
 
       await db.send(new PutItemCommand({ TableName: 'alera-orders', Item: marshall(order, { removeUndefinedValues: true }) }));
       sendOrderEmail(order).catch(e => console.error('SES:', e)); // fire-and-forget
-      return resp(200, { ok: true });
+      return resp(200, { ok: true, order }); // devolver el pedido con su id real
     }
 
     // ── GET /orders  (admin o vendedor) ────────────────────────────────────
@@ -665,7 +665,7 @@ export const handler = async (event) => {
           TableName: 'alera-orders',
           Key: marshall({ id }),
           UpdateExpression: 'SET vendedor = :v',
-          ConditionExpression: 'attribute_not_exists(vendedor)',
+          ConditionExpression: 'attribute_exists(id) AND attribute_not_exists(vendedor)',
           ExpressionAttributeValues: marshall({ ':v': String(claims.user).slice(0, 40) }),
         };
         try {
@@ -673,7 +673,7 @@ export const handler = async (event) => {
           return resp(200, { ok: true });
         } catch (e) {
           if (e.name === 'ConditionalCheckFailedException')
-            return resp(409, { error: 'Este pedido ya fue tomado por otro vendedor.' });
+            return resp(409, { error: 'Este pedido ya fue tomado o no existe.' });
           throw e;
         }
       }
@@ -685,8 +685,10 @@ export const handler = async (event) => {
           TableName: 'alera-orders',
           Key: marshall({ id }),
           UpdateExpression: 'REMOVE vendedor',
+          ConditionExpression: 'attribute_exists(id)',
         };
-        await db.send(new UpdateItemCommand(removeCmd));
+        try { await db.send(new UpdateItemCommand(removeCmd)); }
+        catch (e) { if (e.name === 'ConditionalCheckFailedException') return resp(404, { error: 'Pedido no encontrado.' }); throw e; }
         return resp(200, { ok: true });
       }
 
@@ -697,11 +699,12 @@ export const handler = async (event) => {
         const nombre = String(body.vendedor || '').trim().slice(0, 40);
         const cmd = nombre
           ? { TableName: 'alera-orders', Key: marshall({ id }),
-              UpdateExpression: 'SET vendedor = :v',
+              UpdateExpression: 'SET vendedor = :v', ConditionExpression: 'attribute_exists(id)',
               ExpressionAttributeValues: marshall({ ':v': nombre }) }
           : { TableName: 'alera-orders', Key: marshall({ id }),
-              UpdateExpression: 'REMOVE vendedor' };
-        await db.send(new UpdateItemCommand(cmd));
+              UpdateExpression: 'REMOVE vendedor', ConditionExpression: 'attribute_exists(id)' };
+        try { await db.send(new UpdateItemCommand(cmd)); }
+        catch (e) { if (e.name === 'ConditionalCheckFailedException') return resp(404, { error: 'Pedido no encontrado.' }); throw e; }
         return resp(200, { ok: true });
       }
 
@@ -711,12 +714,14 @@ export const handler = async (event) => {
       const cmdInput = {
         TableName: 'alera-orders',
         Key: marshall({ id }),
+        ConditionExpression: 'attribute_exists(id)',
         UpdateExpression: 'SET ' + expressions.join(', '),
         ExpressionAttributeValues: marshall(attrValues),
       };
       if (Object.keys(attrNames).length) cmdInput.ExpressionAttributeNames = attrNames;
 
-      await db.send(new UpdateItemCommand(cmdInput));
+      try { await db.send(new UpdateItemCommand(cmdInput)); }
+      catch (e) { if (e.name === 'ConditionalCheckFailedException') return resp(404, { error: 'Pedido no encontrado.' }); throw e; }
       return resp(200, { ok: true });
     }
 
