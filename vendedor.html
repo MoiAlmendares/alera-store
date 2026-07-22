@@ -58,6 +58,10 @@
           Pedidos
           <span id="pending-count-badge" class="hidden text-xs font-bold bg-red-500 text-white rounded-full px-1.5 min-w-[1.25rem] h-5 flex items-center justify-center leading-none">0</span>
         </button>
+        <button id="tab-btn-sales" onclick="setTab('sales')"
+          class="flex items-center gap-2 pb-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 transition-colors">
+          Mis ventas
+        </button>
       </div>
 
       <!-- Stats -->
@@ -147,6 +151,17 @@
         </div>
 
       </div><!-- /section-orders -->
+
+      <!-- ─── Mis Ventas Section ─── -->
+      <div id="section-sales" class="hidden">
+        <p class="text-sm text-zinc-500 mb-4">Estas son las ventas de los pedidos que tomaste. La comisión se calcula al 20% sobre los pedidos entregados.</p>
+        <div id="sales-list" class="grid gap-4 sm:grid-cols-2"></div>
+        <div id="sales-empty" class="hidden text-center text-zinc-400 py-20 text-sm">
+          <div class="text-4xl mb-3">🧾</div>
+          <p class="font-semibold">Todavía no tenés ventas.</p>
+          <p class="text-xs mt-1">Tomá un pedido desde la pestaña Pedidos y aparecerá acá.</p>
+        </div>
+      </div><!-- /section-sales -->
 
     </main>
   </div>
