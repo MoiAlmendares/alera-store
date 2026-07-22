@@ -1152,19 +1152,59 @@
     let omZone    = 'tgu';
     let omPayment = 'contraentrega';
     let omType    = null; // 'catalogo' | 'personalizado' | null
+    let omInsumos = [];   // insumos extra del pedido personalizado
+
+    // Insumos del pedido personalizado (filamento auto + extras)
+    function renderOmInsumos() {
+      const container = document.getElementById('om-insumos-list');
+      const totalEl   = document.getElementById('om-cost-total');
+      if (!container || !totalEl) return;
+      const grams   = parseFloat(document.getElementById('om-grams-input')?.value) || 0;
+      const plastic = plasticCost(grams);
+      const filaLine = `
+        <div class="flex items-center gap-2 bg-mint-50 border border-mint-200 rounded-lg px-3 py-2">
+          <span class="flex-1 text-sm text-zinc-700">🧵 Filamento (${grams} g × L${FILAMENT_PER_KG}/kg)</span>
+          <span class="text-sm font-semibold text-zinc-900">L ${plastic.toFixed(2)}</span>
+        </div>`;
+      const extras = omInsumos.map((c, i) => `
+        <div class="flex items-center gap-2 bg-white border border-zinc-200 rounded-lg px-3 py-2">
+          <span class="flex-1 text-sm text-zinc-700">${esc(c.label)}</span>
+          <span class="text-sm font-semibold text-zinc-900">L ${Number(c.amount).toFixed(2)}</span>
+          <button type="button" onclick="removeOmInsumo(${i})" class="text-zinc-400 hover:text-red-500 transition-colors text-lg leading-none">&times;</button>
+        </div>`).join('');
+      container.innerHTML = filaLine + extras;
+      const total = plastic + omInsumos.reduce((s, c) => s + Number(c.amount || 0), 0);
+      totalEl.textContent = 'L ' + total.toFixed(2);
+    }
+    function addOmInsumo() {
+      const l = document.getElementById('om-insumo-label');
+      const a = document.getElementById('om-insumo-amount');
+      const label = l.value.trim(), amount = parseFloat(a.value);
+      if (!label || isNaN(amount) || amount < 0) return;
+      omInsumos.push({ label, amount });
+      l.value = ''; a.value = ''; l.focus();
+      renderOmInsumos();
+    }
+    function removeOmInsumo(i) { omInsumos.splice(i, 1); renderOmInsumos(); }
+    function omMatCost() {
+      const grams = parseFloat(document.getElementById('om-grams-input')?.value) || 0;
+      return Math.round(plasticCost(grams) + omInsumos.reduce((s, c) => s + Number(c.amount || 0), 0));
+    }
 
     function openOrderModal() {
       omItems   = [];
       omZone    = 'tgu';
       omPayment = 'contraentrega';
       omType    = null;
+      omInsumos = [];
       document.getElementById('om-name').value    = '';
       document.getElementById('om-phone').value   = '';
       document.getElementById('om-address').value = '';
       document.getElementById('om-qty').value     = '1';
       const desc = document.getElementById('om-description');     if (desc) desc.value = '';
       const tot  = document.getElementById('om-total-input');     if (tot)  tot.value  = '';
-      const cst  = document.getElementById('om-cost-input');      if (cst)  cst.value  = '';
+      const gr   = document.getElementById('om-grams-input');     if (gr)   gr.value   = '';
+      renderOmInsumos();
       document.getElementById('om-error').classList.add('hidden');
       // Poblar selector de productos
       const products = (getProducts() || []).filter(p => p.active && p.stock !== false);
@@ -1302,7 +1342,7 @@
       if (omType === 'personalizado') {
         const description = document.getElementById('om-description').value.trim();
         const total       = parseFloat(document.getElementById('om-total-input').value) || 0;
-        const matCost     = parseFloat(document.getElementById('om-cost-input').value) || 0;
+        const matCost     = omMatCost(); // filamento (gramos) + insumos extra
         if (!description) { errEl.textContent = 'La descripción es obligatoria.'; errEl.classList.remove('hidden'); return; }
         if (!total || total <= 0) { errEl.textContent = 'El total debe ser mayor a 0.'; errEl.classList.remove('hidden'); return; }
         errEl.classList.add('hidden');
