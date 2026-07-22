@@ -142,7 +142,22 @@
           authFetch(API + '/products').then(r => r?.json()),
           authFetch(API + '/orders').then(r => r?.json())
         ]);
-        _products = Array.isArray(pr) && pr.length ? pr : DEFAULT_PRODUCTS;
+        if (Array.isArray(pr) && pr.length) {
+          // Recuperar imágenes borradas: si un producto quedó sin img, usar la
+          // imagen por defecto del mismo id (se persistirá al próximo guardado).
+          const defById = {};
+          for (const d of DEFAULT_PRODUCTS) defById[d.id] = d;
+          _products = pr.map(p => {
+            const d = defById[p.id];
+            return {
+              ...p,
+              img:  p.img || (d && d.img) || '',
+              imgs: (Array.isArray(p.imgs) && p.imgs.length) ? p.imgs : ((d && d.imgs) || []),
+            };
+          });
+        } else {
+          _products = DEFAULT_PRODUCTS;
+        }
         _orders   = Array.isArray(or) ? or : [];
       } catch(e) {
         console.error('loadData:', e);

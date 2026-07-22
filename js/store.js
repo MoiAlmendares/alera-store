@@ -68,7 +68,18 @@ async function getAllProducts() {
     const r = await fetch(API + '/products', { signal: AbortSignal.timeout(4000) });
     const data = await r.json();
     if (data.length) {
-      const mapped = data.map(p => ({ ...p, img: p.img || '' }));
+      // Recuperar imágenes: si un producto quedó sin img (dato borrado por el
+      // servidor viejo), usar la imagen por defecto del mismo id.
+      const defById = {};
+      for (const d of DEFAULT_PRODUCTS_LIST) defById[d.id] = d;
+      const mapped = data.map(p => {
+        const d = defById[p.id];
+        return {
+          ...p,
+          img:  p.img || (d && d.img) || '',
+          imgs: (Array.isArray(p.imgs) && p.imgs.length) ? p.imgs : ((d && d.imgs) || []),
+        };
+      });
       _productsCache = mapped;
       return mapped;
     }
