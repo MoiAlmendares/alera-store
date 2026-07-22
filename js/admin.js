@@ -208,18 +208,26 @@
       const container = document.getElementById('f-costs-list');
       const totalEl   = document.getElementById('f-costs-total');
       if (!container || !totalEl) return;
-      if (!costsList.length) {
-        container.innerHTML = '<p class="text-xs text-zinc-400 italic">Sin costos agregados</p>';
-      } else {
-        container.innerHTML = costsList.map((c, i) => `
-          <div class="flex items-center gap-2 bg-white border border-zinc-200 rounded-lg px-3 py-2">
-            <span class="flex-1 text-sm text-zinc-700">${esc(c.label)}</span>
-            <span class="text-sm font-semibold text-zinc-900">L ${Number(c.amount).toFixed(2)}</span>
-            <button type="button" onclick="removeCostItem(${i})"
-              class="text-zinc-400 hover:text-red-500 transition-colors text-lg leading-none">&times;</button>
-          </div>`).join('');
-      }
-      const total = costsList.reduce((s, c) => s + Number(c.amount || 0), 0);
+
+      const grams   = parseFloat(document.getElementById('f-g')?.value) || 0;
+      const plastic = plasticCost(grams);
+
+      // Línea automática del filamento (desde los gramos) + los costos extra
+      const filaLine = `
+        <div class="flex items-center gap-2 bg-mint-50 border border-mint-200 rounded-lg px-3 py-2">
+          <span class="flex-1 text-sm text-zinc-700">🧵 Filamento (${grams} g × L${FILAMENT_PER_KG}/kg)</span>
+          <span class="text-sm font-semibold text-zinc-900">L ${plastic.toFixed(2)}</span>
+        </div>`;
+      const extraLines = costsList.map((c, i) => `
+        <div class="flex items-center gap-2 bg-white border border-zinc-200 rounded-lg px-3 py-2">
+          <span class="flex-1 text-sm text-zinc-700">${esc(c.label)}</span>
+          <span class="text-sm font-semibold text-zinc-900">L ${Number(c.amount).toFixed(2)}</span>
+          <button type="button" onclick="removeCostItem(${i})"
+            class="text-zinc-400 hover:text-red-500 transition-colors text-lg leading-none">&times;</button>
+        </div>`).join('');
+      container.innerHTML = filaLine + extraLines;
+
+      const total = plastic + costsList.reduce((s, c) => s + Number(c.amount || 0), 0);
       totalEl.textContent = 'L ' + total.toFixed(2);
     }
     function addCostItem() {
@@ -1030,7 +1038,7 @@
       for (const p of getProducts()) prodMap[p.id] = p;
 
       // ── Ganancia de un pedido ────────────────────────────────────────────────
-      // costo unitario = Σ(costs[].amount) si existe, o (g/1000)×800 fallback
+      // costo unitario = filamento (gramos × L880/kg) + costos extra
       // ganancia       = (precio - costo) × qty
       // comisión       = ganancia × pct (sin ISV)
       function orderProfit(o) {
@@ -1040,12 +1048,7 @@
         let bruta = 0;
         for (const item of (o.items || [])) {
           const p = prodMap[item.id];
-          let unitCost = 0;
-          if (p && Array.isArray(p.costs) && p.costs.length) {
-            unitCost = p.costs.reduce((s, c) => s + Number(c.amount || 0), 0);
-          } else if (p && p.g) {
-            unitCost = (p.g / 1000) * 800;
-          }
+          const unitCost  = p ? productUnitCost(p) : 0;
           const unitPrice = Number(item.price || p?.price || 0);
           bruta += (unitPrice - unitCost) * (item.qty || 1);
         }
