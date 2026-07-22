@@ -690,6 +690,19 @@ export const handler = async (event) => {
       return resp(200, { ok: true });
     }
 
+    // ── DELETE /orders/:id  (eliminar pedido — solo admin) ──────────────────
+    if (method === 'DELETE' && path.includes('/orders/')) {
+      const claims = verifyToken(auth);
+      if (!claims) return unauth();
+      if (claims.role !== 'admin') return forbidden();
+
+      const id = Number(path.split('/orders/')[1]);
+      if (!id) return resp(400, { error: 'ID inválido.' });
+
+      await db.send(new DeleteItemCommand({ TableName: 'alera-orders', Key: marshall({ id }) }));
+      return resp(200, { ok: true });
+    }
+
     // ── POST /upload  (subir imagen — solo admin) ───────────────────────────
     if (method === 'POST' && path.startsWith('/upload')) {
       const claims = verifyToken(auth);

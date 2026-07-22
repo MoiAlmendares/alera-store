@@ -440,7 +440,13 @@
             </div>` : ''}
 
             ${actions}
-            ${releaseBtn ? `<div class="border-t border-zinc-100 pt-3 text-center">${releaseBtn}</div>` : ''}
+            <div class="border-t border-zinc-100 pt-3 flex items-center justify-between gap-3">
+              <div>${releaseBtn}</div>
+              <button data-oid="${o.id}" onclick="deleteOrder(Number(this.dataset.oid))"
+                class="text-xs text-zinc-300 hover:text-red-500 transition-colors">
+                Eliminar pedido
+              </button>
+            </div>
           </div>`;
       }).join('');
     }
@@ -488,6 +494,29 @@
         renderStats(); renderOrders(); updatePendingBadge();
         showToast('Error de conexión', false);
       }
+    }
+
+    async function deleteOrder(id) {
+      const o = _orders.find(x => x.id === id);
+      const quien = o?.customer?.name ? ` de ${o.customer.name}` : '';
+      if (!confirm(`¿Eliminar el pedido${quien}? Esta acción no se puede deshacer.`)) return;
+      try {
+        const r = await authFetch(API + '/orders/' + id, { method:'DELETE' });
+        if (!r || !r.ok) {
+          const data = await r?.json().catch(() => ({}));
+          showToast(data?.error || 'No se pudo eliminar el pedido', false);
+          return;
+        }
+      } catch(e) {
+        console.error('deleteOrder:', e);
+        showToast('Error de conexión al eliminar', false);
+        return;
+      }
+      _orders = _orders.filter(x => x.id !== id);
+      renderStats();
+      renderOrders();
+      updatePendingBadge();
+      showToast('Pedido eliminado');
     }
 
     function renderTable() {
