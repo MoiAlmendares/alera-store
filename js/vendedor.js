@@ -701,4 +701,5 @@ async function refreshOrders() {
 }
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
+showCurrentUser();
 loadData().then(renderAll);
