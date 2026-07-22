@@ -708,7 +708,7 @@ async function submitOrder() {
       const waMsg = `Hola! Confirmo mi pedido ${orderLabel}:\n`
         + order.items.map(it => `${it.qty}x ${it.name}`).join('\n')
         + `\nTotal: L ${totalFinal}`;
-      waEl.href = 'https://wa.me/50495902564?text=' + encodeURIComponent(waMsg);
+      waEl.href = 'https://wa.me/50498822321?text=' + encodeURIComponent(waMsg);
     }
 
     cart = {}; saveCart(); renderCart();
