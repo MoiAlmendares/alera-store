@@ -156,8 +156,10 @@ function cleanImgUrl(u) {
   const s = u.trim().slice(0, 500);
   if (!s) return '';
   if (/["'<>]/.test(s)) return '';
-  if (!/^https?:\/\//i.test(s)) return '';
-  return s;
+  if (/^https?:\/\//i.test(s)) return s;          // URL absoluta http(s)
+  if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return '';  // otro esquema (javascript:, data:, …) → rechazar
+  if (s.startsWith('//')) return '';              // protocol-relative → rechazar
+  return s;                                        // ruta relativa local (assets/…)
 }
 
 function sanitizeProduct(product, id) {
