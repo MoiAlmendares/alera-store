@@ -38,24 +38,60 @@ let currentFilter = 'all';
 let currentTab    = 'products';
 let ordersFilter  = 'pendiente';
 
+// Comisión del vendedor: 20% sobre la ganancia (precio − costo), sin ISV.
+const COMMISSION_PCT = 20;
+
+// Ganancia de un pedido (precio − costo). Personalizado: total − material.
+function orderProfit(o) {
+  if (o.type === 'personalizado' || o.zone === 'personalizado')
+    return Math.round((Number(o.total) || 0) - (Number(o.matCost) || 0));
+  const prodMap = {};
+  for (const p of getProducts()) prodMap[p.id] = p;
+  let bruta = 0;
+  for (const item of (o.items || [])) {
+    const p = prodMap[item.id];
+    let unitCost = 0;
+    if (p && Array.isArray(p.costs) && p.costs.length) unitCost = p.costs.reduce((s, c) => s + Number(c.amount || 0), 0);
+    else if (p && p.g) unitCost = (p.g / 1000) * 800;
+    bruta += (Number(item.price || p?.price || 0) - unitCost) * (item.qty || 1);
+  }
+  return Math.round(bruta);
+}
+function myCommission(o) { return Math.round(orderProfit(o) * COMMISSION_PCT / 100); }
+
 // ─── Tabs ────────────────────────────────────────────────────────────────────
 function setTab(tab) {
   currentTab = tab;
-  const onP = tab === 'products';
   const activeClass = 'flex items-center gap-2 pb-3 text-sm font-semibold transition-colors border-b-2 border-zinc-900 text-zinc-900';
   const idleClass   = 'flex items-center gap-2 pb-3 text-sm font-semibold transition-colors border-b-2 border-transparent text-zinc-400 hover:text-zinc-600';
-  document.getElementById('tab-btn-products').className = onP  ? activeClass : idleClass;
-  document.getElementById('tab-btn-orders').className   = !onP ? activeClass : idleClass;
-  document.getElementById('section-products').classList.toggle('hidden', !onP);
-  document.getElementById('section-orders').classList.toggle('hidden',   onP);
+  document.getElementById('tab-btn-products').className = tab === 'products' ? activeClass : idleClass;
+  document.getElementById('tab-btn-orders').className   = tab === 'orders'   ? activeClass : idleClass;
+  document.getElementById('tab-btn-sales').className    = tab === 'sales'    ? activeClass : idleClass;
+  document.getElementById('section-products').classList.toggle('hidden', tab !== 'products');
+  document.getElementById('section-orders').classList.toggle('hidden',   tab !== 'orders');
+  document.getElementById('section-sales').classList.toggle('hidden',    tab !== 'sales');
   renderStats();
-  if (!onP) renderOrders();
+  if (tab === 'orders') renderOrders();
+  if (tab === 'sales')  renderSales();
 }
 
 function renderAll() { renderStats(); renderTable(); updatePendingBadge(); }
 
 function renderStats() {
   const row = document.getElementById('stats-row');
+  if (currentTab === 'sales') {
+    const me        = getMyUsername();
+    const mine      = getOrders().filter(o => (o.vendedor || '') === me);
+    const delivered = mine.filter(o => o.status === 'entregado');
+    const totalVend = delivered.reduce((s, o) => s + (Number(o.total) || 0), 0);
+    const totalCom  = delivered.reduce((s, o) => s + myCommission(o), 0);
+    row.innerHTML = `
+      <div class="bg-white rounded-2xl border border-zinc-200 p-5"><div class="text-3xl font-black text-zinc-900">L ${totalVend.toLocaleString('es-HN')}</div><div class="text-sm text-zinc-500 mt-1">Total vendido</div></div>
+      <div class="bg-white rounded-2xl border border-zinc-200 p-5"><div class="text-3xl font-black text-teal-600">${delivered.length}</div><div class="text-sm text-zinc-500 mt-1">Pedidos entregados</div></div>
+      <div class="bg-white rounded-2xl border border-zinc-200 p-5"><div class="text-3xl font-black text-mint-600">L ${totalCom.toLocaleString('es-HN')}</div><div class="text-sm text-zinc-500 mt-1">Tu comisión (20%)</div></div>
+      <div class="bg-white rounded-2xl border border-zinc-200 p-5"><div class="text-3xl font-black text-zinc-400">${mine.filter(o=>o.status==='pendiente').length}</div><div class="text-sm text-zinc-500 mt-1">Tus pendientes</div></div>`;
+    return;
+  }
   if (currentTab === 'orders') {
     const orders    = getOrders();
     const pending   = orders.filter(o => o.status === 'pendiente').length;
@@ -74,6 +110,45 @@ function renderStats() {
       <div class="bg-white rounded-2xl border border-zinc-200 p-5"><div class="text-3xl font-black ${agotado.length > 0 ? 'text-red-500' : 'text-zinc-900'}">${agotado.length}</div><div class="text-sm text-zinc-500 mt-1">Agotados</div></div>
       <div class="bg-white rounded-2xl border border-zinc-200 p-5"><div class="text-3xl font-black text-zinc-400">${getOrders().filter(o=>o.status==='pendiente').length}</div><div class="text-sm text-zinc-500 mt-1">Pedidos pendientes</div></div>`;
   }
+}
+
+function renderSales() {
+  const me    = getMyUsername();
+  const mine  = getOrders().filter(o => (o.vendedor || '') === me).sort((a, b) => b.id - a.id);
+  const list  = document.getElementById('sales-list');
+  const empty = document.getElementById('sales-empty');
+  if (!mine.length) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  const statusMap = {
+    pendiente: { label: 'Pendiente', cls: 'bg-yellow-100 text-yellow-700' },
+    entregado: { label: 'Entregado', cls: 'bg-mint-100 text-mint-700'     },
+    cancelado: { label: 'Cancelado', cls: 'bg-red-100 text-red-600'       },
+  };
+
+  list.innerHTML = mine.map(o => {
+    const sc     = statusMap[o.status] || statusMap.pendiente;
+    const isPers = o.type === 'personalizado' || o.zone === 'personalizado';
+    const detalle = isPers
+      ? esc(o.description || 'Pedido personalizado')
+      : (o.items || []).map(i => `${esc(String(i.qty))}x ${esc(i.name)}`).join(', ');
+    const comRow = o.status === 'entregado'
+      ? `<div class="flex justify-between text-sm"><span class="text-zinc-500">Tu comisión</span><span class="font-bold text-mint-600">L ${myCommission(o).toLocaleString('es-HN')}</span></div>`
+      : '';
+    return `
+      <div class="bg-white rounded-2xl border border-zinc-200 p-5 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs text-zinc-400 font-mono">#${esc(o.orderNum != null ? String(o.orderNum).padStart(3,'0') : 's/n')} &middot; ${esc(o.date || 'sin fecha')}</span>
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${sc.cls}">${sc.label}</span>
+        </div>
+        <div class="font-bold text-base">${esc(o.customer?.name || 'Sin datos de cliente')}</div>
+        <div class="text-sm text-zinc-500">${detalle || '—'}</div>
+        <div class="flex justify-between border-t border-zinc-100 pt-2 text-sm">
+          <span class="text-zinc-500">Total</span><span class="font-bold">L ${Number(o.total) || 0}</span>
+        </div>
+        ${comRow}
+      </div>`;
+  }).join('');
 }
 
 function renderTable() {
