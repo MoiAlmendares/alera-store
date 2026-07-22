@@ -51,7 +51,7 @@ function orderProfit(o) {
   let bruta = 0;
   for (const item of (o.items || [])) {
     const p = prodMap[item.id];
-    const unitCost = p ? productUnitCost(p) : 0;
+    const unitCost = itemUnitCost(item, prodMap);
     bruta += (Number(item.price || p?.price || 0) - unitCost) * (item.qty || 1);
   }
   return Math.round(bruta);
