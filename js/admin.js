@@ -363,7 +363,7 @@
         cancelado: { label:'Cancelado',  cls:'bg-red-100 text-red-600'       },
       };
 
-      list.innerHTML = filtered.filter(o => o.customer).map(o => {
+      list.innerHTML = filtered.map(o => {
         const sc        = statusMap[o.status] || statusMap.pendiente;
         const isPers    = o.type === 'personalizado' || o.zone === 'personalizado';
         const zonaLabel = o.zone === 'tgu' ? 'Dentro de TGU' : 'Fuera de TGU';
@@ -444,11 +444,12 @@
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap mb-1">
-                  <span class="text-xs text-zinc-400 font-mono">#${esc(String(o.orderNum).padStart(3,'0'))} &middot; ${esc(o.date)}</span>
+                  <span class="text-xs text-zinc-400 font-mono">#${esc(o.orderNum != null ? String(o.orderNum).padStart(3,'0') : 's/n')} &middot; ${esc(o.date || 'sin fecha')}</span>
                   ${vendorBadge}
                   ${persBadge}
+                  ${!o.customer ? '<span class="text-xs font-semibold bg-red-50 text-red-600 border border-red-200 px-2 py-0.5 rounded-full">⚠ Incompleto</span>' : ''}
                 </div>
-                <div class="font-bold text-base">${esc(o.customer?.name || 'Unknown')}</div>
+                <div class="font-bold text-base">${esc(o.customer?.name || 'Sin datos de cliente')}</div>
                 <div class="text-sm text-zinc-500 mt-0.5">${esc(o.customer?.phone || '—')}</div>
                 ${addressLine}
               </div>
