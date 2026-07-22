@@ -602,9 +602,11 @@ export const handler = async (event) => {
       order        = sanitizeOrder(order);
       order.id     = Date.now() * 1000 + Math.floor(Math.random() * 1000); // siempre server-side
       order.status = 'pendiente';
-      // Si el pedido lo crea un usuario autenticado (vendedor/admin), estampar su usuario
+      // Si el pedido lo crea un VENDEDOR, se le asigna a él. Los pedidos que crea
+      // un admin quedan sin asignar (el admin los asigna manualmente después).
       const orderClaims = verifyToken(auth);
-      if (orderClaims?.user) order.vendedor = String(orderClaims.user).slice(0, 40);
+      if (orderClaims?.user && orderClaims.role === 'vendedor')
+        order.vendedor = String(orderClaims.user).slice(0, 40);
 
       await db.send(new PutItemCommand({ TableName: 'alera-orders', Item: marshall(order, { removeUndefinedValues: true }) }));
       sendOrderEmail(order).catch(e => console.error('SES:', e)); // fire-and-forget
