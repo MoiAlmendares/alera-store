@@ -675,6 +675,21 @@ export const handler = async (event) => {
         return resp(200, { ok: true });
       }
 
+      // Acción "asignar": (re)asigna el pedido a un vendedor — solo admin
+      // Si vendedor viene vacío, equivale a liberar.
+      if (body.action === 'asignar') {
+        if (claims.role !== 'admin') return forbidden();
+        const nombre = String(body.vendedor || '').trim().slice(0, 40);
+        const cmd = nombre
+          ? { TableName: 'alera-orders', Key: marshall({ id }),
+              UpdateExpression: 'SET vendedor = :v',
+              ExpressionAttributeValues: marshall({ ':v': nombre }) }
+          : { TableName: 'alera-orders', Key: marshall({ id }),
+              UpdateExpression: 'REMOVE vendedor' };
+        await db.send(new UpdateItemCommand(cmd));
+        return resp(200, { ok: true });
+      }
+
       if (!expressions.length)
         return resp(400, { error: 'Nada que actualizar.' });
 
