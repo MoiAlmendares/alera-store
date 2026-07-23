@@ -737,12 +737,9 @@ function apHandleUrlInput() {
   }
 }
 
-// En vista previa se oculta el campo de gramos (dato delicado para el vendedor)
-function apApplyPreview() {
-  if (!PREVIEW) return;
-  const gWrap = document.getElementById('ap-g-wrap');
-  if (gWrap) gWrap.style.display = 'none';
-}
+// El vendedor puede ver/editar los gramos (spec de producción), pero el modal
+// no muestra el costo en dinero (esa sección no existe en el panel del vendedor).
+function apApplyPreview() {}
 
 function openAddProductModal() {
   apEditId = null;
@@ -838,16 +835,16 @@ async function submitAddProduct() {
   try {
     let r;
     if (editing) {
-      // Editar: PATCH de los campos visibles. NO se envían gramos ni costos (se preservan).
+      // Editar: PATCH de los campos visibles + gramos. Los costos no se tocan (se preservan).
       r = await authFetch(API + '/products/' + apEditId, {
         method: 'PATCH',
-        body: JSON.stringify({ name, price, category, fandom, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn }),
+        body: JSON.stringify({ name, price, category, fandom, g, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn }),
       });
     } else {
-      // Agregar: en preview no se manejan gramos; en producción se conserva el flujo actual.
-      const payload = { name, price, category, fandom, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn };
-      if (!PREVIEW) payload.g = g;
-      r = await authFetch(API + '/products', { method: 'POST', body: JSON.stringify(payload) });
+      r = await authFetch(API + '/products', {
+        method: 'POST',
+        body: JSON.stringify({ name, price, category, fandom, g, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn }),
+      });
     }
     const data = await r?.json();
     if (!r || !r.ok) {
@@ -857,7 +854,7 @@ async function submitAddProduct() {
     }
     if (editing) {
       const p = _products.find(x => x.id === apEditId);
-      if (p) Object.assign(p, { name, price, category, fandom, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn });
+      if (p) Object.assign(p, { name, price, category, fandom, g, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn });
     } else if (data?.product) {
       _products.push(data.product);
     }

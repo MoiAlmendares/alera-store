@@ -557,6 +557,7 @@ export const handler = async (event) => {
         if (isNaN(v) || v <= 0) return resp(400, { error: 'El precio debe ser mayor a 0.' });
         expressions.push('price = :pr'); attrValues[':pr'] = Math.max(0, v);
       }
+      if (body.g        !== undefined) { expressions.push('g = :g');         attrValues[':g']  = Math.max(0, Number(body.g) || 0); }
       if (body.category !== undefined) { expressions.push('category = :ca'); attrValues[':ca'] = stripHtml(String(body.category)).slice(0, 40); }
       if (body.fandom   !== undefined) { expressions.push('fandom = :fa');   attrValues[':fa'] = stripHtml(String(body.fandom)).slice(0, 40); }
       if (body.emoji    !== undefined) { expressions.push('emoji = :em');    attrValues[':em'] = stripHtml(String(body.emoji)).slice(0, 4); }
