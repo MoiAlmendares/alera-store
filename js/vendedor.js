@@ -171,10 +171,13 @@ function renderTable() {
       <td class="px-4 py-4 text-sm text-zinc-500">${p.fandom||'—'}</td>
       <td class="px-4 py-4 text-sm font-bold">L ${p.price}</td>
       <td class="px-4 py-4">
-        <button onclick="toggleStock(${p.id})"
-          class="text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${p.stock !== false ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-600 hover:bg-red-200'}">
-          ${p.stock !== false ? 'Disponible' : 'Agotado'}
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleStock(${p.id})"
+            class="text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${p.stock !== false ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-600 hover:bg-red-200'}">
+            ${p.stock !== false ? 'Disponible' : 'Agotado'}
+          </button>
+          ${PREVIEW ? `<button onclick="openEditProductModal(${p.id})" class="text-xs font-semibold text-teal-600 hover:text-teal-700 transition-colors">Editar</button>` : ''}
+        </div>
       </td>
     </tr>`).join('');
 }
@@ -597,11 +600,15 @@ async function saveManualOrder() {
   }
 }
 
-// ─── Add Product Modal ────────────────────────────────────────────────────────
+// ─── Add / Edit Product Modal ─────────────────────────────────────────────────
+// Modo vista previa: la edición de productos solo se activa con ?preview=1 en la
+// URL. Así el dueño la revisa antes de habilitarla para el vendedor.
+const PREVIEW = new URLSearchParams(location.search).has('preview');
 let apDarkOn = false;
 let apStockOn = true;
 let apUploadedImgData = '';
 let apGallerySlots = ['', '', '', ''];
+let apEditId = null; // id del producto en edición (null = agregar)
 
 function apFileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -730,7 +737,15 @@ function apHandleUrlInput() {
   }
 }
 
+// En vista previa se oculta el campo de gramos (dato delicado para el vendedor)
+function apApplyPreview() {
+  if (!PREVIEW) return;
+  const gWrap = document.getElementById('ap-g-wrap');
+  if (gWrap) gWrap.style.display = 'none';
+}
+
 function openAddProductModal() {
+  apEditId = null;
   apDarkOn = false; apStockOn = true; apUploadedImgData = ''; apGallerySlots = ['', '', '', ''];
   document.getElementById('ap-name').value      = '';
   document.getElementById('ap-category').value  = 'Llavero';
@@ -745,6 +760,47 @@ function openAddProductModal() {
   document.getElementById('ap-img-placeholder-icon').style.display = '';
   document.getElementById('ap-img-upload-label').textContent = 'Clic para subir imagen';
   document.getElementById('ap-error').classList.add('hidden');
+  document.getElementById('ap-modal-title').textContent = 'Agregar producto';
+  document.getElementById('ap-submit-btn').textContent = 'Guardar producto';
+  apApplyPreview();
+  apUpdateDarkToggle();
+  apUpdateStockToggle();
+  apRenderGallerySlots();
+  document.getElementById('ap-modal-overlay').classList.remove('hidden');
+  document.getElementById('ap-name').focus();
+}
+
+function openEditProductModal(id) {
+  const p = getProducts().find(x => x.id === id);
+  if (!p) return;
+  apEditId = id;
+  apDarkOn = p.dark === true; apStockOn = p.stock !== false; apUploadedImgData = '';
+  const extra = Array.isArray(p.imgs) ? p.imgs.slice(1, 5) : [];
+  apGallerySlots = [0, 1, 2, 3].map(i => extra[i] || '');
+  document.getElementById('ap-name').value     = p.name || '';
+  document.getElementById('ap-category').value = p.category || 'Llavero';
+  document.getElementById('ap-fandom').value   = p.fandom || '';
+  document.getElementById('ap-price').value    = p.price || '';
+  document.getElementById('ap-g').value        = p.g || '';
+  document.getElementById('ap-emoji').value    = p.emoji || '';
+  document.getElementById('ap-badge').value    = p.badge || '';
+  document.getElementById('ap-desc').value     = p.desc || '';
+  document.getElementById('ap-img-url').value  = p.img || '';
+  const wrap = document.getElementById('ap-img-preview-wrap');
+  if (p.img) {
+    document.getElementById('ap-img-preview').src = p.img;
+    wrap.classList.remove('hidden');
+    document.getElementById('ap-img-placeholder-icon').style.display = 'none';
+    document.getElementById('ap-img-upload-label').textContent = 'Cambiar imagen';
+  } else {
+    wrap.classList.add('hidden');
+    document.getElementById('ap-img-placeholder-icon').style.display = '';
+    document.getElementById('ap-img-upload-label').textContent = 'Clic para subir imagen';
+  }
+  document.getElementById('ap-error').classList.add('hidden');
+  document.getElementById('ap-modal-title').textContent = 'Editar producto';
+  document.getElementById('ap-submit-btn').textContent = 'Guardar cambios';
+  apApplyPreview();
   apUpdateDarkToggle();
   apUpdateStockToggle();
   apRenderGallerySlots();
@@ -776,30 +832,45 @@ async function submitAddProduct() {
   errEl.classList.add('hidden');
 
   btn.disabled = true;
+  const editing = apEditId != null;
   btn.textContent = 'Guardando…';
 
   try {
-    const r = await authFetch(API + '/products', {
-      method: 'POST',
-      body: JSON.stringify({ name, price, category, fandom, g, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn }),
-    });
+    let r;
+    if (editing) {
+      // Editar: PATCH de los campos visibles. NO se envían gramos ni costos (se preservan).
+      r = await authFetch(API + '/products/' + apEditId, {
+        method: 'PATCH',
+        body: JSON.stringify({ name, price, category, fandom, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn }),
+      });
+    } else {
+      // Agregar: en preview no se manejan gramos; en producción se conserva el flujo actual.
+      const payload = { name, price, category, fandom, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn };
+      if (!PREVIEW) payload.g = g;
+      r = await authFetch(API + '/products', { method: 'POST', body: JSON.stringify(payload) });
+    }
     const data = await r?.json();
     if (!r || !r.ok) {
       errEl.textContent = data?.error || 'Error al guardar.';
       errEl.classList.remove('hidden');
       return;
     }
-    if (data?.product) _products.push(data.product);
+    if (editing) {
+      const p = _products.find(x => x.id === apEditId);
+      if (p) Object.assign(p, { name, price, category, fandom, emoji, badge, desc, img: imgVal, imgs, dark: apDarkOn, stock: apStockOn });
+    } else if (data?.product) {
+      _products.push(data.product);
+    }
     closeAddProductModal();
     renderAll();
-    showToast('Producto agregado ✓');
+    showToast(editing ? 'Producto actualizado ✓' : 'Producto agregado ✓');
   } catch(e) {
-    console.error('addProduct:', e);
+    console.error('saveProduct:', e);
     errEl.textContent = 'Error de conexión. Intentá de nuevo.';
     errEl.classList.remove('hidden');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Guardar producto';
+    btn.textContent = editing ? 'Guardar cambios' : 'Guardar producto';
   }
 }
 
