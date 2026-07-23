@@ -545,6 +545,30 @@ export const handler = async (event) => {
         attrValues[':ac'] = body.active;
       }
 
+      // Edición de campos visibles del producto (admin o vendedor).
+      // NO toca gramos (g) ni costos: se preservan.
+      if (body.name !== undefined) {
+        const v = stripHtml(String(body.name)).slice(0, 80);
+        if (!v) return resp(400, { error: 'El nombre es obligatorio.' });
+        expressions.push('#n = :nm'); attrNames['#n'] = 'name'; attrValues[':nm'] = v;
+      }
+      if (body.price !== undefined) {
+        const v = Number(body.price);
+        if (isNaN(v) || v <= 0) return resp(400, { error: 'El precio debe ser mayor a 0.' });
+        expressions.push('price = :pr'); attrValues[':pr'] = Math.max(0, v);
+      }
+      if (body.category !== undefined) { expressions.push('category = :ca'); attrValues[':ca'] = stripHtml(String(body.category)).slice(0, 40); }
+      if (body.fandom   !== undefined) { expressions.push('fandom = :fa');   attrValues[':fa'] = stripHtml(String(body.fandom)).slice(0, 40); }
+      if (body.emoji    !== undefined) { expressions.push('emoji = :em');    attrValues[':em'] = stripHtml(String(body.emoji)).slice(0, 4); }
+      if (body.badge    !== undefined) { expressions.push('badge = :ba');    attrValues[':ba'] = stripHtml(String(body.badge)).slice(0, 40); }
+      if (body.desc     !== undefined) { expressions.push('#d = :de'); attrNames['#d'] = 'desc'; attrValues[':de'] = stripHtml(String(body.desc)).slice(0, 300); }
+      if (body.dark     !== undefined) { expressions.push('dark = :dk');     attrValues[':dk'] = body.dark === true; }
+      if (body.img      !== undefined) { expressions.push('img = :im');      attrValues[':im'] = cleanImgUrl(body.img); }
+      if (body.imgs     !== undefined) {
+        const safe = Array.isArray(body.imgs) ? body.imgs.map(cleanImgUrl).filter(Boolean).slice(0, 5) : [];
+        expressions.push('imgs = :ig'); attrValues[':ig'] = safe;
+      }
+
       if (!expressions.length) return resp(400, { error: 'Nada que actualizar.' });
 
       const cmdInput = {
